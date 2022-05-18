@@ -1,6 +1,3 @@
-#Hello Jim, git hub is a stupid thing 
-#WTF 
-##push 
 
 #task: 
 
