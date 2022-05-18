@@ -39,6 +39,9 @@ jim_pair <- len$length[len$male== "red" & len$id %in% id]- len$length[len$male==
 j2 <- boot(jim_pair, function(data, indices)mean(data[indices]), R =10000)
 boot.ci(j2, type = "bca")
 
+#https://stats.stackexchange.com/questions/1399/obtaining-and-interpreting-bootstrapped-confidence-intervals-from-hierarchical-d?rq=1
+# as suggested by the upper question (ref: "Bootstrap methods and their application", 1997, Section 3.8))
+
 
 ## load data 
 len <- read.csv("data/length.csv")
@@ -167,18 +170,19 @@ l <- layout(matrix(c(1,2), nrow=2,ncol=1,byrow =  TRUE),
 layout.show(l)
 par(mar=c(4,5,2,2))
 
+# for pair, set outer  = FALSE  
 boxplot(length~male, data = len,
         col = jk_col(c("blue", "red"), opacity = .6),
         border = jk_col(c("blue", "red"), opacity = .6),
         las = 1, staplewex= 0.4, outline = FALSE, at = c(1,2))
 
-## boxplot with border only 
+## boxplot with border only  
 boxplot(length~male, data = len,
         col = "NA",
         border = jk_col(c("blue", "red"), opacity = .4),
         las = 1, staplewex= 0.4, outline = FALSE, lwd =1.5)
 
-
+# for pair stripchart, jitter = FALSE  
 stripchart(length~male, data = len,
            pch = 19, vertical = TRUE,
            col = jk_col(c("blue", "red"), opacity = .5),
@@ -186,15 +190,10 @@ stripchart(length~male, data = len,
 
 segments(1.0,len$length[len$male == "red"][1:length(len$length[len$male == "red"])], 
          2.0, len$length[len$male == "yellow"][1:length(len$length[len$male == "yellow"])], 
-         col = yarrr::transparent(c("grey20"), trans.val = .7),
+         col = jk_col("grey20", opacity = .7),
          lty =1, lwd=2)
 
-###calculate pair differnce 
-
-#https://stats.stackexchange.com/questions/1399/obtaining-and-interpreting-bootstrapped-confidence-intervals-from-hierarchical-d?rq=1
-# as suggested by the upper question (ref: "Bootstrap methods and their application", 1997, Section 3.8))
-### task how to add jitter + lines 
-
+##all other plot (violin, mean +SI same as unpaired)
 # add effect size in lower panel using density plot
 
 plot(NULL,xlim = c(0, max(range(d$y)+1.5)), ylim = range(d$x),
@@ -213,7 +212,6 @@ abline(h = 0)
 
 axis(1, at = 1.0+max(d$y)/2,
      labels = sprintf("%s minus %s", contrast[2], contrast[1]))
-
 
 dev.off()
 
