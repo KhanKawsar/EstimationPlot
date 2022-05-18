@@ -4,7 +4,7 @@ library(bootES) ## will be replaced by our package
 library(yarrr) ## will be replaced by jk_col, in our package  
 library(vioplot) ## will be replaced by violplot 
 
-## function for colour andd shade 
+## function for colour and shade 
 
 jk_col <-  function(colour, shade) {
   rgb.val <- col2rgb(colour)
