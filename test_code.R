@@ -1,3 +1,5 @@
+#Hello Jim, git hub is a stupid thing 
+
 #task: 
 
 ### task : put file sin git hub 
