@@ -4,45 +4,62 @@
 ### task : put file sin git hub 
 ## cogen's d, heghen's g; one sample t test  
 ## write possible way of plotting-done  
-##polygon to violin 
+
 ## check violin code in github to determine how they made the violin smooth -done, but logic
 
 ## what if we chop the head and tail a bit to make the effect plot longer or 
 ## any other way to make effect plot nicer 
 
-difference <- (data,
-               type = c("unstandarrised", "cohens", "hegens"), # select type of difference #deffault unstandarised
+
+#' Generate differences
+#' 
+#' This is details
+#' 
+#' @param data Describe data
+#' @param type jfgjkdf
+#' 
+#' @return List containing:
+#' bootstrapped mean difference + confidence interval of mean difference + individual bootstrapped difference + 
+#'         CI of group 1 +CI of group 2 +mean of group 1 + mean pf group 2 + median of group 1 + median of group 2 +
+#'         raw data
+difference <- function(data,
+               type = c("unstandardised", "cohens", "hegens"), # select type of difference #default unstandardised
                paired = FALSE, # if true calculate paired mean difference 
                ci.type = "bca", #default
                R = 10000, #default
-               contrast = c("group 1" - "group 2"), # default larger group minus small group
-               ci.conf = 0.95, #default)
+               contrast = c("group 1 - group 2"), # default larger group minus small group
+               ci.conf = 0.95) {
+               
+}
 
-## output= raw data + bootstrapped mean difference + conffidence interval off mean difference + individual bootstrapped difference + CI of group 1 +CI of group 2 +mean of group 1 + mean pf group 2 + median of group 1 + median of group 2              
-## print bootstrap mean difference, bootsrapped confidence interval (R value, bootstrapped corrections"bca")
+## print bootstrap mean difference, bootstrapped confidence interval (R value, bootstrapped corrections"bca")
+print.whatever <- function(result) {
+  
+}
 
 
 
-jk_plot(data, 
+jk_plot <- function(data, 
         box = TRUE,# draw boxplot 
         box_fill = TRUE,# fill up box colour # if false only border will be drawn 
         points = TRUE, #add individual data point 
-        density = TRUE, # add half violin; if desnity is TRUE, violin is false  
-        violin = TRUE, # add violin; if violin is true density is false 
+        violin = c("left-half", "right-half", "full", "none"), # add half violin
         mean = TRUE, #draw mean of the data 
         CI = TRUE, # draw confidence interval line of the data; if, box, density, violin is TRUE, CI is FALSE
         median_line = FALSE, # if TRUE horizontal line in median is drawn # if, box, density, violin is TRUE, median_line is FALSE
         ef_size =TRUE, # if false do not plot effect size
-        ef_size_density =TRUE, #if true draw effect size conffidence interbval
-        ef_size_position = c( "right/Gardner-Altman_plot", "down/Cummings_plot"),# when Gardner-Altman_plot is choosen effect size plotted right, otherwise down 
+        ef_size_density =TRUE, #if true draw effect size confidence interval
+        ef_size_position = c( "right", "down"),# when Gardner-Altman_plot is choosen effect size plotted right, otherwise down 
         paired = FALSE, # if true draw lines between paired points
         xlab = "",
         left_ylab = "",
         right_ylab = "",
         bottom_ylab = "",
-        col = c("col1", "col2", "col3"), shade = 0.6, #colour of box, violin, box border, density, col 1 = group 1, col2 = group 2, col3 = ef plot, {col = n+1, n = group no) #   
-        points_col = c("col1", "col2", "col3"), shade = 0.4, # points colour 
-          
+        col = c("col1", "col2", "col3"), opacity = 0.6, #colour of box, violin, box border, density, col 1 = group 1, col2 = group 2, col3 = ef plot, {col = n+1, n = group no) #   
+        points_col = c("col1", "col2", "col3"), opacity = 0.4, # points colour 
+) {
+  
+}
         
 
 #### calculate bootstrap ####

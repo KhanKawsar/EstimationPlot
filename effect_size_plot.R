@@ -807,17 +807,16 @@ par(mar=c(4,5,1,2))
 
 ##add boxplot with individual data point with jitter  
 #vioplot(length~male, data = len2,side = "left",
-        col = yarrr::transparent(c("blue", "red", "purple"), trans.val = .6),
-        border = yarrr::transparent(c("blue", "red", "purple"), trans.val = .6),
-        las = 1, staplewex= 0.4, outline = FALSE, 
-        rectCol = "NA",
-        lineCol = "NA",
-        colMed = "NA")
+        # col = yarrr::transparent(c("blue", "red", "purple"), trans.val = .6),
+        # border = yarrr::transparent(c("blue", "red", "purple"), trans.val = .6),
+        # las = 1, staplewex= 0.4, outline = FALSE, 
+        # rectCol = "NA",
+        # lineCol = "NA",
+        # colMed = "NA")
 
 ## 
 
-h <- density(len2$length[len2$male == "red"],
-             bw = "SJ")
+h <- density(len2$length[len2$male == "red"], adjust = 1.5)
 
 f <- density(len2$length[len2$male == "yellow"],
              bw = "SJ")
@@ -828,7 +827,10 @@ g <- density(len2$length[len2$male == "orange"],
 plot(NULL,xlim = c(0.5,3.5), ylim = range(c(f$x, g$x)),
      type ="n", axes = FALSE, ylab = "length")
 
-polygon(2-h$y, h$x,
+# polygon(2-h$y, h$x,
+#         col=yarrr::transparent("red", trans.val = .6), 
+#         border=yarrr::transparent("red", trans.val = .6))
+polygon(c(2-h$y, 2+rev(h$y)), c(h$x, rev(h$x)),
         col=yarrr::transparent("red", trans.val = .6), 
         border=yarrr::transparent("red", trans.val = .6))
 
