@@ -1,4 +1,104 @@
 
+
+#### lab talk ##25.05.2022
+jk_col <-  function(colour, opacity) {
+  rgb.val <- col2rgb(colour)
+  t.col <- rgb(rgb.val[1, ], rgb.val[2, ], rgb.val[3, ],
+               max = 255,
+               alpha = (100 - opacity*100) * 255 / 100)
+  invisible(t.col)
+}
+
+# Are Sydney houses designed to keep residents warm in winter ?
+set.seed(12345)
+
+df <- data.frame(rnorm(60, 17, 0.2), rep("indoor",60), stringsAsFactors = TRUE)
+df2 <- data.frame(rnorm(60, 16.80, 0.2), rep("outdoor",60), stringsAsFactors = TRUE)
+colnames (df) <- c("temp", "location")
+colnames (df2) <- c("temp", "location")
+dat <- rbind(df, df2)
+
+dat
+
+t.test(temp~location, data = dat)
+
+boxplot(temp~location, data = dat, las = 1, col = "NA", outline = FALSE,
+        main = "p<10^-8")
+
+stripchart(temp~location, data = dat, add = TRUE, vertical = TRUE, method = "jitter",
+           pch = 16, col = jk_col(c("blue", "red"), opacity = 0.6))
+
+mean(dat$temp[dat$location == "indoor"]) - mean(dat$temp[dat$location == "outdoor"]) 
+
+# Are Finish houses designed to keep residents warm in winter ?
+
+df <- data.frame(rnorm(20, 10, 4), rep("indoor",20), stringsAsFactors = TRUE)
+df2 <- data.frame(rnorm(20, -1, 6), rep("outdoor",20), stringsAsFactors = TRUE)
+colnames (df) <- c("temp", "location")
+colnames (df2) <- c("temp", "location")
+dat <- rbind(df, df2)
+head(dat)
+wilcox.test(temp~location, data = dat)
+
+mean(dat$temp[dat$location == "indoor"]) - mean(dat$temp[dat$location == "outdoor"])
+
+boxplot(temp~location, data = dat, las = 1, col = "NA", outline = FALSE,
+        
+        main = "p< 10^-6")
+stripchart(temp~location, data = dat, add = TRUE, vertical = TRUE, method = "jitter",
+           pch = 16, col = c("blue", "red"))
+
+mean(dat$temp[dat$location == "indoor"]) - mean(dat$temp[dat$location == "outdoor"])
+
+
+## P value in Sydney houses 10^-8 is smaller than P value 10^-6 in Finland 
+## Are Sydney houses better than Finnish houses? 
+
+## change same dat to BMI 
+
+set.seed(12345)
+
+df <- data.frame(rnorm(500, 22, 0.2), rep("wine",50), stringsAsFactors = TRUE)
+df2 <- data.frame(rnorm(500, 21.9, 0.2), rep("control",50), stringsAsFactors = TRUE)
+colnames (df) <- c("BMI", "group")
+colnames (df2) <- c("BMI", "group")
+dat <- rbind(df, df2)
+
+
+head(dat)
+tail(dat)
+
+t.test(BMI~group, data = dat)
+
+boxplot(BMI~group, data = dat, las = 1, col = "NA", outline = FALSE)
+
+stripchart(BMI~group, data = dat, add = TRUE, vertical = TRUE, method = "jitter",
+           pch = 16, col = jk_col(c("blue", "red"), opacity = 0.8), jitter = 0.3)
+
+mean(dat$BMI[dat$group == "wine"]) - mean(dat$BMI[dat$group == "control"])
+
+## does it matter, biologically? 
+dev.off()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #task: 
 
 ### task : put file sin git hub 
