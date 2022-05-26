@@ -14,8 +14,27 @@ jk_col <-  function(colour, opacity) {
   invisible(t.col)
 }
 
-## function for unpair mean differnce 
 
+### for one sample mean and CI 
+one_sample_ci <- function(data, indices)mean(data[indices])
+
+red <- len$length[len$male == "red"]
+
+#_why_does not work# how to add fixed sample number 
+#one_sample_ci <- function(data, indices){
+ # n <- length(indices)
+#  mean(sample(indices,n)) 
+#}
+
+one_sample_ci(red)
+
+p1 <- boot(red, one_sample_ci, R = 1000)
+p1.1 <- boot.ci(p1, type = "bca")
+p1.1
+
+bootES(red)
+
+## function for unpair mean differnce 
 jim_unpair <- function(data, indices){
   subset = data[indices, ]
   m1 = mean(subset$length[subset$male == "yellow"]) 
@@ -30,18 +49,72 @@ k1$t0
 ### calculate pair distance 
 
 len$id <- c(1:19, 1:19)
-
 id = unique(len$id)
-
 jim_pair <- len$length[len$male== "red" & len$id %in% id]- len$length[len$male== "yellow" & len$id %in% id]
 #bootES(jim_pair)
-
 j2 <- boot(jim_pair, function(data, indices)mean(data[indices]), R =10000)
 boot.ci(j2, type = "bca")
 
 #https://stats.stackexchange.com/questions/1399/obtaining-and-interpreting-bootstrapped-confidence-intervals-from-hierarchical-d?rq=1
 # as suggested by the upper question (ref: "Bootstrap methods and their application", 1997, Section 3.8))
 
+sqrt(4)
+## function for cohens' δ ## for population 
+cohens_δ <- function(data, indices){
+  subset = data[indices, ]
+  m1 = mean(subset$length[subset$male == "yellow"]) 
+  SS1 = sum(m1-1:(subset$length[subset$male == "yellow"])^2)
+  N1 = length(subset$length[subset$male == "yellow"])
+  m2 = mean(subset$length[subset$male == "red"])
+  SS2 = sum(m2-1:(subset$length[subset$male == "red"])^2)
+  N2 = length(subset$length[subset$male == "red"])
+  σ = sqrt((SS1+SS2)/(N1+N2))
+  δ = (m1 - m2)/σ
+}
+
+## function for cohens' d ## better for data 
+
+#SSi = sum of square = sum(each value - mean)
+cohens_d <- function(data, indices){
+  subset = data[indices, ]
+  m1 = mean(subset$length[subset$male == "yellow"]) 
+  SD1 = sd((subset$length[subset$male == "yellow"]) )
+  N1 = length(subset$length[subset$male == "yellow"])
+  m2 = mean(subset$length[subset$male == "red"])
+  SD2 = sd(subset$length[subset$male == "red"])
+  N2 = length(subset$length[subset$male == "red"])
+  x = sqrt((N1-1)(SD1*SD1)*(N2-1)(SD2*SD2)/(N1+N2-2))
+  (m1 - m2)/x
+}
+
+j1 <- boot(len, cohens_d, R = 10000)
+k1 <- boot.ci(j1, type = "bca")
+k1$t0
+
+### hedges g 
+cohens_d <- function(data, indices){
+  subset = data[indices, ]
+  m1 = mean(subset$length[subset$male == "yellow"]) 
+  SD1 = sd((subset$length[subset$male == "yellow"]) )
+  N1 = length(subset$length[subset$male == "yellow"])
+  m2 = mean(subset$length[subset$male == "red"])
+  SD2 = sd(subset$length[subset$male == "red"])
+  N2 = length(subset$length[subset$male == "red"])
+  x = sqrt((N1-1)(SD1*SD1)*(N2-1)(SD2*SD2)/(N1+N2-2))
+  d = (m1 - m2)/x
+  d*(1-(3/(4(N1+N2)-9)))
+}
+
+## cohens d for one sample t test 
+# https://rcompanion.org/handbook/I_02.html (tutorial)
+
+cohens_d_one_sample_t_test <- function(data, indices){
+  mean(data[indices])-mu/sd(data[indices])
+}
+mu <- 10
+b1 <- boot(red, cohens_d_one_sample_t_test, R= 100)
+b1.1 <- boot.ci(b1, type = "bca")
+b1.1
 
 ## load data 
 len <- read.csv("data/length.csv")
@@ -61,7 +134,7 @@ contrast <- c("yellow", "red")
 a <- bootES(len, R =10000, 
             data.col = "length", contrast = contrast,
             group.col = "male",
-            effect.type = "unstandardized", plot = FALSE)
+            effect.type = "cohens.d.sigma", plot = FALSE)
 d <- density(a$t)
 
 
@@ -104,7 +177,6 @@ polygon(c(1-a1$y, 1+rev(a1$y)), c(a1$x, rev(a1$x)),
 polygon(c(2-a2$y, 2+rev(a2$y)), c(a2$x, rev(a2$x)),
         col=jk_col("red", opacity = .6), 
         border=jk_col( "red", opacity = .5))
-#
 
 # plot half violin chart
 
@@ -187,7 +259,7 @@ stripchart(length~male, data = len,
            pch = 19, vertical = TRUE,
            col = jk_col(c("blue", "red"), opacity = .5),
            at = c(1,2), add = TRUE)
-
+## connect pair points 
 segments(1.0,len$length[len$male == "red"][1:length(len$length[len$male == "red"])], 
          2.0, len$length[len$male == "yellow"][1:length(len$length[len$male == "yellow"])], 
          col = jk_col("grey20", opacity = .7),
