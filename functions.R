@@ -1,5 +1,9 @@
 ### Private functions
 
+#### TODO handle NA in data !!!
+#### Multiple groups - specify pairings
+#### Scale of cohens d - scale to fit (-1, 1), limit axis extents (Hegdes same)
+
 transparent <-  function(colour, alpha) {
   rgba.val <- col2rgb(colour, TRUE)
   t.col <- rgb(rgba.val[1, ], rgba.val[2, ], rgba.val[3, ],
@@ -122,7 +126,9 @@ difference <- function(data,
   gil <- lapply(groups, function(g) { 
     grpVals <- data[[data.col]][data[[group.col]] == g]
     c(mean = mean(grpVals),
-      median = median(grpVals)
+      median = median(grpVals),
+      sd = sd(grpVals),
+      se = sd(grpVals) / sqrt(length(grpVals))
     )
   })
   df <- do.call(rbind, gil)
@@ -183,7 +189,8 @@ plotES <- function(es,
                    right_ylab = "",
                    bottom_ylab = "",
                    col = c("col1", "col2", "col3"), opacity = 0.6, #colour of box, violin, box border, density, col 1 = group 1, col2 = group 2, col3 = ef plot, {col = n+1, n = group no) #   
-                   points_col = c("col1", "col2", "col3"), points_opacity = 0.4 # points colour 
+                   points_col = c("col1", "col2", "col3"), points_opacity = 0.4, # points colour 
+                   ...
 ) {
   if (!is(es, "plotES")) 
     stop("data must be a plotES object")
@@ -230,7 +237,7 @@ plotES <- function(es,
   # Extend width if showing effect size on right
   
   # Prepare plot
-  plot(NULL, xlim = xlim, ylim = ylim, type = "n", xaxt = "n", yaxt = "n", xlab = es$group.col, ylab = es$data.col)
+  plot(NULL, xlim = xlim, ylim = ylim, type = "n", xaxt = "n", yaxt = "n", xlab = es$group.col, ylab = es$data.col, ...)
   
   # Add the various components to the plot
   f <- as.formula(paste(es$data.col, "~", es$group.col))
@@ -311,6 +318,7 @@ plotES(es, points = transparent(c("red", "blue"), .9), violin = "full")
 es <- difference(data[data$Group %in% c("Control1", "Group1"),], effect.type = "paired-diffs", id.col = "ID", data.col = "Measurement", group.col = "Group", R = 1000)
 print(es)
 plotES(es, points = transparent(c("red", "blue"), .9), violin = "full")
+
 
 # library(dabestr)
 # 
