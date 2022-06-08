@@ -1,5 +1,9 @@
 ### Private functions
 
+#### TODO handle NA in data !!!
+#### Multiple groups - specify pairings
+#### Scale of cohens d - scale to fit (-1, 1), limit axis extents (Hegdes same)
+
 transparent <-  function(colour, alpha) {
   rgba.val <- col2rgb(colour, TRUE)
   t.col <- rgb(rgba.val[1, ], rgba.val[2, ], rgba.val[3, ],
@@ -87,7 +91,7 @@ difference <- function(data,
     effect.type <- match.arg(effect.type)
   
   # Get list of groups
-  groups <- unique(data[[group.col]])
+  groups <- sort(unique(data[[group.col]]))
 
   # Function to simplify writing bootstrap statistic functions  
   .wrap2GroupStatistic <- function(statisticFn) {
@@ -151,7 +155,9 @@ difference <- function(data,
   gil <- lapply(groups, function(g) { 
     grpVals <- data[[data.col]][data[[group.col]] == g]
     c(mean = mean(grpVals),
-      median = median(grpVals)
+      median = median(grpVals),
+      sd = sd(grpVals),
+      se = sd(grpVals) / sqrt(length(grpVals))
     )
   })
   df <- do.call(rbind, gil)
@@ -197,6 +203,9 @@ plotES <- function(es,
                    violin_width = 0.35,
                    violin_trunc_at = 0.05,
                    
+                   mar = c(5, 4, 4, 4) + 0.1, # Default margin
+                   xlab = "",
+                   
                    # box = TRUE,# draw boxplot 
                    # box_fill = TRUE,# fill up box colour # if false only border will be drawn 
                    # points = TRUE, #add individual data point 
@@ -207,12 +216,12 @@ plotES <- function(es,
                    ef_size_density = TRUE, #if true draw effect size confidence interval
                    ef_size_position = c("right", "down"),# when Gardner-Altman_plot is chosen effect size plotted right, otherwise down 
                    paired = FALSE, # if true draw lines between paired points
-                   xlab = "",
                    left_ylab = "",
                    right_ylab = "",
                    bottom_ylab = "",
                    col = c("col1", "col2", "col3"), opacity = 0.6, #colour of box, violin, box border, density, col 1 = group 1, col2 = group 2, col3 = ef plot, {col = n+1, n = group no) #   
-                   points_col = c("col1", "col2", "col3"), points_opacity = 0.4 # points colour 
+                   points_col = c("col1", "col2", "col3"), points_opacity = 0.4, # points colour 
+                   ...
 ) {
   if (!is(es, "plotES")) 
     stop("data must be a plotES object")
@@ -253,13 +262,14 @@ plotES <- function(es,
   
   # If needed extend x range to encompass effect size
   if (.show(ef_size) && length(groups) == 2) {
-    xlim[2] <- xlim[2] + 0.8
+    xlim[2] <- xlim[2] + 0.95
   }
   
   # Extend width if showing effect size on right
   
   # Prepare plot
-  plot(NULL, xlim = xlim, ylim = ylim, type = "n", xaxt = "n", yaxt = "n", xlab = es$group.col, ylab = es$data.col)
+  par(mar = mar)
+  plot(NULL, xlim = xlim, ylim = ylim, type = "n", xaxt = "n", yaxt = "n", xlab = xlab, ylab = es$data.col, ...)
   
   # Add the various components to the plot
   f <- as.formula(paste(es$data.col, "~", es$group.col))
@@ -297,12 +307,31 @@ plotES <- function(es,
     if (length(groups) == 2) {
       # Show it to the right
       d <- density(es$t)
-      d$y <- d$y / max(d$y) * .2
+      d$y <- d$y / max(d$y) * violin_width
       # Diff is group2 - group1, so add to group1 mean make it align with group1
       y <- es$groupStatistics[1, 1]
       polygon(d$y + 3.0, d$x + y, 
               col = transparent("black", .8), 
               border = "black")
+      
+      # Draw mean of effect size
+      points (3, y + es$t0, pch = 19, col = "grey20", cex = 1.5)
+      # Confidence interval of effect size
+      segments(3, y + es$bca[4], 3, y + es$bca[5], col = "grey20", lty = 1, lwd = 2.0)
+
+      # Horizontal lines from group means
+      segments(1 + 0.4, y, 5, y, col = "grey20", lty = 1, lwd = 1.5)
+      segments(2 + 0.4, y + es$t0, 5, y + es$t0, col = "grey20", lty = 1, lwd = 1.5)
+      
+      # Axis labels on right-hand 
+      axis(4, at = pretty(range(es$t)) + y,
+           labels = pretty(range(es$t)), las = 1)
+      
+      # Add x-axis label for effect size
+      axis(1, at = 3, labels = FALSE)
+      mtext(sprintf("%s\nminus\n%s", es$groups[2], es$groups[1]), at = 3, side = 1, line = 3)
+      mtext("Mean difference",  side = 4, line = 2.5)
+      
     }
   } 
     
@@ -320,7 +349,7 @@ data <- data.frame(Measurement = c(rnorm(N, mean = 100, sd = 25),
                                    rnorm(N, mean = 80, sd = 50),
                                    rnorm(N, mean = 100, sd = 12),
                                    rnorm(N, mean = 100, sd = 50)),
-                   Group = c(rep("Control1", N),
+                   Group = c(rep("ZControl1", N),
                              rep("Control2", N),
                              rep("Group1", N),
                              rep("Group2", N),
@@ -332,14 +361,15 @@ data <- data.frame(Measurement = c(rnorm(N, mean = 100, sd = 25),
 # Shuffle
 data <- data[sample(nrow(data)), ]
 
-par(mfrow = c(2, 1))
-es <- difference(data[data$Group %in% c("Control1", "Group1"),], data.col = "Measurement", group.col = "Group", R = 1000)
+#par(mfrow = c(2, 1))
+es <- difference(data[data$Group %in% c("ZControl1", "Group1"),], data.col = "Measurement", group.col = "Group", R = 1000)
 print(es)
 plotES(es, points = transparent(c("red", "blue"), .9), violin = "full")
 
-es <- difference(data[data$Group %in% c("Control1", "Group1"),], effect.type = "paired-diffs", id.col = "ID", data.col = "Measurement", group.col = "Group", R = 1000)
-print(es)
-plotES(es, points = transparent(c("red", "blue"), .9), violin = "full")
+# es <- difference(data[data$Group %in% c("ZControl1", "Group1"),], effect.type = "paired-diffs", id.col = "ID", data.col = "Measurement", group.col = "Group", R = 1000)
+# print(es)
+# plotES(es, points = transparent(c("red", "blue"), .9), violin = "full")
+
 
 # library(dabestr)
 # 
