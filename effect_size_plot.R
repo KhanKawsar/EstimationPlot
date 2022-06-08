@@ -14,7 +14,6 @@ jk_col <-  function(colour, opacity) {
   invisible(t.col)
 }
 
-
 ### for one sample mean and CI 
 one_sample_ci <- function(data, indices)mean(data[indices])
 
@@ -116,6 +115,32 @@ b1 <- boot(red, cohens_d_one_sample_t_test, R= 100)
 b1.1 <- boot.ci(b1, type = "bca")
 b1.1
 
+
+### calculate CI of mean 
+
+lm1 <- lm(len$length[len$male == "yellow"] ~1, data  = len)
+confint(lm1, level = 0.95)
+mean(len$length[len$male == "yellow"])
+
+### write the equation ..
+
+CI <- function(x){
+  alpha <- 0.95
+  m <- mean(x) 
+  sd <- sd(x)
+  n <- length(x)
+  se <- sd/sqrt(n)
+  df <- n-1
+  alpha <- 1-alpha
+  t <- qt(p=alpha/2, df=df,lower.tail=F)
+  me <- t * se
+  c1 <- m - me
+  c2 <- m + me
+  print(c(c1,c2))
+}
+
+CI(len$length[len$male == "yellow"])
+
 ## load data 
 len <- read.csv("data/length.csv")
 head(len)
@@ -136,7 +161,6 @@ a <- bootES(len, R =10000,
             group.col = "male",
             effect.type = "cohens.d.sigma", plot = FALSE)
 d <- density(a$t)
-
 
 #### Cummings_plot_unpaired####
 
@@ -287,7 +311,6 @@ axis(1, at = 1.0+max(d$y)/2,
 
 dev.off()
 
-
 #### Gardner-Altman plot unpaired ####
 
 
@@ -308,11 +331,11 @@ boxplot(length~male, data = len,
         xlim = c(0,4.5), at = c(1,2), lwd =1.5)
 
 
-p <- mean(len$length[len$male=="yellow"])
-q <- mean(len$length[len$male=="red"])
+#p <- mean(len$length[len$male=="yellow"])
+#q <- mean(len$length[len$male=="red"])
 
-points(1.4,q, pch = 19, col = yarrr::transparent("blue", trans.val = .2), cex =1.5)
-points(2.4,p, pch = 19, col = yarrr::transparent("red", trans.val = .2), cex =1.5)
+#points(1.4,q, pch = 19, col = yarrr::transparent("blue", trans.val = .2), cex =1.5)
+#points(2.4,p, pch = 19, col = yarrr::transparent("red", trans.val = .2), cex =1.5)
 
 
 stripchart(length~male, data = len, method = "jitter",
@@ -320,7 +343,7 @@ stripchart(length~male, data = len, method = "jitter",
            col = jk_col(c("blue", "red"), opacity = .5),
            add = TRUE, at = c(1,2))
 
-polygon(d$y/max(d$y)+3.0, d$x+p, 
+polygon(d$y/max(d$y)+3.0, d$x+q, 
         col=jk_col(c("blue", "red"), opacity = .6), 
         border=jk_col(c("blue", "red"), opacity = .6))
 
@@ -328,14 +351,14 @@ polygon(d$y/max(d$y)+3.0, d$x+p,
         col=yarrr::transparent("orange", trans.val = .3), 
         border=yarrr::transparent("orange", trans.val = .3))
 
-points (3,p+a$t0, pch = 19, col = "grey20", cex = 1.5)
+points (3,q+a$t0, pch = 19, col = "grey20", cex = 1.5)
 
-segments(3, a$bounds[1]+p, 3, a$bounds[2]+p, col = "grey20", lty =1, lwd=2.0)
+segments(3, a$bounds[1]+q, 3, a$bounds[2]+q, col = "grey20", lty =1, lwd=2.0)
 
+segments(1+0.4, p, 5, p, col = "grey20", lty =1, lwd=1.5)### 
+segments(2+0.4, q, 5, q, col = "grey20", lty =1, lwd=1.5)### 
 
-segments(2+0.4, p, 5, p, col = "grey20", lty =1, lwd=1.5)### 
-segments(1+0.4, p+a$t0, 5, p+a$t0, col = "grey20", lty =1, lwd=1.5)###
-axis(4, at = pretty(range(a$t))+p,
+axis(4, at = pretty(range(a$t))+q,
      labels = pretty(range(a$t)), las = 1)
 
 axis(1, at = 3+max(d$y)/2,
@@ -344,7 +367,6 @@ axis(1, at = 3+max(d$y)/2,
 mtext("Mean difference",  side =4, line = 2.5)
 
 dev.off()
-
 
 ## violin and jitter 
 par(mar=c(4,5,2,4))
@@ -361,7 +383,6 @@ vioplot(length~male, data = len,
         xlim = c(0,4.5), at = c(1,2))
 
 ##replace violin with density chart 
-
 
 a1 <- density(len$length[len$male == "red"], adjust = 1.5)
 

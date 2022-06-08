@@ -1,6 +1,14 @@
 
 
-#### lab talk ##25.05.2022
+##Think about name 
+## if there is a cohens andd heghes d for paired sample 
+# CI of mean ---done, write the equation  
+## print function 
+## test data and check -- more check (especially paired) (get some more dataset---check)
+
+## 
+
+#### lab talk ##25.05.2022####
 jk_col <-  function(colour, opacity) {
   rgb.val <- col2rgb(colour)
   t.col <- rgb(rgb.val[1, ], rgb.val[2, ], rgb.val[3, ],
@@ -8,6 +16,43 @@ jk_col <-  function(colour, opacity) {
                alpha = (100 - opacity*100) * 255 / 100)
   invisible(t.col)
 }
+
+### test colour 
+dev.off()
+boxplot(temp~location, data = dat, las = 1, col = jk_col(c("orangered", "darkorange"), opacity =0.6),
+        outline = FALSE,
+        main = "p<10^-8")
+
+boxplot(temp~location, data = dat, las = 1, col = jk_col(c("tomato", "hotpink"), opacity =0.4),
+        outline = FALSE,
+        main = "p<10^-8")
+
+boxplot(temp~location, data = dat, las = 1, col = jk_col(c("maroon", "hotpink"), opacity =0.6),
+        outline = FALSE,
+        main = "p<10^-8")
+
+boxplot(temp~location, data = dat, las = 1, col = jk_col(c("darkcyan", "hotpink"), opacity =0.6),
+        outline = FALSE,
+        main = "p<10^-8")
+
+boxplot(temp~location, data = dat, las = 1, col = jk_col(c("darkcyan", "blueviolet"), opacity =0.6),
+        outline = FALSE,
+        main = "p<10^-8")
+
+boxplot(temp~location, data = dat, las = 1, col = jk_col(c("goldenrod", "maroon"), opacity =0.6),
+        outline = FALSE,
+        main = "p<10^-8")
+
+boxplot(temp~location, data = dat, las = 1, col = jk_col(c("darkcyan", "dodgerblue"), opacity =0.6),
+        outline = FALSE,
+        main = "p<10^-8")
+
+boxplot(temp~location, data = dat, las = 1, col = jk_col(c("seagreen", "steelblue"), opacity =0.4),
+        outline = FALSE,
+        main = "p<10^-8")
+
+stripchart(temp~location, data = dat, add = TRUE, vertical = TRUE, method = "jitter",
+           pch = 16, col = jk_col(c("tomato", "hotpink"), opacity =0.1), cex =1.5)
 
 # Are Sydney houses designed to keep residents warm in winter ?
 set.seed(12345)
@@ -43,7 +88,6 @@ wilcox.test(temp~location, data = dat)
 mean(dat$temp[dat$location == "indoor"]) - mean(dat$temp[dat$location == "outdoor"])
 
 boxplot(temp~location, data = dat, las = 1, col = "NA", outline = FALSE,
-        
         main = "p< 10^-6")
 stripchart(temp~location, data = dat, add = TRUE, vertical = TRUE, method = "jitter",
            pch = 16, col = c("blue", "red"))
@@ -80,25 +124,40 @@ mean(dat$BMI[dat$group == "wine"]) - mean(dat$BMI[dat$group == "control"])
 ## does it matter, biologically? 
 dev.off()
 
+#### bar chart +stripchart
+len <- read.csv("data/length.csv")
+head(len)
+
+data_summary <- aggregate(length ~ male, len,       # Create summary data
+                          function(x) c(mean = mean(x),
+                                        sd = sd(x),
+                                        se = sd(x) / sqrt(length(x))))
+data_summary <- data.frame(male = data_summary[ , 1], data_summary$length)
+data_summary 
+
+base_r_barplot <- barplot(data_summary$mean ~ male,  # Draw and store Base R barplot
+                          data_summary,
+                          ylim = c(0,35),
+                          col = "NA",
+                          border = c("blue", "red"),
+                          ylab = "y label")
+                          #width = 1,
+                         # angle = c(60,45))
+arrows(x0 = base_r_barplot,                           # Add error bars
+       y0 = data_summary$mean + data_summary$sd,
+       y1 = data_summary$mean - data_summary$sd,
+       angle = 90,
+       code = 3,
+       length = 0.1)
+
+stripchart(length~male, data = len, method = "jitter",
+           pch = 19, vertical = TRUE,
+           col = jk_col(c("blue", "red"), opacity = .6),
+           add = TRUE, at = c(base_r_barplot[1],base_r_barplot[2]))
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+box()
+dev.off()
 #task: 
 
 ### task : put file sin git hub 

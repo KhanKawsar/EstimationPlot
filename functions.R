@@ -8,6 +8,21 @@ transparent <-  function(colour, alpha) {
   invisible(t.col)
 }
 
+### confidence interval of a group 
+CI <- function(x){
+  alpha <- 0.95
+  m <- mean(x) 
+  sd <- sd(x)
+  n <- length(x)
+  se <- sd/sqrt(n)
+  df <- n-1
+  alpha <- 1-alpha
+  t <- qt(p=alpha/2, df=df,lower.tail=F)
+  me <- t * se
+  c1 <- m - me
+  c2 <- m + me
+  print(c(c1,c2))
+}
 
 # Two group statistic functions
 
@@ -24,6 +39,20 @@ stCohensD <- function(x1, x2){
   N2 <- length(x2)
   x <- sqrt((N1 - 1) * (SD1 * SD1) * (N2 - 1) * (SD2 * SD2) / (N1 + N2 - 2))
   (m2 - m1) / x
+}
+
+# Hegens d (group 2 - group 1)
+
+stHegensD <- function(x1, x2){
+  m1 <- mean(x1) 
+  SD1 <- sd(x1)
+  N1 <- length(x1)
+  m2 <- mean(x2)
+  SD2 <- sd(x2)
+  N2 <- length(x2)
+  x <- sqrt((N1 - 1) * (SD1 * SD1) * (N2 - 1) * (SD2 * SD2) / (N1 + N2 - 2))
+  d = (m2 - m1) / x
+  d*(1-(3/(4(N1+N2)-9)))
 }
 
 #############################################################################
@@ -43,7 +72,7 @@ stCohensD <- function(x1, x2){
 #' @export
 difference <- function(data,
                        effect.type = c("unstandardised", "cohens", "hegens", "paired-diffs"),
-                       paired = FALSE, # if true calculate paired mean difference 
+                       #paired = FALSE, # if true calculate paired mean difference 
                        data.col = 1, group.col = 2, block.col = NULL, id.col,
                        R = 1000,
                        ci.type = "bca",
@@ -80,7 +109,7 @@ difference <- function(data,
   } else if (effect.type == "cohens") {
     statistic <- .wrap2GroupStatistic(stCohensD)
   } else if (effect.type == "hegens") {
-    statistic <- .wrap2GroupStatistic(stHegens)
+    statistic <- .wrap2GroupStatistic(stHegensD)
   } else if (effect.type == "paired-diffs") {
     if (missing(id.col)) stop("id.col must be specified when effect.type = 'paired-diffs'")
     g1 <- data[data[[group.col]] == groups[1], ]
@@ -324,3 +353,18 @@ plotES(es, points = transparent(c("red", "blue"), .9), violin = "full")
 # plot(md)
 # cd <- cohens_d(two.group.unpaired)
 # plot(cd)
+
+### test len data 
+
+par(mfrow = c(2, 1))
+es <- difference(len[len$male %in% c("yellow", "red"),], data.col = "length", group.col = "male", R = 5000)
+print(es)
+plotES(es, points = transparent(c("red", "blue"), .9), violin = "full")
+
+
+
+es <- difference(data[data$Group %in% c("Control1", "Group1"),], effect.type = "paired-diffs", id.col = "ID", data.col = "Measurement", group.col = "Group", R = 1000)
+print(es)
+plotES(es, points = transparent(c("red", "blue"), .9), violin = "full")
+
+
