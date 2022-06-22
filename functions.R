@@ -1,15 +1,19 @@
 ### Private functions
 
-#### TODO handle NA in data !!!
+#### TODO 
+#### Handle NA in data !!!
 #### Multiple groups - specify pairings
 #### Scale of cohens d - scale to fit (-1, 1), limit axis extents (Hegdes same)
+#### Automated testing and test data
+#### Bar jitter
+#### Effect size plot below data for multiple or if selected by user
 
 transparent <-  function(colour, alpha) {
   rgba.val <- col2rgb(colour, TRUE)
   t.col <- rgb(rgba.val[1, ], rgba.val[2, ], rgba.val[3, ],
                maxColorValue = 255,
                alpha = (100 - alpha * 100) * 255 / 100)
-  invisible(t.col)
+  t.col
 }
 
 ### confidence interval of a group 
@@ -19,13 +23,11 @@ CI <- function(x){
   sd <- sd(x)
   n <- length(x)
   se <- sd/sqrt(n)
-  df <- n-1
-  alpha <- 1-alpha
-  t <- qt(p=alpha/2, df=df,lower.tail=F)
+  df <- n - 1
+  alpha <- 1 - alpha
+  t <- qt(p = alpha/2, df = df, lower.tail = F)
   me <- t * se
-  c1 <- m - me
-  c2 <- m + me
-  print(c(c1,c2))
+  c(m - me, m + me)
 }
 
 # Two group statistic functions
@@ -45,9 +47,9 @@ stCohensD <- function(x1, x2){
   (m2 - m1) / x
 }
 
-# Hegens d (group 2 - group 1)
+# Hedges d (group 2 - group 1)
 
-stHegensD <- function(x1, x2){
+stHedgesD <- function(x1, x2){
   m1 <- mean(x1) 
   SD1 <- sd(x1)
   N1 <- length(x1)
@@ -56,7 +58,7 @@ stHegensD <- function(x1, x2){
   N2 <- length(x2)
   x <- sqrt((N1 - 1) * (SD1 * SD1) * (N2 - 1) * (SD2 * SD2) / (N1 + N2 - 2))
   d = (m2 - m1) / x
-  d*(1-(3/(4(N1+N2)-9)))
+  d * (1 - (3 / (4 * (N1 + N2) - 9)))
 }
 
 #############################################################################
@@ -75,7 +77,7 @@ stHegensD <- function(x1, x2){
 #'         
 #' @export
 difference <- function(data,
-                       effect.type = c("unstandardised", "cohens", "hegens", "paired-diffs"),
+                       effect.type = c("unstandardised", "cohens", "hedges", "paired-diffs"),
                        #paired = FALSE, # if true calculate paired mean difference 
                        data.col = 1, group.col = 2, block.col = NULL, id.col,
                        R = 1000,
@@ -112,8 +114,8 @@ difference <- function(data,
     statistic <- .wrap2GroupStatistic(stMeanDiff)
   } else if (effect.type == "cohens") {
     statistic <- .wrap2GroupStatistic(stCohensD)
-  } else if (effect.type == "hegens") {
-    statistic <- .wrap2GroupStatistic(stHegensD)
+  } else if (effect.type == "hedges") {
+    statistic <- .wrap2GroupStatistic(stHedgesD)
   } else if (effect.type == "paired-diffs") {
     if (missing(id.col)) stop("id.col must be specified when effect.type = 'paired-diffs'")
     g1 <- data[data[[group.col]] == groups[1], ]
@@ -154,11 +156,14 @@ difference <- function(data,
   # Fill in extra information in the returned list  
   gil <- lapply(groups, function(g) { 
     grpVals <- data[[data.col]][data[[group.col]] == g]
+    ci <- CI(grpVals)
     c(mean = mean(grpVals),
       median = median(grpVals),
       sd = sd(grpVals),
-      se = sd(grpVals) / sqrt(length(grpVals))
-      ###add CI function here (maybe no need to print to confuse with bootstrap CI, but need to be part of es for plotting CI)
+      se = sd(grpVals) / sqrt(length(grpVals)),
+      # CI function here (maybe no need to print to confuse with bootstrap CI, but need to be part of es for plotting CI)
+      CI.lower = ci[1],
+      CI.upper = ci[2]
     )
   })
   df <- do.call(rbind, gil)
@@ -203,7 +208,8 @@ plotES <- function(es,
                    violin_adj = 1.5,
                    violin_width = 0.35,
                    violin_trunc_at = 0.05,
-                   mean = "blue",
+                   central_tendency = c("mean", "median"),
+                   mean = "grey20",
                    bar = RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"),
                    bar_fill = transparent(RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"), .8),
                    
@@ -213,10 +219,8 @@ plotES <- function(es,
                    # box = TRUE,# draw boxplot 
                    # box_fill = TRUE,# fill up box colour # if false only border will be drawn 
                    # points = TRUE, #add individual data point 
-                   #mean = TRUE, #draw mean of the data 
                    #barchart = TRUE, #draw bar chart
-                   CI = TRUE, # draw confidence interval line of the data; if, box, density, violin is TRUE, CI is FALSE
-                   median_line = FALSE, # if TRUE horizontal line in median is drawn # if, box, density, violin is TRUE, median_line is FALSE
+                   error_bars = c("CI", "SD", "SE"), # draw confidence interval line of the data; if, box, density, violin is TRUE, CI is FALSE
                    ef_size = TRUE, # if false do not plot effect size
                    ef_size_density = TRUE, #if true draw effect size confidence interval
                    ef_size_position = c("right", "down"),# when Gardner-Altman_plot is chosen effect size plotted right, otherwise down 
@@ -232,6 +236,8 @@ plotES <- function(es,
     stop("data must be a plotES object")
   if (!isFALSE(violin))
     violin <- match.arg(violin)
+  error_bars <- match.arg(error_bars)
+  central_tendency <- match.arg(central_tendency)
   
   .show <- function(what) !isFALSE(what) && !is.null(what)
   .isColour <- function(c) tryCatch(is.matrix(col2rgb(c)), error = function(e) FALSE)
@@ -267,7 +273,8 @@ plotES <- function(es,
   
   # If needed, extend y range to encompass bar plots
   if (.show(bar)) {
-      ylim <- range(data[[es$data.col]])
+    message("Bar charts are not implemented yet")
+      ylim <- c(0, max(data[[es$data.col]]))
   }
   
   # If needed extend x range to encompass effect size
@@ -291,7 +298,6 @@ plotES <- function(es,
   }
   
   ## bar chart 
-  # Box plot
   if (.show(bar)) {
     barplot(es$groupStatistics[,1] ~ es$groups,  
             col = .colour(bar_fill), border = .colour(bar),
@@ -319,29 +325,56 @@ plotES <- function(es,
   }
   # Scatter plot of data points
   if (.show(points)) {
-    stripchart(f, data = data, method = "jitter",
+    method <- ifelse(.show(paired), "overplot", "jitter")
+    stripchart(f, data = data, method = method,
                pch = 19, vertical = TRUE,
                col = .colour(points),
                add = TRUE)
   }
   
-##  mean +SD 
-  if (.show(mean)) {
-    #get mean of groups
-    y <- es$groupStatistics[1, 1]
-    z <- es$groupStatistics[2, 1]
-    # plot points 
-    points(1, y, pch = 19, cex = 1.5, col = .colour(mean))
-    points(2, z, pch = 19, cex = 1.5, col = .colour(mean))
-    
-    ## add SD 
-    segments(1, y+es$groupStatistics[1, 3], 1, y-es$groupStatistics[1, 3], col = .colour(mean), lty =1, lwd=2)
-    segments(2, z+es$groupStatistics[2, 3], 2, z-es$groupStatistics[1, 3], col = .colour(mean), lty =1, lwd=2)
-    
+  # Draw lines between paired points
+  if (.show(paired)) {
+    if (es$effect.type != "paired-diffs")
+      stop("To plot paired lines, effect.type must be \"paired-diffs\"")
+    p1 <- data[[es$data.col]][data[[es$group.col]] == groups[1]]
+    p2 <- data[[es$data.col]][data[[es$group.col]] == groups[2]]
+    segments(1.0, p1, 
+             2.0, p2, 
+             col = transparent("grey20", .7),
+             lty = 1, lwd = 2)
+  }
+  
+  ##  mean +SD 
+  if (.show(central_tendency)) {
+    for (i in seq_along(groups)) {
+      
+      # get mean of group
+      y <- es$groupStatistics[i, central_tendency]
+
+      # plot points or lines
+      if (central_tendency == "mean")
+        points(i, y, pch = 19, cex = 1.5, col = .colour(mean))
+      else
+        segments(i - violin_width, y, i + violin_width, y, col = "grey20", lwd = 2)
+
+      ## add CI/SD/SE
+      if (error_bars == "CI") {
+        bars <- es$groupStatistics[i, c("CI.lower", "CI.upper")]
+      } else if (error_bars == "SD") {
+        bars <- c(y - es$groupStatistics[i, "sd"],
+                  y + es$groupStatistics[i, "sd"])
+      } else {
+        bars <- c(y - es$groupStatistics[i, "se"],
+                  y + es$groupStatistics[i, "se"])
+      }
+      if (!is.na(error_bars)) {
+        segments(i, bars[1], i, bars[2], col = "grey20", lty = 1, lwd = 2)
+      }
+    }
   }
     
   
-# effectt size 
+  # effect size 
   if (.show(ef_size)) {
     # If there are 2 groups..
     if (length(groups) == 2) {
@@ -434,8 +467,12 @@ es <- difference(len[len$male %in% c("yellow", "red"),], data.col = "length", gr
 print(es)
 plotES(es, points = transparent(c("red", "blue"), .9), violin = "full", mean = FALSE)
 
-es <- difference(data[data$Group %in% c("Control1", "Group1"),], effect.type = "paired-diffs", id.col = "ID", data.col = "Measurement", group.col = "Group", R = 1000)
+es <- difference(data[data$Group %in% c("ZControl1", "Group1"),], effect.type = "paired-diffs", id.col = "ID", data.col = "Measurement", group.col = "Group", R = 1000)
+print(es)
+es <- difference(data[data$Group %in% c("ZControl1", "Group1"),], effect.type = "hedges", id.col = "ID", data.col = "Measurement", group.col = "Group", R = 1000)
 print(es)
 plotES(es, points = transparent(c("red", "blue"), .9), violin = "full")
 
+es <- difference(data[data$Group %in% c("ZControl1", "Group1"),], effect.type = "cohens", id.col = "ID", data.col = "Measurement", group.col = "Group", R = 1000)
+print(es)
 
