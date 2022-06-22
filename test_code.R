@@ -8,7 +8,7 @@
 
 ## 
 
-#### lab talk ##25.05.2022####
+#### lab talk ##15.06.2022####
 jk_col <-  function(colour, opacity) {
   rgb.val <- col2rgb(colour)
   t.col <- rgb(rgb.val[1, ], rgb.val[2, ], rgb.val[3, ],
@@ -55,10 +55,12 @@ stripchart(temp~location, data = dat, add = TRUE, vertical = TRUE, method = "jit
            pch = 16, col = jk_col(c("tomato", "hotpink"), opacity =0.1), cex =1.5)
 
 # Are Sydney houses designed to keep residents warm in winter ?
-set.seed(12345)
 
-df <- data.frame(rnorm(60, 17, 0.2), rep("indoor",60), stringsAsFactors = TRUE)
-df2 <- data.frame(rnorm(60, 16.80, 0.2), rep("outdoor",60), stringsAsFactors = TRUE)
+set.seed(12345)
+par(mfrow = c(2, 1))
+
+df <- data.frame(rnorm(80, 17, 0.2), rep("indoor",80), stringsAsFactors = TRUE)
+df2 <- data.frame(rnorm(80, 16.80, 0.2), rep("outdoor",80), stringsAsFactors = TRUE)
 colnames (df) <- c("temp", "location")
 colnames (df2) <- c("temp", "location")
 dat <- rbind(df, df2)
@@ -68,17 +70,17 @@ dat
 t.test(temp~location, data = dat)
 
 boxplot(temp~location, data = dat, las = 1, col = "NA", outline = FALSE,
-        main = "p<10^-8")
+        main = "p<10^-9")
 
 stripchart(temp~location, data = dat, add = TRUE, vertical = TRUE, method = "jitter",
            pch = 16, col = jk_col(c("blue", "red"), opacity = 0.6))
 
 mean(dat$temp[dat$location == "indoor"]) - mean(dat$temp[dat$location == "outdoor"]) 
 
-# Are Finish houses designed to keep residents warm in winter ?
+# Are English houses designed to keep residents warm in winter ?
 
 df <- data.frame(rnorm(20, 10, 4), rep("indoor",20), stringsAsFactors = TRUE)
-df2 <- data.frame(rnorm(20, -1, 6), rep("outdoor",20), stringsAsFactors = TRUE)
+df2 <- data.frame(rnorm(20, -1, 8), rep("outdoor",20), stringsAsFactors = TRUE)
 colnames (df) <- c("temp", "location")
 colnames (df2) <- c("temp", "location")
 dat <- rbind(df, df2)
@@ -88,16 +90,17 @@ wilcox.test(temp~location, data = dat)
 mean(dat$temp[dat$location == "indoor"]) - mean(dat$temp[dat$location == "outdoor"])
 
 boxplot(temp~location, data = dat, las = 1, col = "NA", outline = FALSE,
-        main = "p< 10^-6")
+        main = "p< 10^-7")
 stripchart(temp~location, data = dat, add = TRUE, vertical = TRUE, method = "jitter",
-           pch = 16, col = c("blue", "red"))
+           pch = 16, col = jk_col(c("blue", "red"), opacity = 0.6))
 
 mean(dat$temp[dat$location == "indoor"]) - mean(dat$temp[dat$location == "outdoor"])
 
 
-## P value in Sydney houses 10^-8 is smaller than P value 10^-6 in Finland 
+## P value in Sydney houses 10^-9 is smaller than P value 10^-7 in England 
 ## Are Sydney houses better than Finnish houses? 
 
+dev.off()
 ## change same dat to BMI 
 
 set.seed(12345)

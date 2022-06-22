@@ -158,6 +158,7 @@ difference <- function(data,
       median = median(grpVals),
       sd = sd(grpVals),
       se = sd(grpVals) / sqrt(length(grpVals))
+      ###add CI function here (maybe no need to print to confuse with bootstrap CI, but need to be part of es for plotting CI)
     )
   })
   df <- do.call(rbind, gil)
@@ -202,6 +203,9 @@ plotES <- function(es,
                    violin_adj = 1.5,
                    violin_width = 0.35,
                    violin_trunc_at = 0.05,
+                   mean = "blue",
+                   bar = RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"),
+                   bar_fill = transparent(RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"), .8),
                    
                    mar = c(5, 4, 4, 4) + 0.1, # Default margin
                    xlab = "",
@@ -209,7 +213,8 @@ plotES <- function(es,
                    # box = TRUE,# draw boxplot 
                    # box_fill = TRUE,# fill up box colour # if false only border will be drawn 
                    # points = TRUE, #add individual data point 
-                   mean = TRUE, #draw mean of the data 
+                   #mean = TRUE, #draw mean of the data 
+                   #barchart = TRUE, #draw bar chart
                    CI = TRUE, # draw confidence interval line of the data; if, box, density, violin is TRUE, CI is FALSE
                    median_line = FALSE, # if TRUE horizontal line in median is drawn # if, box, density, violin is TRUE, median_line is FALSE
                    ef_size = TRUE, # if false do not plot effect size
@@ -260,6 +265,11 @@ plotES <- function(es,
     }
   }
   
+  # If needed, extend y range to encompass bar plots
+  if (.show(bar)) {
+      ylim <- range(data[[es$data.col]])
+  }
+  
   # If needed extend x range to encompass effect size
   if (.show(ef_size) && length(groups) == 2) {
     xlim[2] <- xlim[2] + 0.95
@@ -279,6 +289,19 @@ plotES <- function(es,
     boxplot(f, data = data, add = TRUE, 
             col = .colour(box_fill), border = .colour(box))
   }
+  
+  ## bar chart 
+  # Box plot
+  if (.show(bar)) {
+    barplot(es$groupStatistics[,1] ~ es$groups,  
+            col = .colour(bar_fill), border = .colour(bar),
+            add = TRUE)
+    
+    ## add SD 
+    segments(1, y+es$groupStatistics[1, 3], 1, y-es$groupStatistics[1, 3], col = .colour(bar), lty =1, lwd=2)
+    segments(2, z+es$groupStatistics[2, 3], 2, z-es$groupStatistics[1, 3], col = .colour(bar), lty =1, lwd=2)
+  }
+  
   # Violin plots
   if (.show(violin)) {
     for (i in seq_along(groups)) {
@@ -302,6 +325,23 @@ plotES <- function(es,
                add = TRUE)
   }
   
+##  mean +SD 
+  if (.show(mean)) {
+    #get mean of groups
+    y <- es$groupStatistics[1, 1]
+    z <- es$groupStatistics[2, 1]
+    # plot points 
+    points(1, y, pch = 19, cex = 1.5, col = .colour(mean))
+    points(2, z, pch = 19, cex = 1.5, col = .colour(mean))
+    
+    ## add SD 
+    segments(1, y+es$groupStatistics[1, 3], 1, y-es$groupStatistics[1, 3], col = .colour(mean), lty =1, lwd=2)
+    segments(2, z+es$groupStatistics[2, 3], 2, z-es$groupStatistics[1, 3], col = .colour(mean), lty =1, lwd=2)
+    
+  }
+    
+  
+# effectt size 
   if (.show(ef_size)) {
     # If there are 2 groups..
     if (length(groups) == 2) {
@@ -364,7 +404,10 @@ data <- data[sample(nrow(data)), ]
 #par(mfrow = c(2, 1))
 es <- difference(data[data$Group %in% c("ZControl1", "Group1"),], data.col = "Measurement", group.col = "Group", R = 1000)
 print(es)
-plotES(es, points = transparent(c("red", "blue"), .9), violin = "full")
+plotES(es, points = transparent(c("red", "blue"), .9), violin = "full", mean = FALSE, bar = FALSE)
+
+plotES(es, points = transparent(c("red", "blue"), .9), violin = "full", mean = TRUE, bar = FALSE)
+plotES(es, bar = TRUE, violin = FALSE, box = FALSE, mean = FALSE)
 
 # es <- difference(data[data$Group %in% c("ZControl1", "Group1"),], effect.type = "paired-diffs", id.col = "ID", data.col = "Measurement", group.col = "Group", R = 1000)
 # print(es)
@@ -389,9 +432,7 @@ plotES(es, points = transparent(c("red", "blue"), .9), violin = "full")
 par(mfrow = c(2, 1))
 es <- difference(len[len$male %in% c("yellow", "red"),], data.col = "length", group.col = "male", R = 5000)
 print(es)
-plotES(es, points = transparent(c("red", "blue"), .9), violin = "full")
-
-
+plotES(es, points = transparent(c("red", "blue"), .9), violin = "full", mean = FALSE)
 
 es <- difference(data[data$Group %in% c("Control1", "Group1"),], effect.type = "paired-diffs", id.col = "ID", data.col = "Measurement", group.col = "Group", R = 1000)
 print(es)
