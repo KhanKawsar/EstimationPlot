@@ -1,0 +1,461 @@
+
+###
+# Testing
+
+N <- 40
+data <- data.frame(Measurement = c(rnorm(N, mean = 100, sd = 25),
+                                   rnorm(N, mean = 100, sd = 50),
+                                   rnorm(N, mean = 120, sd = 25),
+                                   rnorm(N, mean = 80, sd = 50),
+                                   rnorm(N, mean = 100, sd = 12),
+                                   rnorm(N, mean = 100, sd = 50)),
+                   Group = c(rep("ZControl1", N),
+                             rep("Control2", N),
+                             rep("Group1", N),
+                             rep("Group2", N),
+                             rep("Group3", N),
+                             rep("Group4", N)),
+                   Gender = rep(c(rep('Male', N/2), rep('Female', N/2)), 6),
+                   ID = rep(1:N, 6)
+)
+# Shuffle
+data <- data[sample(nrow(data)), ]
+
+#par(mfrow = c(2, 1))
+es <- difference(data[data$Group %in% c("ZControl1", "Group1"),], data.col = "Measurement", group.col = "Group", R = 1000)
+print(es)
+plotES(es, points = transparent(c("red", "blue"), .4), violin = "full", mean = FALSE, bar = FALSE)
+
+plotES(es, points = transparent(c("red", "blue"), .9), violin = "full", mean = TRUE, bar = FALSE)
+#plotES(es, bar = TRUE, violin = FALSE, box = FALSE, mean = FALSE)
+
+es2 <- difference(data[data$Group %in% c("ZControl1", "Group1"),],
+                  data.col = "Measurement", group.col = "Group", R = 1000,
+                  effect.type = "paired-diffs", id.col = "ID")
+#####  Make all the plot in one plot
+pageWidthLarge<- 20.08661
+pageHeightLarge <- pageWidthLarge * 1.2
+pagePaper <- 'special'
+fontFamily <- 'Times'
+#png("output/Figure_1.png", width=pageWidthLarge, height= pageHeightLarge,
+#  units= "in",type= "cairo", res = 600)
+
+#pdf("output/Figure_3.11.pdf", width=pageWidthLarge,
+#height= pageHeightLarge, family=fontFamily, paper=pagePaper)
+
+tiff("output/Figure_collage1.tiff", width=pageWidthLarge,
+     height= pageHeightLarge, family=fontFamily, units = "in", res = 600)
+
+l <- layout(matrix(c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), nrow=4,ncol=5,byrow =  TRUE))
+layout.show(l)
+
+#par(mfrow = c(2, 4))
+#a)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = "white", box_fill = "white",
+       central_tendency = "median", error_bars = "CI", ef_size = FALSE,
+       points = transparent(c("red", "blue"), .5))
+
+#b)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = "white", box_fill = "white",
+       central_tendency = "median", error_bars = "SD", ef_size = FALSE,
+       points = transparent(c("red", "blue"), .5),)
+
+#c)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = "white", box_fill = "white",
+       central_tendency = "median", error_bars = "SE", ef_size = FALSE,
+       points = transparent(c("red", "blue"), .5),)
+
+#d)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = "white", box_fill = "white",
+       central_tendency = "mean", error_bars = "CI", ef_size = FALSE,
+       points = transparent(c("red", "blue"), .5),)
+
+#e)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = "white", box_fill = "white",
+       central_tendency = "mean", error_bars = "SD", ef_size = FALSE,
+       points = transparent(c("red", "blue"), .5),)
+
+#f)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = "white", box_fill = "white",
+       central_tendency = "mean", error_bars = "SE", ef_size = FALSE,
+       points = transparent(c("red", "blue"), .5),)
+
+#g)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = transparent(c("red", "blue"), .5),
+       box_fill = "white",error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = FALSE,
+       points = FALSE)
+
+#h)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = transparent(c("red", "blue"), .5),
+       box_fill = "white",error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = FALSE,
+       points = transparent(c("red", "blue"), .5))
+
+#i)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = transparent(c("red", "blue"), .5),
+       box_fill = transparent(c("red", "blue"), .7),error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = FALSE,
+       points = FALSE)
+
+#j)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = transparent(c("red", "blue"), .5),
+       box_fill = transparent(c("red", "blue"), .7),error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = FALSE,
+       points = transparent(c("red", "blue"), .5))
+
+
+#k)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = "left-half",
+       violin_border = transparent(c("red", "blue"), .6),
+       violin_fill = transparent(c("red", "blue"), .6),
+       box = "white",
+       box_fill = "white",
+       error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = FALSE,
+       points = transparent(c("red", "blue"), .5))
+
+#l)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = "left-half",
+       violin_border = transparent(c("red", "blue"), .6),
+       violin_fill = transparent(c("red", "blue"), .6),
+       box = transparent(c("red", "blue"), .5),
+       box_fill = transparent(c("red", "blue"), .7),error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = FALSE,
+       points = FALSE)
+
+##m)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = "left-half",
+       violin_border = transparent(c("red", "blue"), .6),
+       violin_fill = transparent(c("red", "blue"), .6),
+       box = transparent(c("red", "blue"), .5),
+       box_fill = transparent(c("red", "blue"), .7),error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = FALSE,
+       points = transparent(c("red", "blue"), .5))
+
+#n)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = "right-half",
+       violin_border = transparent(c("red", "blue"), .6),
+       violin_fill = transparent(c("red", "blue"), .6),
+       box = "white",
+       box_fill = "white",
+       error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = FALSE,
+       points = transparent(c("red", "blue"), .5))
+#o)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = "right-half",
+       violin_border = transparent(c("red", "blue"), .6),
+       violin_fill = transparent(c("red", "blue"), .6),
+       box = transparent(c("red", "blue"), .5),
+       box_fill = transparent(c("red", "blue"), .7),error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = FALSE,
+       points = FALSE)
+
+#p)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = "right-half",
+       violin_border = transparent(c("red", "blue"), .6),
+       violin_fill = transparent(c("red", "blue"), .6),
+       box = transparent(c("red", "blue"), .5),
+       box_fill = transparent(c("red", "blue"), .7),error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = FALSE,
+       points = transparent(c("red", "blue"), .5))
+
+#q)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = "full",
+       violin_border = transparent(c("red", "blue"), .6),
+       violin_fill = transparent(c("red", "blue"), .6),
+       box = transparent(c("red", "blue"), .5),
+       box_fill = transparent(c("red", "blue"), .7),error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = FALSE,
+       points = FALSE)
+
+#r)
+plotES(es2, bar = FALSE, bar_fill = FALSE, violin = "full",
+       violin_border = transparent(c("red", "blue"), .4),
+       violin_fill = transparent(c("red", "blue"), .8),
+       box = transparent(c("grey10"), .1),
+       box_fill = transparent(c("red", "blue"), .7),error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = TRUE,
+       points = transparent(c("red", "blue"), .5), paired = TRUE)
+
+#s)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = "full",
+       violin_border = transparent(c("red", "blue"), .6),
+       violin_fill = transparent(c("red", "blue"), .6),
+       box = "white",
+       box_fill = "white",
+       error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = FALSE,
+       points = transparent(c("red", "blue"), .5))
+
+#t)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = "full",
+       violin_border = transparent(c("red", "blue"), .6),
+       violin_fill = transparent(c("red", "blue"), .6),
+       box = "white",
+       box_fill = "white",
+       error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = FALSE,
+       points = FALSE)
+
+dev.off()
+
+
+#####  compile chart with paired data
+pageWidthLarge<- 20.08661
+pageHeightLarge <- pageWidthLarge * 1.2
+pagePaper <- 'special'
+fontFamily <- 'Times'
+#png("output/Figure_1.png", width=pageWidthLarge, height= pageHeightLarge,
+#  units= "in",type= "cairo", res = 600)
+
+#pdf("output/Figure_3.11.pdf", width=pageWidthLarge,
+#height= pageHeightLarge, family=fontFamily, paper=pagePaper)
+
+tiff("output/Figure_collage1.tiff", width=pageWidthLarge,
+     height= pageHeightLarge, family=fontFamily, units = "in", res = 600)
+
+l <- layout(matrix(c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), nrow=4,ncol=5,byrow =  TRUE))
+layout.show(l)
+
+es <- difference(data[data$Group %in% c("ZControl1", "Group1"),],
+                 data.col = "Measurement", group.col = "Group", R = 1000,
+                 effect.type = "Paired-diffs")
+print(es)
+
+#a)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = "white", box_fill = "white",
+       central_tendency = "median", error_bars = "CI", ef_size = FALSE,
+       points = transparent(c("red", "blue"), .5), paired = TRUE)
+
+#b)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = "white", box_fill = "white",
+       central_tendency = "median", error_bars = "SD", ef_size = FALSE,
+       points = transparent(c("red", "blue"), .5),paired = TRUE)
+
+#c)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = "white", box_fill = "white",
+       central_tendency = "median", error_bars = "SE", ef_size = FALSE,
+       points = transparent(c("red", "blue"), .5))
+
+#d)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = "white", box_fill = "white",
+       central_tendency = "mean", error_bars = "CI", ef_size = FALSE,
+       points = transparent(c("red", "blue"), .5),)
+
+#e)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = "white", box_fill = "white",
+       central_tendency = "mean", error_bars = "SD", ef_size = FALSE,
+       points = transparent(c("red", "blue"), .5),)
+
+#f)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = "white", box_fill = "white",
+       central_tendency = "mean", error_bars = "SE", ef_size = FALSE,
+       points = transparent(c("red", "blue"), .5),)
+
+#g)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = transparent(c("red", "blue"), .5),
+       box_fill = "white",error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = FALSE,
+       points = FALSE)
+
+#h)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = transparent(c("red", "blue"), .5),
+       box_fill = "white",error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = FALSE,
+       points = transparent(c("red", "blue"), .5), paired = TRUE)
+
+#i)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = transparent(c("red", "blue"), .5),
+       box_fill = transparent(c("red", "blue"), .7),error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = FALSE,
+       points = FALSE)
+
+#j)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = transparent(c("red", "blue"), .5),
+       box_fill = transparent(c("red", "blue"), .7),error_bars = "CI",
+       central_tendency = "mean", ef_size = FALSE, mean = NA,
+       points = transparent(c("red", "blue"), .5), paired = TRUE)
+
+
+#k)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = "left-half",
+       violin_border = transparent(c("red", "blue"), .6),
+       violin_fill = transparent(c("red", "blue"), .6),
+       box = "white",
+       box_fill = "white",
+       error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = FALSE,
+       points = transparent(c("red", "blue"), .5))
+
+#l)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = "left-half",
+       violin_border = transparent(c("red", "blue"), .6),
+       violin_fill = transparent(c("red", "blue"), .6),
+       box = transparent(c("red", "blue"), .5),
+       box_fill = transparent(c("red", "blue"), .7),error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = FALSE,
+       points = FALSE)
+
+##m)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = "left-half",
+       violin_border = transparent(c("red", "blue"), .6),
+       violin_fill = transparent(c("red", "blue"), .6),
+       box = transparent(c("red", "blue"), .5),
+       box_fill = transparent(c("red", "blue"), .7),error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = FALSE,
+       points = transparent(c("red", "blue"), .5))
+
+#n)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = "right-half",
+       violin_border = transparent(c("red", "blue"), .6),
+       violin_fill = transparent(c("red", "blue"), .6),
+       box = "white",
+       box_fill = "white",
+       error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = FALSE,
+       points = transparent(c("red", "blue"), .5))
+#o)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = "right-half",
+       violin_border = transparent(c("red", "blue"), .6),
+       violin_fill = transparent(c("red", "blue"), .6),
+       box = transparent(c("red", "blue"), .5),
+       box_fill = transparent(c("red", "blue"), .7),error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = FALSE,
+       points = FALSE)
+
+#p)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = "right-half",
+       violin_border = transparent(c("red", "blue"), .6),
+       violin_fill = transparent(c("red", "blue"), .6),
+       box = transparent(c("red", "blue"), .5),
+       box_fill = transparent(c("red", "blue"), .7),error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = FALSE,
+       points = transparent(c("red", "blue"), .5))
+
+#q)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = "full",
+       violin_border = transparent(c("red", "blue"), .6),
+       violin_fill = transparent(c("red", "blue"), .6),
+       box = transparent(c("red", "blue"), .5),
+       box_fill = transparent(c("red", "blue"), .7),error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = FALSE,
+       points = FALSE)
+
+#r)
+plotES(es2, bar = FALSE, bar_fill = FALSE, violin = "full",
+       violin_border = transparent(c("red", "blue"), .6),
+       violin_fill = transparent(c("red", "blue"), .6),
+       box = transparent(c("red", "blue"), .5),
+       box_fill = transparent(c("red", "blue"), .7), error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = TRUE,
+       points = transparent(c("red", "blue"), .5), paired =TRUE)
+
+#s)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = "full",
+       violin_border = transparent(c("red", "blue"), .6),
+       violin_fill = transparent(c("red", "blue"), .6),
+       box = "white",
+       box_fill = "white",
+       error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = FALSE,
+       points = transparent(c("red", "blue"), .5))
+
+#t)
+plotES(es, bar = FALSE, bar_fill = FALSE, violin = "full",
+       violin_border = transparent(c("red", "blue"), .6),
+       violin_fill = transparent(c("red", "blue"), .6),
+       box = "white",
+       box_fill = "white",
+       error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = FALSE,
+       points = FALSE)
+
+dev.off()
+
+# es <- difference(data[data$Group %in% c("ZControl1", "Group1"),], effect.type = "paired-diffs", id.col = "ID", data.col = "Measurement", group.col = "Group", R = 1000)
+# print(es)
+# plotES(es, points = transparent(c("red", "blue"), .9), violin = "full")
+
+
+# library(dabestr)
+#
+# two.group.unpaired <- dabest(data, Group, Measurement,
+#                              # The idx below passes "Control" as the control group,
+#                              # and "Group1" as the test group. The mean difference
+#                              # will be computed as mean(Group1) - mean(Control1).
+#                              idx = c("Control1", "Group1"),
+#                              paired = FALSE)
+# md <- mean_diff(two.group.unpaired)
+# plot(md)
+# cd <- cohens_d(two.group.unpaired)
+# plot(cd)
+
+### test len data
+
+par(mfrow = c(2, 1))
+es <- difference(len[len$male %in% c("yellow", "red"),], data.col = "length", group.col = "male", R = 5000)
+print(es)
+plotES(es, points = transparent(c("red", "blue"), .9), violin = "full", mean = FALSE)
+
+es <- difference(data[data$Group %in% c("ZControl1", "Group1"),], effect.type = "paired-diffs", id.col = "ID", data.col = "Measurement", group.col = "Group", R = 1000)
+print(es)
+es <- difference(data[data$Group %in% c("ZControl1", "Group1"),], effect.type = "hedges", id.col = "ID", data.col = "Measurement", group.col = "Group", R = 1000)
+print(es)
+plotES(es, points = transparent(c("red", "blue"), .9), violin = "full")
+
+es <- difference(data[data$Group %in% c("ZControl1", "Group1"),], effect.type = "cohens", id.col = "ID", data.col = "Measurement", group.col = "Group", R = 1000)
+print(es)
+
+
+### insulin paired data
+
+insulin <- read.csv("data/insulin.csv")
+insulin <- na.omit(insulin)
+insulin <- insulin[1:26,] ## does not work if id is not equal in booth group
+head(insulin)
+tail(insulin)
+
+es3 <- difference(insulin[insulin$time %in% c("before", "after"),],
+                  data.col = "sugar", group.col = "time", R = 1000,
+                  effect.type = "paired-diffs", id.col = "id")
+
+plotES(es3, bar = FALSE, bar_fill = FALSE, violin = "full",
+       violin_border = transparent(c("red", "blue"), .6),
+       violin_fill = transparent(c("red", "blue"), .6),
+       box = transparent(c("red", "blue"), .5),
+       box_fill = transparent(c("red", "blue"), .7), error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = TRUE,
+       points = transparent(c("red", "blue"), .5), paired =TRUE)
+
+##
+darwin <- read.csv("data/darwin_237.csv")
+head(darwin)
+
+es4 <- difference(darwin[darwin$fertilisation %in% c("cross", "self"),],
+                  data.col = "height", group.col = "fertilisation", R = 1000)
+
+plotES(es4, bar = FALSE, bar_fill = FALSE, violin = "full",
+       violin_border = transparent(c("red", "blue"), .6),
+       violin_fill = transparent(c("red", "blue"), .6),
+       box = transparent(c("red", "blue"), .5),
+       box_fill = transparent(c("red", "blue"), .7), error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = TRUE,
+       points = transparent(c("red", "blue"), .5))
+
+##
+fertilisation <- read.csv("data/fertilisation.csv")
+head(fertilisation)
+
+es5 <- difference(fertilisation[fertilisation$fertilisation %in% c("cross", "self"),],
+                  data.col = "length", group.col = "fertilisation", R = 1000)
+
+plotES(es5, bar = FALSE, bar_fill = FALSE, violin = "full",
+       violin_border = transparent(c("red", "blue"), .6),
+       violin_fill = transparent(c("red", "blue"), .6),
+       box = transparent(c("red", "blue"), .5),
+       box_fill = transparent(c("red", "blue"), .7), error_bars = "CI",
+       central_tendency = "mean", mean = NA, ef_size = TRUE,
+       points = transparent(c("red", "blue"), .5))
+
+
