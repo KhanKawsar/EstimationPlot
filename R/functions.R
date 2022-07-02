@@ -1,20 +1,14 @@
 ### Private functions
 
 #### TODO
-#### Handle NA in data !!!
 #### Multiple groups - specify pairings
 #### Scale of cohens d - scale to fit (-1, 1), limit axis extents (Hegdes same)
-#### Automated testing and test data
-#### Bar jitter
+#### Bar jitter -- done
 #### Effect size plot below data for multiple or if selected by user
-### Box= FALSE delete the axis
-## central tendency and error bar false
 ## magic adjacent/at ?
-# las = 1, in mainplot
-## do not return cohens and hedges
 ## effect size density optional (FALSE)
 ## points optional in paired
-##
+## CI optional/seperate with mean: to include with meean SD
 
 transparent <-  function(colour, alpha) {
   rgba.val <- col2rgb(colour, TRUE)
@@ -296,7 +290,7 @@ plotES <- function(es,
 
   # If needed, extend y range to encompass bar plots
   if (.show(bar)) {
-    message("Bar charts are not implemented yet")
+    #message("Bar charts are not implemented yet")
       ylim <- c(0, max(data[[es$data.col]]))
   }
 
@@ -326,12 +320,9 @@ plotES <- function(es,
   ## bar chart
   if (.show(bar)) {
     barplot(es$groupStatistics[,1] ~ es$groups,
+            width = 0.8, space = c(0.75,0.25),
             col = .colour(bar_fill), border = .colour(bar),
-            add = TRUE)
-
-    ## add SD
-    segments(1, y+es$groupStatistics[1, 3], 1, y-es$groupStatistics[1, 3], col = .colour(bar), lty =1, lwd=2)
-    segments(2, z+es$groupStatistics[2, 3], 2, z-es$groupStatistics[1, 3], col = .colour(bar), lty =1, lwd=2)
+            add = TRUE, axes = FALSE)
   }
 
   # Violin plots
@@ -382,23 +373,29 @@ plotES <- function(es,
         points(i, y, pch = 19, cex = 1.5, col = .colour(mean))
       else
         segments(i - violin_width, y, i + violin_width, y, col = .colour(mean), lwd = 2)
-
+    }
+}
       ## add CI/SD/SE
+  if (.show(error_bars)) {
+    for (i in seq_along(groups)) {
+
       if (error_bars == "CI") {
         bars <- es$groupStatistics[i, c("CI.lower", "CI.upper")]
+
       } else if (error_bars == "SD") {
         bars <- c(y - es$groupStatistics[i, "sd"],
                   y + es$groupStatistics[i, "sd"])
+
       } else {
         bars <- c(y - es$groupStatistics[i, "se"],
                   y + es$groupStatistics[i, "se"])
+
       }
       if (!is.na(error_bars)) {
         segments(i, bars[1], i, bars[2], col = .colour(mean), lty = 1, lwd = 2)
       }
     }
   }
-
 
   # effect size
   if (.show(ef_size)) {
@@ -433,7 +430,6 @@ plotES <- function(es,
 
     }
   }
-
 
   es
 }
