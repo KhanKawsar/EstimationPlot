@@ -205,6 +205,22 @@ print.plotES <- function(result, ...) {
               es$effect.type, es$t0, es$bca[1], es$ci.type, es$bca[4], es$bca[5]))
 }
 
+getErrorBars <- function(es, groupIdx, groupMean, error_bars) {
+  if (error_bars == "CI") {
+    bars <- es$groupStatistics[groupIdx, c("CI.lower", "CI.upper")]
+
+  } else if (error_bars == "SD") {
+    bars <- c(groupMean - es$groupStatistics[groupIdx, "sd"],
+              groupMean + es$groupStatistics[groupIdx, "sd"])
+
+  } else {
+    bars <- c(groupMean - es$groupStatistics[groupIdx, "se"],
+              groupMean + es$groupStatistics[groupIdx, "se"])
+  }
+
+  bars
+}
+
 
 #' Plot data with effect size
 #'
@@ -291,7 +307,21 @@ plotES <- function(es,
   # If needed, extend y range to encompass bar plots
   if (.show(bar)) {
     #message("Bar charts are not implemented yet")
+    if (.show(points)) {
       ylim <- c(0, max(data[[es$data.col]]))
+    } else {
+      # Are we drawing error bars?
+      if (.show(error_bars)) {
+        ym <- max(sapply(seq_along(groups), function(gi) {
+          groupMean <- mean(data[[es$data.col]][data[[es$group.col]] == groups[gi]])
+          getErrorBars(es, gi, groupMean, error_bars)[2]
+        }))
+      } else {
+        # Get means of each group
+        ym <- max(sapply(groups, function(g) mean(data[[es$data.col]][data[[es$group.col]] == g])))
+      }
+      ylim <- c(0, ym)
+    }
   }
 
   # If needed extend x range to encompass effect size
@@ -319,7 +349,7 @@ plotES <- function(es,
 
   ## bar chart
   if (.show(bar)) {
-    barplot(es$groupStatistics[,1] ~ es$groups,
+    barplot(es$groupStatistics[, "mean"] ~ es$groups,
             width = 0.8, space = c(0.75,0.25),
             col = .colour(bar_fill), border = .colour(bar),
             add = TRUE, axes = FALSE)
@@ -374,23 +404,17 @@ plotES <- function(es,
       else
         segments(i - violin_width, y, i + violin_width, y, col = .colour(mean), lwd = 2)
     }
-}
-      ## add CI/SD/SE
+  }
+
+  ## add CI/SD/SE
   if (.show(error_bars)) {
+    centre <- central_tendency
+    if (isFALSE(centre))
+      centre <- "mean"
     for (i in seq_along(groups)) {
-
-      if (error_bars == "CI") {
-        bars <- es$groupStatistics[i, c("CI.lower", "CI.upper")]
-
-      } else if (error_bars == "SD") {
-        bars <- c(y - es$groupStatistics[i, "sd"],
-                  y + es$groupStatistics[i, "sd"])
-
-      } else {
-        bars <- c(y - es$groupStatistics[i, "se"],
-                  y + es$groupStatistics[i, "se"])
-
-      }
+      y <- es$groupStatistics[i, centre]
+      print(y)
+      bars <- getErrorBars(es, i, y, error_bars)
       if (!is.na(error_bars)) {
         segments(i, bars[1], i, bars[2], col = .colour(mean), lty = 1, lwd = 2)
       }

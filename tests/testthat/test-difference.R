@@ -295,3 +295,11 @@ test_that("paired with NAs works", {
          points = transparent(c("red", "blue"), .5))
   expect_equal(1, 1)
 })
+
+test_that("bar charts work", {
+  es <- makeData1()
+  plotES(es, bar = TRUE, violin = FALSE, box = FALSE, box_fill = "blue",
+         central_tendency = FALSE, error_bars = "CI", ef_size = FALSE,
+         points = FALSE)
+  expect_equal(1, 1)
+})
