@@ -21,7 +21,7 @@ makeData1 <- function() {
   difference(data[data$Group %in% c("ZControl1", "Group1"),], data.col = "Measurement", group.col = "Group", R = 1000)
 }
 
-makePairedData <- function(addSomeNAs = FALSE) {
+makePairedData <- function(addSomeNAs = FALSE, reverseGroups = FALSE) {
   N <- 40
   set.seed(1)
   data <- data.frame(Measurement = c(rnorm(N, mean = 100, sd = 25),
@@ -44,10 +44,18 @@ makePairedData <- function(addSomeNAs = FALSE) {
 
   # Shuffle
   data <- data[sample(nrow(data)), ]
-  difference(data[data$Group %in% c("ZControl1", "Group1"),],
-             na.rm = addSomeNAs,
-             data.col = "Measurement", group.col = "Group", R = 1000,
-             effect.type = "paired", id.col = "ID")
+  if (reverseGroups) {
+    difference(data[data$Group %in% c("ZControl1", "Group1"),],
+               groups = c("ZControl1", "Group1"),
+               na.rm = addSomeNAs,
+               data.col = "Measurement", group.col = "Group", R = 1000,
+               effect.type = "paired", id.col = "ID")
+  } else {
+    difference(data[data$Group %in% c("ZControl1", "Group1"),],
+               na.rm = addSomeNAs,
+               data.col = "Measurement", group.col = "Group", R = 1000,
+               effect.type = "paired", id.col = "ID")
+  }
 }
 
 ##########################################################################
@@ -332,6 +340,14 @@ test_that("central tendency FALSE works", {
 
 test_that("paired works", {
   es <- makePairedData()
+  SAKPlot(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = "red", box_fill = "blue",
+         central_tendency = FALSE, error_bars = "CI", ef_size = FALSE,
+         points = transparent(c("red", "blue"), .5))
+  expect_equal(1, 1)
+})
+
+test_that("paired (reversed groups) works", {
+  es <- makePairedData(reverseGroups = TRUE)
   SAKPlot(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = "red", box_fill = "blue",
          central_tendency = FALSE, error_bars = "CI", ef_size = FALSE,
          points = transparent(c("red", "blue"), .5))

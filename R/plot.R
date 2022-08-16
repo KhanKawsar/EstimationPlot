@@ -1,6 +1,8 @@
 ### Private functions
 
 #### TODO
+#### Use of layout - is it ok???
+#### Discuss useful defaults - suggestion: SAKPlot(data) should produce a useful plot, violin = TRUE should have expected effect
 #### Multiple groups - specify pairings
 #### Scale of cohens d - scale to fit (-1, 1), limit axis extents (Hedges same)
 #### Bar jitter -- done
@@ -8,7 +10,7 @@
 ## magic adjacent/at ?
 ## effect size density optional (FALSE)
 ## points optional in paired
-## CI optional/seperate with mean: to include with mean SD
+## CI optional/separate with mean: to include with mean SD
 
 transparent <-  function(colour, alpha) {
   rgba.val <- col2rgb(colour, TRUE)
@@ -16,28 +18,6 @@ transparent <-  function(colour, alpha) {
                maxColorValue = 255,
                alpha = (100 - alpha * 100) * 255 / 100)
   t.col
-}
-
-#' TODO print bootstrap mean difference, bootstrapped confidence interval (R value, bootstrapped corrections "bca")
-#'
-#' @export
-print.SAKPlot <- function(es, ...) {
-  cat("Bootstrapped effect size\n")
-  cat("Groups:\n")
-  print(es$groupStatistics)
-  cat(sprintf("Pairwise %s effect size:\n", es$effect.type))
-  for (i in seq_len(length(es$pairwiseDifferences))) {
-    print(es$pairwiseDifferences[[i]])
-  }
-}
-
-#' TODO print bootstrap pairwise mean difference, bootstrapped confidence interval (R value, bootstrapped corrections "bca")
-#'
-#' @export
-print.SAKDiff <- function(pw) {
-  cat(sprintf("  %s - %s: %g, %g%% CI (%s) %g, %g\n",
-              pw$groups[1], pw$groups[2],
-              pw$t0, pw$bca[1], pw$ci.type, pw$bca[4], pw$bca[5]))
 }
 
 getErrorBars <- function(es, groupIdx, groupMean, error_bars) {
@@ -57,41 +37,43 @@ getErrorBars <- function(es, groupIdx, groupMean, error_bars) {
 }
 
 # Plot a single pairwise effect size
-plotEffectSize <- function(es, pwes, xo, yo, group1Idx, violin_width) {
+plotEffectSize <- function(pwes, xo, yo, group1y, violin_width) {
   d <- density(pwes$t)
   # Make effect size width half the violin width
   d$y <- d$y / max(d$y) * violin_width / 2
   # Diff is group2 - group1, so add to group1 mean make it align with group2
-  y <- es$groupStatistics[group1Idx, 1]
-  y <- 0
-  #browser()
-  polygon(xo + d$y, yo + d$x + y,
+  polygon(xo + d$y, yo + group1y + d$x,
           col = transparent("black", .8),
           border = "black")
 
   # Draw mean of effect size
-  points(xo, yo + y + pwes$t0, pch = 19, col = "grey20", cex = 1.5)
+  points(xo, yo + group1y + pwes$t0, pch = 19, col = "grey20", cex = 1.5)
   # Confidence interval of effect size
-  segments(xo, yo + y + pwes$bca[4], xo, yo + y + pwes$bca[5], col = "grey20", lty = 1, lwd = 2.0)
+  segments(xo, yo + group1y + pwes$bca[4], xo, yo + group1y + pwes$bca[5], col = "grey20", lty = 1, lwd = 2.0)
 }
 
-plotEffectSizesRight <- function(es, violin_width) {
+plotEffectSizesRight <- function(es, violin_width, right_ylab) {
   # Show it to the right
   pwes <- es$pairwiseDifferences[[1]]
-  plotEffectSize(es, pwes, 3, 0, 1, violin_width)
+  y <- es$groupStatistics[1, 1]
+  plotEffectSize(pwes, 3, 0, y, violin_width)
 
   # Horizontal lines from group means
-  segments(1, 0, 5, 0, col = "grey50", lty = 1, lwd = 1.5)
-  segments(2, 0 + pwes$t0, 5, pwes$t0, col = "grey50", lty = 1, lwd = 1.5)
+  segments(1, y, 5, y, col = "grey50", lty = 1, lwd = 1.5)
+  segments(2, 0 + y + pwes$t0, 5, y + pwes$t0, col = "grey50", lty = 1, lwd = 1.5)
 
   # Axis labels on right-hand
-  axis(4, at = pretty(range(c(0, pwes$t))),
+  axis(4, at = y + pretty(range(c(0, pwes$t))),
        labels = pretty(range(c(0, pwes$t))), las = 1)
 
   # Add x-axis label for effect size
-  axis(1, at = 3, labels = FALSE)
   mtext(sprintf("%s\nminus\n%s", es$groups[2], es$groups[1]), at = 3, side = 1, line = 3)
-  mtext("Mean difference",  side = 4, line = 2.5)
+
+  # Optionally label the right y-axis
+  axis(1, at = 3, labels = FALSE)
+  if (!isFALSE(right_ylab)) {
+    mtext(es$effect.name,  side = 4, line = 2.5)
+  }
 }
 
 plotEffectSizesBelow <- function(es, violin_width, xlim, mar) {
@@ -123,28 +105,17 @@ plotEffectSizesBelow <- function(es, violin_width, xlim, mar) {
   esmar <- mar
   esmar[3] <- 0
   par(mar = esmar)
-  plot(NULL, xlim = xlim, ylim = ylim, type = "n", xlab = "", ylab = "", bty = "n", xaxt = "n")
+  plot(NULL, xlim = xlim, ylim = ylim, type = "n", xlab = "", ylab = es$effect.name, bty = "n", xaxt = "n")
   abline(h = 0, col = "grey50")
   for (i in seq_along(plotDiffs)) {
     pwes <- plotDiffs[[i]]
     if (!is.null(pwes)) {
       gid1 <- which(groups == pwes$groups[1])
       gid2 <- which(groups == pwes$groups[2])
-      plotEffectSize(es, pwes, gid1, 0, gid1, violin_width)
+      plotEffectSize(pwes, gid1, 0, 0, violin_width)
       mtext(sprintf("%s\nminus\n%s", pwes$groups[1], pwes$groups[2]), at = gid1, side = 1, line = 2.2)
     }
   }
-}
-
-
-# Returns the negation of the specified pairwsie difference (ie a member of es$pairwiseDifferences)
-negatePairwiseDiff <- function(pwd) {
-  pwd$groups[[1]] <- rev(pwd$groups[[1]])
-  pwd$t0 <- -pwd$t0
-  pwd$t[[1]] <- -pwd$t[[1]]
-  pwd$bca[[1]][4] <- -pwd$bca[[1]][4]
-  pwd$bca[[1]][5] <- -pwd$bca[[1]][4]
-  pwd
 }
 
 #############################################################################
@@ -160,37 +131,41 @@ negatePairwiseDiff <- function(pwd) {
 #'
 #' @export
 SAKPlot <- function(es,
-                   box = "black",
-                   box_fill = "lightgrey",
-                   points = transparent(RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"), .4),
-                   violin = c("left-half", "right-half", "full"),
-                   violin_border = RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"),
-                   violin_fill = transparent(RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"), .6),
-                   violin_adj = 1.5,
-                   violin_width = 0.35,
-                   violin_trunc_at = 0.05,
-                   bar = RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"),
-                   bar_fill = transparent(RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"), .8),
-                   central_tendency = c("mean", "median"),
-                   mean = "grey20", ##take off with FALSE option
-                   error_bars = c("CI", "SD", "SE"), # draw confidence interval line of the data; if, box, density, violin is TRUE, CI is FALSE
-                   mar = c(5, 4, 4, 4) + 0.1, # Default margin
-                   xlab = "",
-                   ef_size = c(TRUE, "right", "below"), # if !FALSE, plot effect size
-                   ef_size_density = TRUE, # if TRUE, draw effect size confidence interval
-                   #ef_size_position = c("right", "down"),# when Gardner-Altman_plot is chosen effect size plotted right, otherwise down
-                   paired = es$effect.type == "paired", # if true draw lines between paired points
-                   # points = TRUE, #add individual data point
-                   #barchart = TRUE, #draw bar chart
-                   left_ylab = es$data.col.name,
-                   right_ylab = "",
-                   bottom_ylab = "",
-                   col = c("col1", "col2", "col3"), opacity = 0.6, #colour of box, violin, box border, density, col 1 = group 1, col2 = group 2, col3 = ef plot, {col = n+1, n = group no) #
-                   points_col = c("col1", "col2", "col3"), points_opacity = 0.4, # points colour
-                   las = 1, ...
+
+                    points = transparent(RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"), .4),
+
+                    violin = c("left-half", "right-half", "full"),
+                    violin_border = RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"),
+                    violin_fill = transparent(RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"), .6),
+                    violin_adj = 1.5,
+                    violin_width = 0.35,
+                    violin_trunc_at = 0.05,
+
+                    box = "black",
+                    box_fill = "lightgrey",
+
+                    bar = RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"),
+                    bar_fill = transparent(RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"), .8),
+
+                    ef_size = c(TRUE, "right", "below"), # if !FALSE, plot effect size
+                    ef_size_density = TRUE, # if TRUE, draw effect size confidence interval
+                    paired = es$effect.type == "paired", # if true draw lines between paired points
+
+                    central_tendency = c("mean", "median"),
+                    error_bars = c("CI", "SD", "SE"), # draw confidence interval line of the data; if box, density, violin is TRUE, CI is FALSE
+
+                    mean = "grey20", ##take off with FALSE option
+                    mar = c(5, 4, 4, 4) + 0.1, # Default margin
+                    xlab = "",
+                    left_ylab = es$data.col.name,
+                    right_ylab = "",
+                    bottom_ylab = "",
+                    col = c("col1", "col2", "col3"), opacity = 0.6, #colour of box, violin, box border, density, col 1 = group 1, col2 = group 2, col3 = ef plot, {col = n+1, n = group no) #
+                    points_col = c("col1", "col2", "col3"), points_opacity = 0.4, # points colour
+                    las = 1, ...
 ) {
-  if (!is(es, "SAKPlot"))
-    stop("data must be a SAKPlot object")
+  if (!is(es, "SAKDiffs"))
+    stop("data must be a SAKDiffs object")
   if (!isFALSE(violin))
     violin <- match.arg(violin)
   error_bars <- match.arg(error_bars)
@@ -287,8 +262,10 @@ SAKPlot <- function(es,
   # Label the groups
   axis(1, at = seq_len(nGroups), labels = groups)
 
-  # Add the various components to the plot
-  f <- as.formula(paste(es$data.col.name, "~", es$group.col.name))
+  ### Add the various components to the plot ###
+  # Turn group column into a factor so it can be ordered by the user
+  data$.group.as.factor <- factor(data[[es$group.col]], levels = groups)
+  f <- as.formula(paste(es$data.col.name, "~.group.as.factor"))
 
   # Box plot
   if (.show(box)) {
@@ -296,12 +273,12 @@ SAKPlot <- function(es,
             col = .colour(box_fill), border = .colour(box))
   }
 
-  ## bar chart
+  # bar chart
   if (.show(bar)) {
-    barplot(es$groupStatistics[, "mean"] ~ es$groups,
+    barplot(es$groupStatistics[, "mean"] ~ factor(groups, levels = groups),
             width = 0.8, space = c(0.75, rep(0.25, nGroups - 1)),
             col = .colour(bar_fill), border = .colour(bar),
-            add = TRUE, axes = FALSE)
+            add = TRUE, axes = FALSE, names.arg = FALSE)
   }
 
   # Violin plots
@@ -319,10 +296,11 @@ SAKPlot <- function(es,
       }
     }
   }
+
   # Scatter plot of data points
   if (.show(points)) {
     method <- ifelse(.show(paired), "overplot", "jitter")
-    stripchart(f, data = data, method = method,
+    stripchart(f, data = data[data[[es$group.col]] %in% groups, ], method = method,
                pch = 19, vertical = TRUE,
                col = .colour(points),
                add = TRUE)
@@ -355,7 +333,7 @@ SAKPlot <- function(es,
     }
   }
 
-  ## add CI/SD/SE
+  ## add CI/SD/SE error bars
   if (.show(error_bars)) {
     centre <- central_tendency
     if (isFALSE(centre))
@@ -363,15 +341,13 @@ SAKPlot <- function(es,
     for (i in seq_along(groups)) {
       y <- es$groupStatistics[i, centre]
       bars <- getErrorBars(es, i, y, error_bars)
-      if (!is.na(error_bars)) {
-        segments(i, bars[1], i, bars[2], col = .colour(mean), lty = 1, lwd = 2)
-      }
+      segments(i, bars[1], i, bars[2], col = .colour(mean), lty = 1, lwd = 2)
     }
   }
 
   # effect size
   if (ef_size == "right") {
-    plotEffectSizesRight(es, violin_width)
+    plotEffectSizesRight(es, violin_width, right_ylab)
   } else if (ef_size == "below") {
     plotEffectSizesBelow(es, violin_width, xlim, mar)
   }

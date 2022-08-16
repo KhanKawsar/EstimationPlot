@@ -32,7 +32,6 @@ stCohensD <- function(x1, x2){
 }
 
 # Hedges d (group 2 - group 1)
-
 stHedgesD <- function(x1, x2){
   m1 <- mean(x1)
   SD1 <- sd(x1)
@@ -108,6 +107,17 @@ calcPairDiff <- function(data, pair, data.col, group.col, id.col, effect.type, R
   es
 }
 
+# Returns the negation of the specified pairwsie difference (ie a member of es$pairwiseDifferences)
+negatePairwiseDiff <- function(pwd) {
+  pwd$groups[[1]] <- rev(pwd$groups[[1]])
+  pwd$t0 <- -pwd$t0
+  pwd$t[[1]] <- -pwd$t[[1]]
+  pwd$bca[4] <- -pwd$bca[4]
+  pwd$bca[5] <- -pwd$bca[5]
+  pwd
+}
+
+
 #############################################################################
 
 #' Generate differences
@@ -116,6 +126,7 @@ calcPairDiff <- function(data, pair, data.col, group.col, id.col, effect.type, R
 #'
 #' @param data A data frame...
 #' @param effect.type Type of difference
+#' @param groups Vector of group names. Defaults to all groups in \code{data} in \emph{natural} order.
 #' @param na.rm a logical evaluating to TRUE or FALSE indicating whether NA
 #'   values should be stripped before the computation proceeds. If NA values are
 #'   stripped and `effect.type` is "paired", all rows (observations) for IDs
@@ -131,6 +142,7 @@ difference <- function(data,
                        effect.type = c("unstandardised", "cohens", "hedges", "paired"),
                        #paired = FALSE, # if true calculate paired mean difference
                        data.col = 1, group.col = 2, block.col = NULL, id.col,
+                       groups = sort(unique(data[[group.col]])),
                        R = 1000,
                        ci.type = "bca",
                        na.rm = FALSE,
@@ -140,8 +152,19 @@ difference <- function(data,
                        # ci.conf = 0.95,
 ) {
 
+  effectNames <- c(unstandardised = "Mean difference", cohens = "Cohen's d", hedges = "Hedge's g")
+
   if (!is.function(effect.type))
     effect.type <- match.arg(effect.type)
+
+  # Check column specifications
+  .isACol <- function(spec) (is.numeric(spec) && spec >= 1 && spec <= ncol(data)) || (!is.numeric(spec) && spec %in% names(data))
+  if (!.isACol(data.col))
+    stop(sprintf("data.col %s is not a valid column name or index (names are %s)",
+                 data.col, paste(names(data), collapse = ", ")))
+  if (!.isACol(group.col))
+    stop(sprintf("group.col %s is not a valid column name or index (names are %s)",
+                 data.col, paste(names(data), collapse = ", ")))
 
   # Optionally handle NA values
   if (na.rm) {
@@ -155,9 +178,6 @@ difference <- function(data,
     data <- data[toKeep, ]
   }
 
-  # Get list of groups
-  groups <- sort(unique(data[[group.col]]))
-
   # Create return structure with administrative info
   .colName <- function(col) ifelse(is.numeric(col), names(data)[col], col)
   es <- list(data = data,
@@ -167,9 +187,10 @@ difference <- function(data,
              group.col = group.col,
              group.col.name = .colName(group.col),
              groups = groups,
-             effect.type = effect.type)
-  # Return value has type SAKPlot
-  class(es) <- c("SAKPlot", class(es))
+             effect.type = effect.type,
+             effect.name = effectNames[effect.type])
+  # Return value has type SAKDiffs
+  class(es) <- c("SAKDiffs", class(es))
 
   # Fill in statistical summary about each of the groups
   gil <- lapply(groups, function(g) {
@@ -197,5 +218,30 @@ difference <- function(data,
   })
 
   es
+}
+
+#######################################################################################
+# Print methods
+
+#' TODO DOCO print bootstrap mean difference, bootstrapped confidence interval (R value, bootstrapped corrections "bca")
+#'
+#' @export
+print.SAKDiffs <- function(es) {
+  cat("Bootstrapped effect size\n")
+  cat("Groups:\n")
+  print(es$groupStatistics)
+  cat(sprintf("Pairwise %s effect size:\n", es$effect.type))
+  for (i in seq_len(length(es$pairwiseDifferences))) {
+    print(es$pairwiseDifferences[[i]])
+  }
+}
+
+#' TODO DOCO print bootstrap pairwise mean difference, bootstrapped confidence interval (R value, bootstrapped corrections "bca")
+#'
+#' @export
+print.SAKDiff <- function(pw) {
+  cat(sprintf("  %s - %s: %g, %g%% CI (%s) %g, %g\n",
+              pw$groups[1], pw$groups[2],
+              pw$t0, pw$bca[1], pw$ci.type, pw$bca[4], pw$bca[5]))
 }
 
