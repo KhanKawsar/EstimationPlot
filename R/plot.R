@@ -127,9 +127,7 @@ plotEffectSizesBelow <- function(es, violin_width, xlim, mar) {
 
 #############################################################################
 
-#' Plot data with effect size in base R.
-#'
-#'
+#' Plot grouped data and effect size in base R.
 #'
 #' When the effect size plot is below the main plot, (i.e. either \code{ef_size
 #' = "below"} or when there are more than two effect sizes to be drawn),

@@ -20,7 +20,6 @@ To install the development version (which is the only version available as yet):
                    group = c(rep("Control", n), rep("Group", n)),
                    id = c(1:n, 1:n))
 
-  # Check all effect types
-  d <- difference(df, effect.type = "unstandardised")
-  SAKPlot(d, bar = FALSE, box = FALSE)
+  d <- difference(df, data.col = "val", group.col = "group")
+  SAKPlot(d)
 ```

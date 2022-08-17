@@ -18,7 +18,7 @@ makeData1 <- function() {
   )
   # Shuffle
   data <- data[sample(nrow(data)), ]
-  difference(data[data$Group %in% c("ZControl1", "Group1"),], data.col = "Measurement", group.col = "Group", R = 1000)
+  SAKDifference(data[data$Group %in% c("ZControl1", "Group1"),], data.col = "Measurement", group.col = "Group", R = 1000)
 }
 
 makePairedData <- function(addSomeNAs = FALSE, reverseGroups = FALSE) {
@@ -45,13 +45,13 @@ makePairedData <- function(addSomeNAs = FALSE, reverseGroups = FALSE) {
   # Shuffle
   data <- data[sample(nrow(data)), ]
   if (reverseGroups) {
-    difference(data[data$Group %in% c("ZControl1", "Group1"),],
+    SAKDifference(data[data$Group %in% c("ZControl1", "Group1"),],
                groups = c("ZControl1", "Group1"),
                na.rm = addSomeNAs,
                data.col = "Measurement", group.col = "Group", R = 1000,
                effect.type = "paired", id.col = "ID")
   } else {
-    difference(data[data$Group %in% c("ZControl1", "Group1"),],
+    SAKDifference(data[data$Group %in% c("ZControl1", "Group1"),],
                na.rm = addSomeNAs,
                data.col = "Measurement", group.col = "Group", R = 1000,
                effect.type = "paired", id.col = "ID")
@@ -69,10 +69,10 @@ test_that("difference effect types", {
                    id = c(1:n, 1:n))
 
   # Check all effect types
-  expect_error(difference(df, effect.type = "unstandardised", group.col = 2), NA)
-  expect_error(difference(df, effect.type = "cohens", group.col = 2), NA)
-  expect_error(difference(df, effect.type = "hedges", group.col = 2), NA)
-  expect_error(difference(df, effect.type = "paired", id.col = "id", group.col = 2), NA)
+  expect_error(SAKDifference(df, effect.type = "unstandardised", data.col = 1, group.col = 2), NA)
+  expect_error(SAKDifference(df, effect.type = "cohens", data.col = 1, group.col = 2), NA)
+  expect_error(SAKDifference(df, effect.type = "hedges", data.col = 1, group.col = 2), NA)
+  expect_error(SAKDifference(df, effect.type = "paired", id.col = "id", data.col = 1, group.col = 2), NA)
 
 })
 
@@ -83,10 +83,10 @@ test_that("group factors", {
                    id = c(1:n, 1:n))
 
   # Check all effect types
-  expect_error(difference(df, effect.type = "unstandardised", group.col = 2), NA)
-  expect_error(difference(df, effect.type = "cohens", group.col = 2), NA)
-  expect_error(difference(df, effect.type = "hedges", group.col = 2), NA)
-  expect_error(difference(df, effect.type = "paired", id.col = "id", group.col = 2), NA)
+  expect_error(SAKDifference(df, effect.type = "unstandardised", data.col = 1, group.col = 2), NA)
+  expect_error(SAKDifference(df, effect.type = "cohens", data.col = 1, group.col = 2), NA)
+  expect_error(SAKDifference(df, effect.type = "hedges", data.col = 1, group.col = 2), NA)
+  expect_error(SAKDifference(df, effect.type = "paired", id.col = "id", data.col = 1, group.col = 2), NA)
 
 })
 
@@ -97,11 +97,11 @@ test_that("difference handles NA", {
   df[c(1, 4, 10, 65), 1] <- NA
 
   # This should throw an error
-  expect_error(difference(df, na.rm = FALSE, group.col = 2))
+  expect_error(SAKDifference(df, na.rm = FALSE, data.col = 1, group.col = 2))
   # This should NOT throw an error
-  expect_error(difference(df, na.rm = TRUE, group.col = 2), NA)
+  expect_error(SAKDifference(df, na.rm = TRUE, data.col = 1, group.col = 2), NA)
   # This should throw an error if one of a pair is missing
-  expect_error(difference(df, effect.type = "paired", id.col = "id", na.rm = TRUE, group.col = 2))
+  expect_error(SAKDifference(df, effect.type = "paired", id.col = "id", na.rm = TRUE, group.col = 2))
 })
 
 test_that("three groups", {
@@ -116,7 +116,7 @@ test_that("three groups", {
                              ID = rep(1:N, 3)
   )
 
-  d3 <- difference(df, group.col = 2)
+  d3 <- SAKDifference(df, data.col = 1, group.col = 2)
   # This should NOT throw an error
   expect_error(SAKPlot(d3, bar = FALSE, box = FALSE), NA)
 })
@@ -135,7 +135,7 @@ test_that("three groups with factor", {
                              ID = rep(1:N, 3)
   )
 
-  d3 <- difference(df, group.col = 2)
+  d3 <- SAKDifference(df, data.col = 1, group.col = 2)
   # This should NOT throw an error
   expect_error(SAKPlot(d3, bar = FALSE, box = FALSE), NA)
 })
