@@ -140,17 +140,17 @@ negatePairwiseDiff <- function(pwd) {
 #'   median of group 2 + raw data
 #'
 #' @export
-difference <- function(data,
-                       effect.type = c("unstandardised", "cohens", "hedges", "paired"),
-                       #paired = FALSE, # if true calculate paired mean difference
-                       data.col = 1, group.col, block.col = NULL, id.col,
+SAKDifference <- function(data,
+                       data.col, group.col,
+                       block.col = NULL, id.col,
                        groups = sort(unique(data[[group.col]])),
+                       contrast = c("group 1 - group 2"), # default larger group minus small group TODO
+                       effect.type = c("unstandardised", "cohens", "hedges", "paired"),
                        R = 1000,
                        ci.type = "bca",
                        na.rm = FALSE,
                        ...
                        # ci.type = "bca", #default
-                       # contrast = c("group 1 - group 2"), # default larger group minus small group
                        # ci.conf = 0.95,
 ) {
 

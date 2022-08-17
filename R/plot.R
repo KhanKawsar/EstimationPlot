@@ -1,15 +1,23 @@
 ### Private functions
 
 #### TODO
-#### Use of layout - is it ok??? Could use par(new = TRUE)
-#### Discuss useful defaults - suggestion: SAKPlot(data) should produce a useful plot, violin = TRUE should have expected effect
-#### Multiple groups - specify pairings
-#### Scale of cohens d - scale to fit (-1, 1), limit axis extents (Hedges same)
+#### Unstandardised - y-axis scale should be the same in both components (effect size and data plot)
+
+#### Use of layout for ef_size = "below": leave until later, maybe use gridBase or similar
+#### MKK agrees: Discuss useful defaults - suggestions:
+####          SAKPlot(diff) should produce a useful plot
+####          violin = TRUE and similar should have expected effect
+#### Multiple groups - specify pairings, YES TODO
+#### Scale of cohens d, hedges - scale to look good, perhaps 1/3 of y range, limit axis extents TODO
+#### NO Rename plot function to plot.SAKPlot? Maybe easier to use, harder to locate documentation
 #### Bar jitter -- done
 ## magic adjacent/at ?
-## effect size density optional (FALSE)
-## points optional in paired
+####  New options, box_at, box_width, violin_at, points_at, scatter points cex, colour of points, add stripplot methods arg
+## effect size density optional (FALSE) TODO implement ef_size_density
+## points optional in paired TODO
 ## CI optional/separate with mean: to include with mean SD
+#### TODO how to include outliers in diff calc but not in plot?
+# Why aren't print methods working for Kawsar
 
 transparent <-  function(colour, alpha) {
   rgba.val <- col2rgb(colour, TRUE)
@@ -175,6 +183,7 @@ SAKPlot <- function(es,
                     points_col = c("col1", "col2", "col3"), points_opacity = 0.4, # points colour
                     las = 1, ...
 ) {
+  # Check and process input parameters
   if (!is(es, "SAKDiffs"))
     stop("data must be a SAKDiffs object")
   if (!isFALSE(violin))
@@ -262,7 +271,10 @@ SAKPlot <- function(es,
   }
 
 
-  # Save current plot parameters and restore on exit. Note that this doesn't work when effect size is below
+  # Save current plot parameters and restore on exit. Note that this doesn't
+  # work when effect size is "below". Also, don't save all parameters because
+  # that confuses things if we are inside a layout created by layout or
+  # par(mfrow)
   def.par <- par(mar = mar)
   on.exit(par(def.par))
 
