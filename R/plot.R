@@ -1,12 +1,11 @@
 ### Private functions
 
 #### TODO
-#### Use of layout - is it ok???
+#### Use of layout - is it ok??? Could use par(new = TRUE)
 #### Discuss useful defaults - suggestion: SAKPlot(data) should produce a useful plot, violin = TRUE should have expected effect
 #### Multiple groups - specify pairings
 #### Scale of cohens d - scale to fit (-1, 1), limit axis extents (Hedges same)
 #### Bar jitter -- done
-#### Effect size plot below data for multiple or if selected by user
 ## magic adjacent/at ?
 ## effect size density optional (FALSE)
 ## points optional in paired
@@ -120,12 +119,24 @@ plotEffectSizesBelow <- function(es, violin_width, xlim, mar) {
 
 #############################################################################
 
-#' Plot data with effect size.
+#' Plot data with effect size in base R.
+#'
+#'
+#'
+#' When the effect size plot is below the main plot, (i.e. either \code{ef_size
+#' = "below"} or when there are more than two effect sizes to be drawn),
+#' \link{\code{graphics::layout} is used internally for laying out the two plot
+#' components. This  means that this plot cannot be combined with other plots
+#' using \code{par(mfrow = c...))}, \code{\link{graphics::layout}} or
+#' \code{\link{graphics::split.screen}}.
 #'
 #' @param box Colour of boxplot. If FALSE or NA, boxplot is not drawn
-#' @param box_fill Colour used to fill the bodies of the boxplot. If FALSE or NA, bodies are not filled
-#' @param points Vector of colours used to draw data points, one colour per group. If FALSE or NA, points are not drawn
-#' @param violin What type of violin plot to display. If FALSE, violin plot is not drawn
+#' @param box_fill Colour used to fill the bodies of the boxplot. If FALSE or
+#'   NA, bodies are not filled
+#' @param points Vector of colours used to draw data points, one colour per
+#'   group. If FALSE or NA, points are not drawn
+#' @param violin What type of violin plot to display. If FALSE, violin plot is
+#'   not drawn
 #' @param adj Value used to control violin plot smoothness.
 #'
 #'
@@ -181,10 +192,6 @@ SAKPlot <- function(es,
   .show <- function(what) !isFALSE(what) && !is.null(what)
   .isColour <- function(c) tryCatch(is.matrix(col2rgb(c)), error = function(e) FALSE)
   .colour <- function(what) if (isTRUE(what)) { "black" } else if (.isColour(what)) { what } else { NA }
-
-  # Save current plot parameters and restore on exit
-  def.par <- par(no.readonly = TRUE)
-  on.exit(par(def.par))
 
   data <- es$data
   groups <- es$groups
@@ -255,8 +262,11 @@ SAKPlot <- function(es,
   }
 
 
+  # Save current plot parameters and restore on exit. Note that this doesn't work when effect size is below
+  def.par <- par(mar = mar)
+  on.exit(par(def.par))
+
   ### Prepare plot ###
-  par(mar = mar)
   plot(NULL, xlim = xlim, ylim = ylim, type = "n",
        xaxt = "n", xlab = xlab, ylab = left_ylab, las = las, ...)
   # Label the groups

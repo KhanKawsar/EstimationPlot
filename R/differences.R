@@ -125,6 +125,8 @@ negatePairwiseDiff <- function(pwd) {
 #' This is details
 #'
 #' @param data A data frame...
+#' @param data.col Name or index of the column within \code{data} containing the measurement data.
+#' @param group.col Name or index of the column within \code{data} containing the values to group by.
 #' @param effect.type Type of difference
 #' @param groups Vector of group names. Defaults to all groups in \code{data} in \emph{natural} order.
 #' @param na.rm a logical evaluating to TRUE or FALSE indicating whether NA
@@ -141,7 +143,7 @@ negatePairwiseDiff <- function(pwd) {
 difference <- function(data,
                        effect.type = c("unstandardised", "cohens", "hedges", "paired"),
                        #paired = FALSE, # if true calculate paired mean difference
-                       data.col = 1, group.col = 2, block.col = NULL, id.col,
+                       data.col = 1, group.col, block.col = NULL, id.col,
                        groups = sort(unique(data[[group.col]])),
                        R = 1000,
                        ci.type = "bca",

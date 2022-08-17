@@ -69,10 +69,10 @@ test_that("difference effect types", {
                    id = c(1:n, 1:n))
 
   # Check all effect types
-  expect_error(difference(df, effect.type = "unstandardised"), NA)
-  expect_error(difference(df, effect.type = "cohens"), NA)
-  expect_error(difference(df, effect.type = "hedges"), NA)
-  expect_error(difference(df, effect.type = "paired",id.col = "id"), NA)
+  expect_error(difference(df, effect.type = "unstandardised", group.col = 2), NA)
+  expect_error(difference(df, effect.type = "cohens", group.col = 2), NA)
+  expect_error(difference(df, effect.type = "hedges", group.col = 2), NA)
+  expect_error(difference(df, effect.type = "paired", id.col = "id", group.col = 2), NA)
 
 })
 
@@ -83,10 +83,10 @@ test_that("group factors", {
                    id = c(1:n, 1:n))
 
   # Check all effect types
-  expect_error(difference(df, effect.type = "unstandardised"), NA)
-  expect_error(difference(df, effect.type = "cohens"), NA)
-  expect_error(difference(df, effect.type = "hedges"), NA)
-  expect_error(difference(df, effect.type = "paired",id.col = "id"), NA)
+  expect_error(difference(df, effect.type = "unstandardised", group.col = 2), NA)
+  expect_error(difference(df, effect.type = "cohens", group.col = 2), NA)
+  expect_error(difference(df, effect.type = "hedges", group.col = 2), NA)
+  expect_error(difference(df, effect.type = "paired", id.col = "id", group.col = 2), NA)
 
 })
 
@@ -97,11 +97,11 @@ test_that("difference handles NA", {
   df[c(1, 4, 10, 65), 1] <- NA
 
   # This should throw an error
-  expect_error(difference(df, na.rm = FALSE))
+  expect_error(difference(df, na.rm = FALSE, group.col = 2))
   # This should NOT throw an error
-  expect_error(difference(df, na.rm = TRUE), NA)
+  expect_error(difference(df, na.rm = TRUE, group.col = 2), NA)
   # This should throw an error if one of a pair is missing
-  expect_error(difference(df, effect.type = "paired", id.col = "id", na.rm = TRUE))
+  expect_error(difference(df, effect.type = "paired", id.col = "id", na.rm = TRUE, group.col = 2))
 })
 
 test_that("three groups", {
@@ -116,7 +116,7 @@ test_that("three groups", {
                              ID = rep(1:N, 3)
   )
 
-  d3 <- difference(df)
+  d3 <- difference(df, group.col = 2)
   # This should NOT throw an error
   expect_error(SAKPlot(d3, bar = FALSE, box = FALSE), NA)
 })
@@ -135,7 +135,7 @@ test_that("three groups with factor", {
                              ID = rep(1:N, 3)
   )
 
-  d3 <- difference(df)
+  d3 <- difference(df, group.col = 2)
   # This should NOT throw an error
   expect_error(SAKPlot(d3, bar = FALSE, box = FALSE), NA)
 })
