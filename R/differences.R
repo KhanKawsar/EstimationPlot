@@ -102,12 +102,13 @@ calcPairDiff <- function(data, pair, data.col, group.col, id.col, effect.type, R
   es$ci.type <- ci.type
 
   # Give it a class
-  class(es) <- c("SAKDiff", class(es))
+  class(es) <- c("SAKPWDiff", class(es))
 
   es
 }
 
-# Returns the negation of the specified pairwsie difference (ie a member of es$pairwiseDifferences)
+# Returns the negation of the specified pairwise difference (type SAKPWDiff,
+# usually a member of es$pairwiseDifferences)
 negatePairwiseDiff <- function(pwd) {
   pwd$groups[[1]] <- rev(pwd$groups[[1]])
   pwd$t0 <- -pwd$t0
@@ -191,8 +192,8 @@ SAKDifference <- function(data,
              groups = groups,
              effect.type = effect.type,
              effect.name = effectNames[effect.type])
-  # Return value has type SAKDiffs
-  class(es) <- c("SAKDiffs", class(es))
+  # Return value has type SAKDiff
+  class(es) <- c("SAKDiff", class(es))
 
   # Fill in statistical summary about each of the groups
   gil <- lapply(groups, function(g) {
@@ -228,8 +229,9 @@ SAKDifference <- function(data,
 #' TODO DOCO print bootstrap mean difference, bootstrapped confidence interval (R value, bootstrapped corrections "bca")
 #'
 #' @export
-print.SAKDiffs <- function(es) {
+print.SAKDiff <- function(es) {
   cat("Bootstrapped effect size\n")
+  cat(sprintf("  %s ~ %s\n", es$data.col, es$group.col))
   cat("Groups:\n")
   print(es$groupStatistics)
   cat(sprintf("Pairwise %s effect size:\n", es$effect.type))
@@ -241,7 +243,7 @@ print.SAKDiffs <- function(es) {
 #' TODO DOCO print bootstrap pairwise mean difference, bootstrapped confidence interval (R value, bootstrapped corrections "bca")
 #'
 #' @export
-print.SAKDiff <- function(pw) {
+print.SAKPWDiff <- function(pw) {
   cat(sprintf("  %s - %s: %g, %g%% CI (%s) %g, %g\n",
               pw$groups[1], pw$groups[2],
               pw$t0, pw$bca[1], pw$ci.type, pw$bca[4], pw$bca[5]))

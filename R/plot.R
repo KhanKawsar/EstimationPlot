@@ -17,7 +17,7 @@
 ## points optional in paired TODO
 ## CI optional/separate with mean: to include with mean SD
 #### TODO how to include outliers in diff calc but not in plot?
-# Why aren't print methods working for Kawsar
+#### Allow user control over vipor::offsetX
 
 transparent <-  function(colour, alpha) {
   rgba.val <- col2rgb(colour, TRUE)
@@ -136,11 +136,11 @@ plotEffectSizesBelow <- function(es, violin_width, xlim, mar) {
 #' using \code{par(mfrow = c...))}, \code{\link{graphics::layout}} or
 #' \code{\link{graphics::split.screen}}.
 #'
-#' @param box Colour of boxplot. If FALSE or NA, boxplot is not drawn
+#' @param es Data returned from a call to \link{\code{SAKDifference}}
+#' @param points Colour of individual points. If FALSE, points are not plotted, TRUE plots applies a default colour
+#' @param box Colour of boxplot. If FALSE, boxplot is not drawn
 #' @param box_fill Colour used to fill the bodies of the boxplot. If FALSE or
 #'   NA, bodies are not filled
-#' @param points Vector of colours used to draw data points, one colour per
-#'   group. If FALSE or NA, points are not drawn
 #' @param violin What type of violin plot to display. If FALSE, violin plot is
 #'   not drawn
 #' @param adj Value used to control violin plot smoothness.
@@ -149,7 +149,7 @@ plotEffectSizesBelow <- function(es, violin_width, xlim, mar) {
 #' @export
 SAKPlot <- function(es,
 
-                    points = transparent(RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"), .4),
+                    points = TRUE,
 
                     violin = c("left-half", "right-half", "full"),
                     violin_border = RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"),
@@ -158,10 +158,10 @@ SAKPlot <- function(es,
                     violin_width = 0.35,
                     violin_trunc_at = 0.05,
 
-                    box = "black",
+                    box = FALSE,
                     box_fill = "lightgrey",
 
-                    bar = RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"),
+                    bar = FALSE,
                     bar_fill = transparent(RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"), .8),
 
                     ef_size = c(TRUE, "right", "below"), # if !FALSE, plot effect size
@@ -182,8 +182,8 @@ SAKPlot <- function(es,
                     las = 1, ...
 ) {
   # Check and process input parameters
-  if (!is(es, "SAKDiffs"))
-    stop("data must be a SAKDiffs object")
+  if (!is(es, "SAKDiff"))
+    stop("data must be a SAKDiff object")
   if (!isFALSE(violin))
     violin <- match.arg(violin)
   error_bars <- match.arg(error_bars)
@@ -196,9 +196,14 @@ SAKPlot <- function(es,
       ef_size <- match.arg(ef_size)
   }
 
+  # We allow TRUE/FALSE or colours to be specified for many values. TRUE is equivalent to a default colour
+  .boolToDef <- function(arg, def) if (isTRUE(arg)) { def } else { arg }
+  box <- .boolToDef(box, "black")
+  bar <- .boolToDef(bar, RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"))
+
   .show <- function(what) !isFALSE(what) && !is.null(what)
   .isColour <- function(c) tryCatch(is.matrix(col2rgb(c)), error = function(e) FALSE)
-  .colour <- function(what) if (isTRUE(what)) { "black" } else if (.isColour(what)) { what } else { NA }
+  .colour <- function(what) if (.isColour(what)) { what } else { NA }
 
   data <- es$data
   groups <- es$groups
@@ -319,11 +324,16 @@ SAKPlot <- function(es,
 
   # Scatter plot of data points
   if (.show(points)) {
-    method <- ifelse(.show(paired), "overplot", "jitter")
-    stripchart(f, data = data[data[[es$group.col]] %in% groups, ], method = method,
-               pch = 19, vertical = TRUE,
-               col = .colour(points),
-               add = TRUE)
+    palette <- transparent(RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"), .4)
+    points <- .boolToDef(points, palette[as.numeric(data$.group.as.factor)])
+
+    x <- as.numeric(data$.group.as.factor)
+    # If not showing paired...
+    if (!.show(paired)) {
+      # Scatter the points
+    x <- x + vipor::offsetX(data[[data.col]], as.numeric(data$.group.as.factor), varwidth = TRUE, adjust = 1)
+    }
+    points(x, data[[es$data.col]], pch = 19, col = .colour(points))
   }
 
   # Draw lines between paired points
