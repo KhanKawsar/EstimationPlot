@@ -172,151 +172,151 @@ test_that("three groups with factor", {
 #
 #   #par(mfrow = c(2, 4))
 #   #a)
-#   SAKPlot(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = FALSE, box_fill = FALSE,
-#          central_tendency = "median", error_bars = "CI", ef_size = FALSE,
+#   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = FALSE, box.fill = FALSE,
+#          central.tendency = "median", error.bars = "CI", ef.size = FALSE,
 #          points = transparent(c("red", "blue"), .5))
 #
 #   #b)
-#   SAKPlot(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = "white", box_fill = "white",
-#          central_tendency = "median", error_bars = "SD", ef_size = FALSE,
+#   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "white", box.fill = "white",
+#          central.tendency = "median", error.bars = "SD", ef.size = FALSE,
 #          points = transparent(c("red", "blue"), .5),)
 #
 #   #c)
-#   SAKPlot(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = "white", box_fill = "white",
-#          central_tendency = "median", error_bars = "SE", ef_size = FALSE,
+#   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "white", box.fill = "white",
+#          central.tendency = "median", error.bars = "SE", ef.size = FALSE,
 #          points = transparent(c("red", "blue"), .5),)
 #
 #   #d)
-#   SAKPlot(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = "white", box_fill = "white",
-#          central_tendency = "mean", error_bars = "CI", ef_size = FALSE,
+#   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "white", box.fill = "white",
+#          central.tendency = "mean", error.bars = "CI", ef.size = FALSE,
 #          points = transparent(c("red", "blue"), .5),)
 #
 #   #e)
-#   SAKPlot(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = "white", box_fill = "white",
-#          central_tendency = "mean", error_bars = "SD", ef_size = FALSE,
+#   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "white", box.fill = "white",
+#          central.tendency = "mean", error.bars = "SD", ef.size = FALSE,
 #          points = transparent(c("red", "blue"), .5),)
 #
 #   #f)
-#   SAKPlot(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = "white", box_fill = "white",
-#          central_tendency = "mean", error_bars = "SE", ef_size = FALSE,
+#   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "white", box.fill = "white",
+#          central.tendency = "mean", error.bars = "SE", ef.size = FALSE,
 #          points = transparent(c("red", "blue"), .5),)
 #
 #   #g)
-#   SAKPlot(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = transparent(c("red", "blue"), .5),
-#          box_fill = "white",error_bars = "CI",
-#          central_tendency = "mean", mean = NA, ef_size = FALSE,
+#   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = transparent(c("red", "blue"), .5),
+#          box.fill = "white",error.bars = "CI",
+#          central.tendency = "mean", mean = NA, ef.size = FALSE,
 #          points = FALSE)
 #
 #   #h)
-#   SAKPlot(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = transparent(c("red", "blue"), .5),
-#          box_fill = "white",error_bars = "CI",
-#          central_tendency = "mean", mean = NA, ef_size = FALSE,
+#   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = transparent(c("red", "blue"), .5),
+#          box.fill = "white",error.bars = "CI",
+#          central.tendency = "mean", mean = NA, ef.size = FALSE,
 #          points = transparent(c("red", "blue"), .5))
 #
 #   #i)
-#   SAKPlot(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = transparent(c("red", "blue"), .5),
-#          box_fill = transparent(c("red", "blue"), .7),error_bars = "CI",
-#          central_tendency = "mean", mean = NA, ef_size = FALSE,
+#   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = transparent(c("red", "blue"), .5),
+#          box.fill = transparent(c("red", "blue"), .7),error.bars = "CI",
+#          central.tendency = "mean", mean = NA, ef.size = FALSE,
 #          points = FALSE)
 #
 #   #j)
-#   SAKPlot(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = transparent(c("red", "blue"), .5),
-#          box_fill = transparent(c("red", "blue"), .7),error_bars = "CI",
-#          central_tendency = "mean", mean = NA, ef_size = FALSE,
+#   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = transparent(c("red", "blue"), .5),
+#          box.fill = transparent(c("red", "blue"), .7),error.bars = "CI",
+#          central.tendency = "mean", mean = NA, ef.size = FALSE,
 #          points = transparent(c("red", "blue"), .5))
 #
 #
 #   #k)
-#   SAKPlot(es, bar = FALSE, bar_fill = FALSE, violin = "left-half",
+#   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = "left-half",
 #          violin_border = transparent(c("red", "blue"), .6),
 #          violin_fill = transparent(c("red", "blue"), .6),
 #          box = "white",
-#          box_fill = "white",
-#          error_bars = "CI",
-#          central_tendency = "mean", mean = NA, ef_size = FALSE,
+#          box.fill = "white",
+#          error.bars = "CI",
+#          central.tendency = "mean", mean = NA, ef.size = FALSE,
 #          points = transparent(c("red", "blue"), .5))
 #
 #   #l)
-#   SAKPlot(es, bar = FALSE, bar_fill = FALSE, violin = "left-half",
+#   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = "left-half",
 #          violin_border = transparent(c("red", "blue"), .6),
 #          violin_fill = transparent(c("red", "blue"), .6),
 #          box = transparent(c("red", "blue"), .5),
-#          box_fill = transparent(c("red", "blue"), .7),error_bars = "CI",
-#          central_tendency = "mean", mean = NA, ef_size = FALSE,
+#          box.fill = transparent(c("red", "blue"), .7),error.bars = "CI",
+#          central.tendency = "mean", mean = NA, ef.size = FALSE,
 #          points = FALSE)
 #
 #   ##m)
-#   SAKPlot(es, bar = FALSE, bar_fill = FALSE, violin = "left-half",
+#   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = "left-half",
 #          violin_border = transparent(c("red", "blue"), .6),
 #          violin_fill = transparent(c("red", "blue"), .6),
 #          box = transparent(c("red", "blue"), .5),
-#          box_fill = transparent(c("red", "blue"), .7),error_bars = "CI",
-#          central_tendency = "mean", mean = NA, ef_size = FALSE,
+#          box.fill = transparent(c("red", "blue"), .7),error.bars = "CI",
+#          central.tendency = "mean", mean = NA, ef.size = FALSE,
 #          points = transparent(c("red", "blue"), .5))
 #
 #   #n)
-#   SAKPlot(es, bar = FALSE, bar_fill = FALSE, violin = "right-half",
+#   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = "right-half",
 #          violin_border = transparent(c("red", "blue"), .6),
 #          violin_fill = transparent(c("red", "blue"), .6),
 #          box = "white",
-#          box_fill = "white",
-#          error_bars = "CI",
-#          central_tendency = "mean", mean = NA, ef_size = FALSE,
+#          box.fill = "white",
+#          error.bars = "CI",
+#          central.tendency = "mean", mean = NA, ef.size = FALSE,
 #          points = transparent(c("red", "blue"), .5))
 #   #o)
-#   SAKPlot(es, bar = FALSE, bar_fill = FALSE, violin = "right-half",
+#   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = "right-half",
 #          violin_border = transparent(c("red", "blue"), .6),
 #          violin_fill = transparent(c("red", "blue"), .6),
 #          box = transparent(c("red", "blue"), .5),
-#          box_fill = transparent(c("red", "blue"), .7),error_bars = "CI",
-#          central_tendency = "mean", mean = NA, ef_size = FALSE,
+#          box.fill = transparent(c("red", "blue"), .7),error.bars = "CI",
+#          central.tendency = "mean", mean = NA, ef.size = FALSE,
 #          points = FALSE)
 #
 #   #p)
-#   SAKPlot(es, bar = FALSE, bar_fill = FALSE, violin = "right-half",
+#   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = "right-half",
 #          violin_border = transparent(c("red", "blue"), .6),
 #          violin_fill = transparent(c("red", "blue"), .6),
 #          box = transparent(c("red", "blue"), .5),
-#          box_fill = transparent(c("red", "blue"), .7),error_bars = "CI",
-#          central_tendency = "mean", mean = NA, ef_size = FALSE,
+#          box.fill = transparent(c("red", "blue"), .7),error.bars = "CI",
+#          central.tendency = "mean", mean = NA, ef.size = FALSE,
 #          points = transparent(c("red", "blue"), .5))
 #
 #   #q)
-#   SAKPlot(es, bar = FALSE, bar_fill = FALSE, violin = "full",
+#   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = "full",
 #          violin_border = transparent(c("red", "blue"), .6),
 #          violin_fill = transparent(c("red", "blue"), .6),
 #          box = transparent(c("red", "blue"), .5),
-#          box_fill = transparent(c("red", "blue"), .7),error_bars = "CI",
-#          central_tendency = "mean", mean = NA, ef_size = FALSE,
+#          box.fill = transparent(c("red", "blue"), .7),error.bars = "CI",
+#          central.tendency = "mean", mean = NA, ef.size = FALSE,
 #          points = FALSE)
 #
 #   #r)
-#   SAKPlot(es2, bar = FALSE, bar_fill = FALSE, violin = "full",
+#   SAKPlot(es2, bar = FALSE, bar.fill = FALSE, violin = "full",
 #          violin_border = transparent(c("red", "blue"), .4),
 #          violin_fill = transparent(c("red", "blue"), .8),
 #          box = transparent(c("grey10"), .1),
-#          box_fill = transparent(c("red", "blue"), .7),error_bars = "CI",
-#          central_tendency = "mean", mean = NA, ef_size = TRUE,
+#          box.fill = transparent(c("red", "blue"), .7),error.bars = "CI",
+#          central.tendency = "mean", mean = NA, ef.size = TRUE,
 #          points = transparent(c("red", "blue"), .5), paired = TRUE)
 #
 #   #s)
-#   SAKPlot(es, bar = FALSE, bar_fill = FALSE, violin = "full",
+#   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = "full",
 #          violin_border = transparent(c("red", "blue"), .6),
 #          violin_fill = transparent(c("red", "blue"), .6),
 #          box = "white",
-#          box_fill = "white",
-#          error_bars = "CI",
-#          central_tendency = "mean", mean = NA, ef_size = FALSE,
+#          box.fill = "white",
+#          error.bars = "CI",
+#          central.tendency = "mean", mean = NA, ef.size = FALSE,
 #          points = transparent(c("red", "blue"), .5))
 #
 #   #t)
-#   SAKPlot(es, bar = FALSE, bar_fill = FALSE, violin = "full",
+#   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = "full",
 #          violin_border = transparent(c("red", "blue"), .6),
 #          violin_fill = transparent(c("red", "blue"), .6),
 #          box = "white",
-#          box_fill = "white",
-#          error_bars = "CI",
-#          central_tendency = "mean", mean = NA, ef_size = FALSE,
+#          box.fill = "white",
+#          error.bars = "CI",
+#          central.tendency = "mean", mean = NA, ef.size = FALSE,
 #          points = FALSE)
 #
 #   expect_equal(1, 1)
@@ -324,48 +324,48 @@ test_that("three groups with factor", {
 
 test_that("box FALSE works", {
   es <- makeData1()
-  SAKPlot(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = FALSE, box_fill = FALSE,
-         central_tendency = "median", error_bars = "CI", ef_size = FALSE,
+  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = FALSE, box.fill = FALSE,
+         central.tendency = "median", error.bars = "CI", ef.size = FALSE,
          points = transparent(c("red", "blue"), .5))
   expect_equal(1, 1)
 })
 
 test_that("central tendency FALSE works", {
   es <- makeData1()
-  SAKPlot(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = "red", box_fill = "blue",
-         central_tendency = FALSE, error_bars = "CI", ef_size = FALSE,
+  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "red", box.fill = "blue",
+         central.tendency = FALSE, error.bars = "CI", ef.size = FALSE,
          points = transparent(c("red", "blue"), .5))
   expect_equal(1, 1)
 })
 
 test_that("paired works", {
   es <- makePairedData()
-  SAKPlot(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = "red", box_fill = "blue",
-         central_tendency = FALSE, error_bars = "CI", ef_size = FALSE,
+  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "red", box.fill = "blue",
+         central.tendency = FALSE, error.bars = "CI", ef.size = FALSE,
          points = transparent(c("red", "blue"), .5))
   expect_equal(1, 1)
 })
 
 test_that("paired (reversed groups) works", {
   es <- makePairedData(reverseGroups = TRUE)
-  SAKPlot(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = "red", box_fill = "blue",
-         central_tendency = FALSE, error_bars = "CI", ef_size = FALSE,
+  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "red", box.fill = "blue",
+         central.tendency = FALSE, error.bars = "CI", ef.size = FALSE,
          points = transparent(c("red", "blue"), .5))
   expect_equal(1, 1)
 })
 
 test_that("paired with NAs works", {
   es <- makePairedData(addSomeNAs = TRUE)
-  SAKPlot(es, bar = FALSE, bar_fill = FALSE, violin = FALSE, box = "red", box_fill = "blue",
-         central_tendency = FALSE, error_bars = "CI", ef_size = FALSE,
+  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "red", box.fill = "blue",
+         central.tendency = FALSE, error.bars = "CI", ef.size = FALSE,
          points = transparent(c("red", "blue"), .5))
   expect_equal(1, 1)
 })
 
 test_that("bar charts work", {
   es <- makeData1()
-  SAKPlot(es, bar = TRUE, violin = FALSE, box = FALSE, box_fill = "blue",
-         central_tendency = FALSE, error_bars = "CI", ef_size = FALSE,
+  SAKPlot(es, bar = TRUE, violin = FALSE, box = FALSE, box.fill = "blue",
+         central.tendency = FALSE, error.bars = "CI", ef.size = FALSE,
          points = FALSE)
   expect_equal(1, 1)
 })

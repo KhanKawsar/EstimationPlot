@@ -4,12 +4,12 @@
 CI <- function(x){
   alpha <- 0.95
   m <- mean(x)
-  sd <- sd(x)
+  sd <- stats::sd(x)
   n <- length(x)
   se <- sd/sqrt(n)
   df <- n - 1
   alpha <- 1 - alpha
-  t <- qt(p = alpha/2, df = df, lower.tail = F)
+  t <- stats::qt(p = alpha/2, df = df, lower.tail = F)
   me <- t * se
   c(m - me, m + me)
 }
@@ -22,10 +22,10 @@ stMeanDiff <- function(x1, x2) { mean(x2) - mean(x1) }
 # Cohens d (group 2 - group 1)
 stCohensD <- function(x1, x2){
   m1 <- mean(x1)
-  SD1 <- sd(x1)
+  SD1 <- stats::sd(x1)
   N1 <- length(x1)
   m2 <- mean(x2)
-  SD2 <- sd(x2)
+  SD2 <- stats::sd(x2)
   N2 <- length(x2)
   x <- sqrt((N1 - 1) * (SD1 * SD1) * (N2 - 1) * (SD2 * SD2) / (N1 + N2 - 2))
   (m2 - m1) / x
@@ -34,10 +34,10 @@ stCohensD <- function(x1, x2){
 # Hedges d (group 2 - group 1)
 stHedgesD <- function(x1, x2){
   m1 <- mean(x1)
-  SD1 <- sd(x1)
+  SD1 <- stats::sd(x1)
   N1 <- length(x1)
   m2 <- mean(x2)
-  SD2 <- sd(x2)
+  SD2 <- stats::sd(x2)
   N2 <- length(x2)
   x <- sqrt((N1 - 1) * (SD1 * SD1) * (N2 - 1) * (SD2 * SD2) / (N1 + N2 - 2))
   d = (m2 - m1) / x
@@ -108,7 +108,7 @@ calcPairDiff <- function(data, pair, data.col, group.col, id.col, effect.type, R
 }
 
 # Returns the negation of the specified pairwise difference (type SAKPWDiff,
-# usually a member of es$pairwiseDifferences)
+# usually a member of es$pairwise.differences)
 negatePairwiseDiff <- function(pwd) {
   pwd$groups[[1]] <- rev(pwd$groups[[1]])
   pwd$t0 <- -pwd$t0
@@ -126,19 +126,48 @@ negatePairwiseDiff <- function(pwd) {
 #' This is details
 #'
 #' @param data A data frame...
-#' @param data.col Name or index of the column within \code{data} containing the measurement data.
-#' @param group.col Name or index of the column within \code{data} containing the values to group by.
+#' @param data.col Name or index of the column within \code{data} containing the
+#'   measurement data.
+#' @param group.col Name or index of the column within \code{data} containing
+#'   the values to group by.
 #' @param effect.type Type of difference
-#' @param groups Vector of group names. Defaults to all groups in \code{data} in \emph{natural} order.
+#' @param groups Vector of group names. Defaults to all groups in \code{data} in
+#'   \emph{natural} order.
+#' @param contrast TODO
+#' @param effect.type Type of group difference to be calculated. Possible types
+#'   are: \code{unstandardised}, difference in group means; \code{cohens},
+#'   Cohen's d; \code{hedges}, Hedge's g, \code{pairwise}, pairwise differences.
+#' @param R The number of bootstrap replicates.
+#' @param ci.type A single character  string representing the type of bootstrap
+#'   interval required. See the \code{type} parameter to the
+#'   \code{\link{boot::boot.ci}} function for details.
 #' @param na.rm a logical evaluating to TRUE or FALSE indicating whether NA
 #'   values should be stripped before the computation proceeds. If NA values are
 #'   stripped and `effect.type` is "paired", all rows (observations) for IDs
 #'   with missing data are stripped.
 #'
-#' @return List containing: bootstrapped mean difference + confidence interval
-#'   of mean difference + individual bootstrapped difference + CI of group 1 +
-#'   CI of group 2 + mean of group 1 + mean of group 2 + median of group 1 +
-#'   median of group 2 + raw data
+#' @return List containing:
+#'
+#' \itemize{
+#'   \item{groups}{Vector of group names}
+#'   \item{group.statistics}{Matrix with a row for each group, columns are group mean, median, standard deviation, standard error of the mean, lower and upper 95% confidence intervals of the mean}
+#'   \item{effect.type}{Value of \code{effect.type} argument}
+#'   \item{effect.name}{Pretty version of \code{effect.type}}
+#'   \item{data.col}{Value of \code{data.col} argument}
+#'   \item{data.col.name}{Name of the \code{data.col} column}
+#'   \item{group.col}{Value of \code{group.col} argument}
+#'   \item{group.col.name}{Name of the \code{group.col} column}
+#'   \item{data}{bootstrapped mean difference}
+#'   \item{data}{the input data}
+#'   \item{call}{how this function was called}
+#' }
+#'
+#'
+#' @references
+#'
+#' Lakens, D. (2013). Calculating and reporting effect sizes to facilitate
+#' cumulative science: a practical primer for t-tests and ANOVAs. Frontiers in
+#' Psychology, 4. doi:10.3389/fpsyg.2013.00863
 #'
 #' @export
 SAKDifference <- function(data,
@@ -200,9 +229,9 @@ SAKDifference <- function(data,
     grpVals <- data[[data.col]][data[[group.col]] == g]
     ci <- CI(grpVals)
     c(mean = mean(grpVals),
-      median = median(grpVals),
-      sd = sd(grpVals),
-      se = sd(grpVals) / sqrt(length(grpVals)),
+      median = stats::median(grpVals),
+      sd = stats::sd(grpVals),
+      se = stats::sd(grpVals) / sqrt(length(grpVals)),
       # CI function here (maybe no need to print to confuse with bootstrap CI, but need to be part of es for plotting CI)
       CI.lower = ci[1],
       CI.upper = ci[2]
@@ -210,11 +239,11 @@ SAKDifference <- function(data,
   })
   df <- do.call(rbind, gil)
   rownames(df) <- groups
-  es$groupStatistics <- df
+  es$group.statistics <- df
 
   ### We will calculate effect size of all pairs (maybe rethink this later)
   # For each pair of groups... (convert groups to character to handle groups that are factors)
-  es$pairwiseDifferences <- apply(combn(as.character(groups), 2), 2, function(pair) {
+  es$pairwise.differences <- apply(utils::combn(as.character(groups), 2), 2, function(pair) {
     pair <- rev(pair)
     pairData <- data[as.character(data[[group.col]]) %in% pair, ]
     calcPairDiff(pairData, pair, data.col, group.col, id.col, effect.type, R, ci.type)
@@ -226,26 +255,38 @@ SAKDifference <- function(data,
 #######################################################################################
 # Print methods
 
-#' TODO DOCO print bootstrap mean difference, bootstrapped confidence interval (R value, bootstrapped corrections "bca")
+#' Print a summary of a SAK Difference object
+#'
+#' This is a method for the function \code{print()} for objects of class
+#' "\code{SAKDiff}" created by a call to \link{\code{SAKDifference}}.
+#'
+#' @param x An object of class \link{\code{SAKDifference}}.
+#' @param ... Ignored
 #'
 #' @export
-print.SAKDiff <- function(es) {
+print.SAKDiff <- function(x, ...) {
   cat("Bootstrapped effect size\n")
-  cat(sprintf("  %s ~ %s\n", es$data.col, es$group.col))
+  cat(sprintf("  %s ~ %s\n", x$data.col, x$group.col))
   cat("Groups:\n")
-  print(es$groupStatistics)
-  cat(sprintf("Pairwise %s effect size:\n", es$effect.type))
-  for (i in seq_len(length(es$pairwiseDifferences))) {
-    print(es$pairwiseDifferences[[i]])
+  print(x$group.statistics)
+  cat(sprintf("Pairwise %s effect size:\n", x$effect.type))
+  for (i in seq_len(length(x$pairwise.differences))) {
+    print(x$pairwise.differences[[i]])
   }
 }
 
-#' TODO DOCO print bootstrap pairwise mean difference, bootstrapped confidence interval (R value, bootstrapped corrections "bca")
+#' Print a summary of a SAK pairwise difference object
 #'
+#' This is a method for the function \code{print()} for objects of class
+#' "\code{SAKPWDiff}", which is a row in the \code{pairwise.differences} matrix
+#' belonging to an object returned by a call to \link{\code{SAKDifference}}.
+#'
+#' @param x An object of class \link{\code{SAKPWDiff}}.
+#' @param ... Ignored
 #' @export
-print.SAKPWDiff <- function(pw) {
+print.SAKPWDiff <- function(x, ...) {
   cat(sprintf("  %s - %s: %g, %g%% CI (%s) %g, %g\n",
-              pw$groups[1], pw$groups[2],
-              pw$t0, pw$bca[1], pw$ci.type, pw$bca[4], pw$bca[5]))
+              x$groups[1], x$groups[2],
+              x$t0, x$bca[1], x$ci.type, x$bca[4], x$bca[5]))
 }
 

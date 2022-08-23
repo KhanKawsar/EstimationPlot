@@ -6,53 +6,77 @@
 \usage{
 SAKPlot(
   es,
-  points = transparent(RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"),
-    0.4),
+  points = TRUE,
+  points.method = c("quasirandom", "pseudorandom", "smiley", "maxout", "frowney",
+    "minout", "tukey", "tukeyDense", "jitter", "overplot"),
   violin = c("left-half", "right-half", "full"),
-  violin_border = RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"),
-  violin_fill = transparent(RColorBrewer::brewer.pal(max(3, length(es$groups)),
+  violin.border = RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"),
+  violin.fill = transparent(RColorBrewer::brewer.pal(max(3, length(es$groups)),
     "Set2"), 0.6),
-  violin_adj = 1.5,
-  violin_width = 0.35,
-  violin_trunc_at = 0.05,
-  box = "black",
-  box_fill = "lightgrey",
-  bar = RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"),
-  bar_fill = transparent(RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"),
+  violin.adj = 1.5,
+  violin.width = 0.35,
+  violin.trunc.at = 0.05,
+  box = FALSE,
+  box.fill = "lightgrey",
+  box.notch = FALSE,
+  bar = FALSE,
+  bar.fill = transparent(RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"),
     0.8),
-  ef_size = c(TRUE, "right", "below"),
-  ef_size_density = TRUE,
+  ef.size = c(TRUE, "right", "below"),
+  ef.size.density = TRUE,
   paired = es$effect.type == "paired",
-  central_tendency = c("mean", "median"),
-  error_bars = c("CI", "SD", "SE"),
+  central.tendency = c("mean", "median"),
+  error.bars = c("CI", "SD", "SE"),
   mean = "grey20",
-  mar = c(5, 4, 4, 4) + 0.1,
   xlab = "",
-  left_ylab = es$data.col.name,
-  right_ylab = "",
-  bottom_ylab = "",
-  col = c("col1", "col2", "col3"),
-  opacity = 0.6,
-  points_col = c("col1", "col2", "col3"),
-  points_opacity = 0.4,
-  las = 1,
+  left.ylab = es$data.col.name,
+  right.ylab = "",
   ...
 )
 }
 \arguments{
-\item{points}{Vector of colours used to draw data points, one colour per
-group. If FALSE or NA, points are not drawn}
+\item{es}{Data returned from a call to \link{\code{SAKDifference}}}
+
+\item{points}{Colour of individual points. If FALSE, points are not plotted,
+TRUE plots applies a default colour. May be a vector of colours. If length
+1, all points are drawn with the specified colour. If length is the number
+of groups, points in each group are drawn with the appropriate colour.
+Otherwise, \code{points} should be a vector of colours with a value for
+each data point.}
+
+\item{points.method}{Method used to avoid overplotting points. Use
+\code{overplot} to overplot points and \code{jitter} to add random noise to
+each x-value. See \link{\code{vipor::offsetX}} for remaining methods.}
 
 \item{violin}{What type of violin plot to display. If FALSE, violin plot is
-not drawn}
+not drawn.}
 
-\item{box}{Colour of boxplot. If FALSE or NA, boxplot is not drawn}
+\item{violin.border}{Colours of violin borders.}
 
-\item{box_fill}{Colour used to fill the bodies of the boxplot. If FALSE or
-NA, bodies are not filled}
+\item{violin.fill}{Colour used to fill violins.}
 
-\item{adj}{Value used to control violin plot smoothness.}
+\item{violin.adj}{Value used to control violin plot smoothness by adjusting
+the kernel density bandwidth. Higher values produce a smoother plot.}
+
+\item{violin.width}{Width of maximum violin horizontal extents, as a
+proportion of the distance between groups.}
+
+\item{violin.trunc.at}{Numeric value that specifies what vertical proportion
+of the violin is truncated.}
+
+\item{box}{If not FALSE, draw a box-and-whisker plot of the grouped values.
+Value may be a colour, in which case the box borders are plotted with the
+colour(s). See \link{\code{graphics::boxplot}}.}
+
+\item{box.fill}{Colour used to fill the bodies of the box-and-whisker plot.
+If FALSE or NA, bodies are not filled}
+
+\item{box.notch}{If TRUE, draws notches in the sides of the boxes. See
+\link{\code{graphics::boxplot.stats}} for the calculations used.}
 }
 \description{
-
+.
+}
+\seealso{
+\link{\code{vipor::offsetX}},
 }

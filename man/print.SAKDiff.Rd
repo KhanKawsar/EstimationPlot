@@ -2,10 +2,16 @@
 % Please edit documentation in R/differences.R
 \name{print.SAKDiff}
 \alias{print.SAKDiff}
-\title{TODO DOCO print bootstrap pairwise mean difference, bootstrapped confidence interval (R value, bootstrapped corrections "bca")}
+\title{Print a summary of a SAK Difference object}
 \usage{
-\method{print}{SAKDiff}(pw)
+\method{print}{SAKDiff}(x, ...)
+}
+\arguments{
+\item{x}{An object of class \link{\code{SAKDifference}}.}
+
+\item{...}{Ignored}
 }
 \description{
-TODO DOCO print bootstrap pairwise mean difference, bootstrapped confidence interval (R value, bootstrapped corrections "bca")
+This is a method for the function \code{print()} for objects of class
+"\code{SAKDiff}" created by a call to \link{\code{SAKDifference}}.
 }

@@ -22,13 +22,26 @@ SAKDifference(
 \arguments{
 \item{data}{A data frame...}
 
-\item{data.col}{Name or index of the column within \code{data} containing the measurement data.}
+\item{data.col}{Name or index of the column within \code{data} containing the
+measurement data.}
 
-\item{group.col}{Name or index of the column within \code{data} containing the values to group by.}
+\item{group.col}{Name or index of the column within \code{data} containing
+the values to group by.}
 
-\item{groups}{Vector of group names. Defaults to all groups in \code{data} in \emph{natural} order.}
+\item{groups}{Vector of group names. Defaults to all groups in \code{data} in
+\emph{natural} order.}
 
-\item{effect.type}{Type of difference}
+\item{contrast}{TODO}
+
+\item{effect.type}{Type of group difference to be calculated. Possible types
+are: \code{unstandardised}, difference in group means; \code{cohens},
+Cohen's d; \code{hedges}, Hedge's g, \code{pairwise}, pairwise differences.}
+
+\item{R}{The number of bootstrap replicates.}
+
+\item{ci.type}{A single character  string representing the type of bootstrap
+interval required. See the \code{type} parameter to the
+\code{\link{boot::boot.ci}} function for details.}
 
 \item{na.rm}{a logical evaluating to TRUE or FALSE indicating whether NA
 values should be stripped before the computation proceeds. If NA values are
@@ -36,11 +49,13 @@ stripped and `effect.type` is "paired", all rows (observations) for IDs
 with missing data are stripped.}
 }
 \value{
-List containing: bootstrapped mean difference + confidence interval
-  of mean difference + individual bootstrapped difference + CI of group 1 +
-  CI of group 2 + mean of group 1 + mean of group 2 + median of group 1 +
-  median of group 2 + raw data
+
 }
 \description{
 This is details
+}
+\references{
+Lakens, D. (2013). Calculating and reporting effect sizes to facilitate
+cumulative science: a practical primer for t-tests and ANOVAs. Frontiers in
+Psychology, 4. doi:10.3389/fpsyg.2013.00863
 }
