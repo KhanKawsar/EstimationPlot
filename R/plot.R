@@ -6,14 +6,12 @@
 #### Multiple groups - specify pairings, YES TODO
 #### Scale of cohens d, hedges - scale to look good, perhaps 1/3 of y range, limit axis extents TODO
 #### NO Rename plot function to plot.SAKPlot? Maybe easier to use, harder to locate documentation
-#### Bar jitter -- done
-## magic adjacent/at ?
-####  New options, box_at, box_width, violin_at, points_at, scatter points cex, colour of points, add stripplot methods arg
+## magic adjacent/at ? See google raincloud plot for examples
+####  New options, box_at, box_width, violin_at, points_at, scatter points cex
 ## effect size density optional (FALSE) TODO implement ef.size.density
 ## points optional in paired TODO
 ## CI optional/separate with mean: to include with mean SD
 #### TODO how to include outliers in diff calc but not in plot?
-#### Allow user control over vipor::offsetX
 
 transparent <-  function(colour, alpha) {
   rgba.val <- grDevices::col2rgb(colour, TRUE)
@@ -56,37 +54,47 @@ plotEffectSize <- function(pwes, xo, yo, group1y, violin.width, mapYFn, xpd = FA
            col = "grey20", lty = 1, lwd = 2.0, xpd = xpd)
 }
 
+# Plot effect size to the right of the main plot. Only useful when showing a single effect size
 plotEffectSizesRight <- function(es, violin.width, right.ylab) {
-  # Show it to the right
   pwes <- es$pairwise.differences[[1]]
   y <- es$group.statistics[1, 1]
-  plotEffectSize(pwes, 3, 0, y, violin.width, identity)
+  y2 <- es$group.statistics[2, 1]
 
-  # Horizontal lines from group means, only meaningful for unstandardised differences
-  if (es$effect.type == "unstandardised") {
-    graphics::segments(1, y, 5, y, col = "grey50", lty = 1, lwd = 1.5)
-    graphics::segments(2, 0 + y + pwes$t0, 5, y + pwes$t0, col = "grey50", lty = 1, lwd = 1.5)
+  if (es$effect.type %in% c("unstandardised", "paired")) {
+    esRange <- range(c(0, pwes$t))
+    plotEffectSize(pwes, 3, 0, y, violin.width, identity)
+  } else {
+    cat("===========================================================\n")
+    cat("TODO position and scale standardised effect size plots TODO\n")
+    cat("===========================================================\n")
+    esRange <- c(-3, 3)
+    plotEffectSize(pwes, 3, 0, es$group.statistics[2, 1], violin.width, identity)
   }
 
+  # Horizontal lines from group means, only meaningful for unstandardised differences
+  graphics::segments(1, y, 5, y, col = "grey50", lty = 1, lwd = 1.5)
+  graphics::segments(2, 0 + y + pwes$t0, 5, y + pwes$t0, col = "grey50", lty = 1, lwd = 1.5)
+  #graphics::segments(2, y2, 5, y2, col = "grey50", lty = 1, lwd = 1.5)
+
   # Axis labels on right-hand
-  graphics::axis(4, at = y + pretty(range(c(0, pwes$t))),
-       labels = pretty(range(c(0, pwes$t))), las = 1)
+  graphics::axis(4, at = y + pretty(esRange),
+       labels = pretty(esRange), las = 1)
 
   # Add x-axis label for effect size
   graphics::mtext(sprintf("%s\nminus\n%s", es$groups[2], es$groups[1]), at = 3, side = 1, line = 3)
+  graphics::axis(1, at = 3, labels = FALSE) # X-axis tick mark
 
   # Optionally label the right y-axis
-  graphics::axis(1, at = 3, labels = FALSE)
   if (!isFALSE(right.ylab)) {
-    graphics::mtext(es$effect.name,  side = 4, line = 2.5)
+    graphics::mtext(es$effect.name, side = 4, line = 2.5)
   }
 }
 
+# Plot effect size below the main plot. Assumes that bottom margin is large
+# enough to accomodate the effect size plot
 plotEffectSizesBelow <- function(es, violin.width, xlim) { #, mar) {
   groups <- es$groups
   nGroups <- length(groups)
-
-  if (nGroups > 3) stop("Sorry, unable to plot effect sizes for more than 3 groups")
 
   # Find and return the pairwise difference for the specified 2 groups
   pwDiff <- function(g1, g2) {
@@ -141,9 +149,10 @@ plotEffectSizesBelow <- function(es, violin.width, xlim) { #, mar) {
 
 #' Plot grouped data and effect size in base R.
 #'
-#' .
+#' Plot grouped data and effect size in base R, with control over a large range
+#' of possible display formats and options.
 #'
-#' @param es Data returned from a call to \link{\code{SAKDifference}}
+#' @param es Data returned from a call to \code{\link{SAKDifference}}
 #' @param points Colour of individual points. If FALSE, points are not plotted,
 #'   TRUE plots applies a default colour. May be a vector of colours. If length
 #'   1, all points are drawn with the specified colour. If length is the number
@@ -151,8 +160,13 @@ plotEffectSizesBelow <- function(es, violin.width, xlim) { #, mar) {
 #'   Otherwise, \code{points} should be a vector of colours with a value for
 #'   each data point.
 #' @param points.method Method used to avoid overplotting points. Use
-#'   \code{overplot} to overplot points and \code{jitter} to add random noise to
-#'   each x-value. See \link{\code{vipor::offsetX}} for remaining methods.
+#'   \code{"overplot"} to overplot points and \code{"jitter"} to add random
+#'   noise to each x-value. See \code{\link{vipor::offsetX}} for remaining
+#'   methods.
+#' @param pch Symbol to use for plotting points.
+#' @param points.params List of named parameters to pass on to
+#'   \code{\link{graphics::points}}, e.g. \code{SAKPlot(es, points = 1, pch =
+#'   21, points.params = list(bg = as.numeric(factor(data$Sex)) + 1))}.
 #'
 #' @param violin What type of violin plot to display. If FALSE, violin plot is
 #'   not drawn.
@@ -167,13 +181,15 @@ plotEffectSizesBelow <- function(es, violin.width, xlim) { #, mar) {
 #'
 #' @param box If not FALSE, draw a box-and-whisker plot of the grouped values.
 #'   Value may be a colour, in which case the box borders are plotted with the
-#'   colour(s). See \link{\code{graphics::boxplot}}.
+#'   colour(s). See \code{\link{graphics::boxplot}}.
 #' @param box.fill Colour used to fill the bodies of the box-and-whisker plot.
 #'   If FALSE or NA, bodies are not filled
 #' @param box.notch If TRUE, draws notches in the sides of the boxes. See
-#'   \link{\code{graphics::boxplot.stats}} for the calculations used.
+#'   \code{\link{graphics::boxplot.stats}} for the calculations used.
 #'
-#' @seealso \link{\code{vipor::offsetX}},
+#' @return \code{es} invisibly.
+#'
+#' @seealso \code{\link{vipor::offsetX}}
 #'
 #' @export
 SAKPlot <- function(es,
@@ -181,10 +197,12 @@ SAKPlot <- function(es,
                     points = TRUE,
                     points.method = c("quasirandom", "pseudorandom", "smiley", "maxout", "frowney", "minout", "tukey",
                                       "tukeyDense", "jitter", "overplot"),
+                    pch = 19,
+                    points.params = list(),
 
                     violin = c("left-half", "right-half", "full"),
                     violin.border = RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"),
-                    violin.fill = transparent(RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"), .6),
+                    violin.fill = transparent(RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"), .8),
                     violin.adj = 1.5,
                     violin.width = 0.35,
                     violin.trunc.at = 0.05,
@@ -382,7 +400,8 @@ SAKPlot <- function(es,
       x <- x + vipor::offsetX(data[[es$data.col]], as.numeric(data$.group.as.factor),
                               method = points.method, varwidth = TRUE, adjust = violin.width)
     }
-    graphics::points(x, data[[es$data.col]], pch = 19, col = .colour(pointCol))
+    # Complicated way of calling is to allow user to pass in arbitrary parameters
+    do.call(graphics::points, c(list(x = x, y = data[[es$data.col]], pch = pch, col = .colour(pointCol)), points.params))
   }
 
   # Draw lines between paired points

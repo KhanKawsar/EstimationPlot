@@ -36,7 +36,7 @@ makePairedData <- function(addSomeNAs = FALSE, reverseGroups = FALSE) {
                                rep("Group2", N),
                                rep("Group3", N),
                                rep("Group4", N)),
-                     Gender = rep(c(rep('Male', N/2), rep('Female', N/2)), 6),
+                     Sex = rep(c(rep('Male', N/2), rep('Female', N/2)), 6),
                      ID = rep(1:N, 6)
   )
   if (addSomeNAs)
@@ -64,16 +64,64 @@ makePairedData <- function(addSomeNAs = FALSE, reverseGroups = FALSE) {
 
 test_that("difference effect types", {
   n <- 100
-  df <- data.frame(val = c(rnorm(n), rnorm(n, mean = 1)),
+  set.seed(1)
+  realDiff <- 1
+  df <- data.frame(val = c(rnorm(n, mean = 10), rnorm(n, mean = 10 + realDiff)),
                    group = c(rep("Control", n), rep("Group", n)),
                    id = c(1:n, 1:n))
 
   # Check all effect types
+  expect_error(SAKDifference(df, effect.type = "wrong", data.col = 1, group.col = 2)) # Should throw an error
   expect_error(SAKDifference(df, effect.type = "unstandardised", data.col = 1, group.col = 2), NA)
   expect_error(SAKDifference(df, effect.type = "cohens", data.col = 1, group.col = 2), NA)
   expect_error(SAKDifference(df, effect.type = "hedges", data.col = 1, group.col = 2), NA)
   expect_error(SAKDifference(df, effect.type = "paired", id.col = "id", data.col = 1, group.col = 2), NA)
 
+  # Check unstandardised diff
+  d <- SAKDifference(df, data.col = 1, group.col = 2, id.col = 3, effect.type = "unstandardised")
+  pwd <- d$pairwise.differences[[1]]
+  expect_equal(pwd$groups[1], "Group")
+  expect_equal(pwd$groups[2], "Control")
+  expect_lt(pwd$bca[4], realDiff)
+  expect_gt(pwd$bca[5], realDiff)
+
+  # Check paired diff
+  d <- SAKDifference(df, data.col = 1, group.col = 2, id.col = 3, effect.type = "paired")
+  pwd <- d$pairwise.differences[[1]]
+  expect_equal(pwd$groups[1], "Group")
+  expect_equal(pwd$groups[2], "Control")
+  expect_lt(pwd$bca[4], realDiff)
+  expect_gt(pwd$bca[5], realDiff)
+
+  # Check Cohen's D
+  d <- SAKDifference(df, data.col = 1, group.col = 2, id.col = 3, effect.type = "cohens")
+  pwd <- d$pairwise.differences[[1]]
+  expect_equal(pwd$groups[1], "Group")
+  expect_equal(pwd$groups[2], "Control")
+  expect_lt(pwd$bca[4], 0.5) # Should be positive but small
+  expect_gt(pwd$bca[5], 0)
+  # Swap groups
+  d <- SAKDifference(df, groups = c("Group", "Control"), data.col = 1, group.col = 2, id.col = 3, effect.type = "cohens")
+  pwd <- d$pairwise.differences[[1]]
+  expect_equal(pwd$groups[1], "Control")
+  expect_equal(pwd$groups[2], "Group")
+  expect_lt(pwd$bca[4], 0) # Should be negative but small
+  expect_gt(pwd$bca[5], -0.5)
+
+  # Check Hedge's g
+  d <- SAKDifference(df, data.col = 1, group.col = 2, id.col = 3, effect.type = "hedges")
+  pwd <- d$pairwise.differences[[1]]
+  expect_equal(pwd$groups[1], "Group")
+  expect_equal(pwd$groups[2], "Control")
+  expect_lt(pwd$bca[4], 0.5) # Should be positive but small
+  expect_gt(pwd$bca[5], 0)
+  # Swap groups
+  d <- SAKDifference(df, groups = c("Group", "Control"), data.col = 1, group.col = 2, id.col = 3, effect.type = "hedges")
+  pwd <- d$pairwise.differences[[1]]
+  expect_equal(pwd$groups[1], "Control")
+  expect_equal(pwd$groups[2], "Group")
+  expect_lt(pwd$bca[4], 0) # Should be negative but small
+  expect_gt(pwd$bca[5], -0.5)
 })
 
 test_that("group factors", {

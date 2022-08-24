@@ -8,7 +8,6 @@ SAKDifference(
   data,
   data.col,
   group.col,
-  block.col = NULL,
   id.col,
   groups = sort(unique(data[[group.col]])),
   contrast = c("group 1 - group 2"),
@@ -27,6 +26,8 @@ measurement data.}
 
 \item{group.col}{Name or index of the column within \code{data} containing
 the values to group by.}
+
+\item{id.col}{Name or index of ID column for \code{"paired"} data.}
 
 \item{groups}{Vector of group names. Defaults to all groups in \code{data} in
 \emph{natural} order.}
@@ -47,9 +48,22 @@ interval required. See the \code{type} parameter to the
 values should be stripped before the computation proceeds. If NA values are
 stripped and `effect.type` is "paired", all rows (observations) for IDs
 with missing data are stripped.}
+
+\item{...}{Any additional parameters are passed to \code{\link{boot::boot}}.}
 }
 \value{
-
+List containing:
+  \item{\code{groups}}{Vector of group names}
+  \item{\code{group.statistics}}{Matrix with a row for each group, columns are group mean, median, standard deviation, standard error of the mean, lower and upper 95\% confidence intervals of the mean}
+  \item{\code{pairwise.differences}}{List of \code{SAKPWDiff} objects, which are \code{boot} objects with added confidence interval information. See \code{\link{boot::boot}} and  \code{\link{boot::boot.ci}}}
+  \item{\code{effect.type}}{Value of \code{effect.type} argument}
+  \item{\code{effect.name}}{Pretty version of \code{effect.type}}
+  \item{\code{data.col}}{Value of \code{data.col} argument}
+  \item{\code{data.col.name}}{Name of the \code{data.col} column}
+  \item{\code{group.col}}{Value of \code{group.col} argument}
+  \item{\code{group.col.name}}{Name of the \code{group.col} column}
+  \item{\code{data}}{the input data}
+  \item{\code{call}}{how this function was called}
 }
 \description{
 This is details
@@ -58,4 +72,7 @@ This is details
 Lakens, D. (2013). Calculating and reporting effect sizes to facilitate
 cumulative science: a practical primer for t-tests and ANOVAs. Frontiers in
 Psychology, 4. doi:10.3389/fpsyg.2013.00863
+}
+\seealso{
+\code{\link{boot::boot}}, \code{\link{boot::boot.ci}}
 }

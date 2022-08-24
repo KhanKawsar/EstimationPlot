@@ -9,10 +9,12 @@ SAKPlot(
   points = TRUE,
   points.method = c("quasirandom", "pseudorandom", "smiley", "maxout", "frowney",
     "minout", "tukey", "tukeyDense", "jitter", "overplot"),
+  pch = 19,
+  points.params = list(),
   violin = c("left-half", "right-half", "full"),
   violin.border = RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"),
   violin.fill = transparent(RColorBrewer::brewer.pal(max(3, length(es$groups)),
-    "Set2"), 0.6),
+    "Set2"), 0.8),
   violin.adj = 1.5,
   violin.width = 0.35,
   violin.trunc.at = 0.05,
@@ -35,7 +37,7 @@ SAKPlot(
 )
 }
 \arguments{
-\item{es}{Data returned from a call to \link{\code{SAKDifference}}}
+\item{es}{Data returned from a call to \code{\link{SAKDifference}}}
 
 \item{points}{Colour of individual points. If FALSE, points are not plotted,
 TRUE plots applies a default colour. May be a vector of colours. If length
@@ -45,8 +47,15 @@ Otherwise, \code{points} should be a vector of colours with a value for
 each data point.}
 
 \item{points.method}{Method used to avoid overplotting points. Use
-\code{overplot} to overplot points and \code{jitter} to add random noise to
-each x-value. See \link{\code{vipor::offsetX}} for remaining methods.}
+\code{"overplot"} to overplot points and \code{"jitter"} to add random
+noise to each x-value. See \code{\link{vipor::offsetX}} for remaining
+methods.}
+
+\item{pch}{Symbol to use for plotting points.}
+
+\item{points.params}{List of named parameters to pass on to
+\code{\link{graphics::points}}, e.g. \code{SAKPlot(es, points = 1, pch =
+21, points.params = list(bg = as.numeric(factor(data$Sex)) + 1))}.}
 
 \item{violin}{What type of violin plot to display. If FALSE, violin plot is
 not drawn.}
@@ -66,17 +75,20 @@ of the violin is truncated.}
 
 \item{box}{If not FALSE, draw a box-and-whisker plot of the grouped values.
 Value may be a colour, in which case the box borders are plotted with the
-colour(s). See \link{\code{graphics::boxplot}}.}
+colour(s). See \code{\link{graphics::boxplot}}.}
 
 \item{box.fill}{Colour used to fill the bodies of the box-and-whisker plot.
 If FALSE or NA, bodies are not filled}
 
 \item{box.notch}{If TRUE, draws notches in the sides of the boxes. See
-\link{\code{graphics::boxplot.stats}} for the calculations used.}
+\code{\link{graphics::boxplot.stats}} for the calculations used.}
+}
+\value{
+\code{es} invisibly.
 }
 \description{
 .
 }
 \seealso{
-\link{\code{vipor::offsetX}},
+\code{\link{vipor::offsetX}}
 }
