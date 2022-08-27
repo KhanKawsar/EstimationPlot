@@ -1,5 +1,4 @@
-makeData1 <- function() {
-  N <- 40
+makeData <- function(N = 40) {
   set.seed(1)
   data <- data.frame(Measurement = c(rnorm(N, mean = 100, sd = 25),
                                      rnorm(N, mean = 100, sd = 50),
@@ -17,7 +16,12 @@ makeData1 <- function() {
                      ID = rep(1:N, 6)
   )
   # Shuffle
-  data <- data[sample(nrow(data)), ]
+  data[sample(nrow(data)), ]
+}
+
+makeES1 <- function() {
+  set.seed(1)
+  data <- makeData()
   SAKDifference(data[data$Group %in% c("ZControl1", "Group1"),], data.col = "Measurement", group.col = "Group", R = 1000)
 }
 
@@ -58,9 +62,52 @@ makePairedData <- function(addSomeNAs = FALSE, reverseGroups = FALSE) {
   }
 }
 
+compareDiffs <- function(d1, d2) {
+  expect_equal(names(d1), names(d2))
+  expect_equal(d1$t0, d2$t0, tolerance = )
+  expect_equal(d1$R, d2$R)
+  expect_equal(d1$bca, d2$bca)
+}
+
 ##########################################################################
 # Tests start here ####
 
+test_that("contrasts", {
+  data <- makeData()
+  d <- SAKDifference(data, "Measurement", "Group")
+  ng <- length(d$groups)
+  expect_equal(length(d$group.differences), ng * (ng - 1) / 2)
+
+  # All in 1 string
+  contrasts = "Group1 - ZControl1, Group2 - ZControl1, Group3 - ZControl1, Group4 - ZControl1"
+  d <- SAKDifference(data, "Measurement", "Group", contrasts = contrasts)
+  expect_equal(length(d$group.differences), 4)
+  expect_equal(d$group.differences[[1]]$groups[1], "Group1")
+  expect_equal(d$group.differences[[1]]$groups[2], "ZControl1")
+  expect_equal(d$group.differences[[2]]$groups[1], "Group2")
+  expect_equal(d$group.differences[[2]]$groups[2], "ZControl1")
+  expect_equal(d$group.differences[[3]]$groups[1], "Group3")
+  expect_equal(d$group.differences[[3]]$groups[2], "ZControl1")
+  expect_equal(d$group.differences[[4]]$groups[1], "Group4")
+  expect_equal(d$group.differences[[4]]$groups[2], "ZControl1")
+
+  contrasts = c("Group1 - ZControl1", "Group2 - ZControl1", "Group3 - ZControl1", "Group4 - ZControl1")
+  d2 <- SAKDifference(data, "Measurement", "Group", contrasts = contrasts)
+  expect_equal(length(d2$group.differences), 4)
+  expect_equal(d2$group.differences[[1]]$groups[1], "Group1")
+  expect_equal(d2$group.differences[[1]]$groups[2], "ZControl1")
+  compareDiffs(d2, d)
+
+  contrasts <- matrix(c("Group1", "ZControl1", "Group2", "ZControl1", "Group3", "ZControl1", "Group4", "ZControl1"), nrow = 2)
+  d2 <- SAKDifference(data, "Measurement", "Group", contrasts = contrasts)
+  expect_equal(length(d2$group.differences), 4)
+  expect_equal(d2$group.differences[[1]]$groups[1], "Group1")
+  expect_equal(d2$group.differences[[1]]$groups[2], "ZControl1")
+  compareDiffs(d2, d)
+
+  expect_error(SAKDifference(data, "Measurement", "Group", contrasts = "Group2:ZControl"))
+  expect_error(SAKDifference(data, "Measurement", "Group", contrasts = "ZControl"))
+})
 
 test_that("difference effect types", {
   n <- 100
@@ -79,7 +126,7 @@ test_that("difference effect types", {
 
   # Check unstandardised diff
   d <- SAKDifference(df, data.col = 1, group.col = 2, id.col = 3, effect.type = "unstandardised")
-  pwd <- d$pairwise.differences[[1]]
+  pwd <- d$group.difference[[1]]
   expect_equal(pwd$groups[1], "Group")
   expect_equal(pwd$groups[2], "Control")
   expect_lt(pwd$bca[4], realDiff)
@@ -87,7 +134,7 @@ test_that("difference effect types", {
 
   # Check paired diff
   d <- SAKDifference(df, data.col = 1, group.col = 2, id.col = 3, effect.type = "paired")
-  pwd <- d$pairwise.differences[[1]]
+  pwd <- d$group.difference[[1]]
   expect_equal(pwd$groups[1], "Group")
   expect_equal(pwd$groups[2], "Control")
   expect_lt(pwd$bca[4], realDiff)
@@ -95,14 +142,14 @@ test_that("difference effect types", {
 
   # Check Cohen's D
   d <- SAKDifference(df, data.col = 1, group.col = 2, id.col = 3, effect.type = "cohens")
-  pwd <- d$pairwise.differences[[1]]
+  pwd <- d$group.difference[[1]]
   expect_equal(pwd$groups[1], "Group")
   expect_equal(pwd$groups[2], "Control")
   expect_lt(pwd$bca[4], 0.5) # Should be positive but small
   expect_gt(pwd$bca[5], 0)
   # Swap groups
   d <- SAKDifference(df, groups = c("Group", "Control"), data.col = 1, group.col = 2, id.col = 3, effect.type = "cohens")
-  pwd <- d$pairwise.differences[[1]]
+  pwd <- d$group.difference[[1]]
   expect_equal(pwd$groups[1], "Control")
   expect_equal(pwd$groups[2], "Group")
   expect_lt(pwd$bca[4], 0) # Should be negative but small
@@ -110,14 +157,14 @@ test_that("difference effect types", {
 
   # Check Hedge's g
   d <- SAKDifference(df, data.col = 1, group.col = 2, id.col = 3, effect.type = "hedges")
-  pwd <- d$pairwise.differences[[1]]
+  pwd <- d$group.difference[[1]]
   expect_equal(pwd$groups[1], "Group")
   expect_equal(pwd$groups[2], "Control")
   expect_lt(pwd$bca[4], 0.5) # Should be positive but small
   expect_gt(pwd$bca[5], 0)
   # Swap groups
   d <- SAKDifference(df, groups = c("Group", "Control"), data.col = 1, group.col = 2, id.col = 3, effect.type = "hedges")
-  pwd <- d$pairwise.differences[[1]]
+  pwd <- d$group.difference[[1]]
   expect_equal(pwd$groups[1], "Control")
   expect_equal(pwd$groups[2], "Group")
   expect_lt(pwd$bca[4], 0) # Should be negative but small
@@ -371,7 +418,7 @@ test_that("three groups with factor", {
 # })
 
 test_that("box FALSE works", {
-  es <- makeData1()
+  es <- makeES1()
   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = FALSE, box.fill = FALSE,
          central.tendency = "median", error.bars = "CI", ef.size = FALSE,
          points = transparent(c("red", "blue"), .5))
@@ -379,7 +426,7 @@ test_that("box FALSE works", {
 })
 
 test_that("central tendency FALSE works", {
-  es <- makeData1()
+  es <- makeES1()
   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "red", box.fill = "blue",
          central.tendency = FALSE, error.bars = "CI", ef.size = FALSE,
          points = transparent(c("red", "blue"), .5))
@@ -411,7 +458,7 @@ test_that("paired with NAs works", {
 })
 
 test_that("bar charts work", {
-  es <- makeData1()
+  es <- makeES1()
   SAKPlot(es, bar = TRUE, violin = FALSE, box = FALSE, box.fill = "blue",
          central.tendency = FALSE, error.bars = "CI", ef.size = FALSE,
          points = FALSE)

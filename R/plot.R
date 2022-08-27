@@ -11,7 +11,6 @@
 ## effect size density optional (FALSE) TODO implement ef.size.density
 ## points optional in paired TODO
 ## CI optional/separate with mean: to include with mean SD
-#### TODO how to include outliers in diff calc but not in plot?
 
 transparent <-  function(colour, alpha) {
   rgba.val <- grDevices::col2rgb(colour, TRUE)
@@ -19,6 +18,77 @@ transparent <-  function(colour, alpha) {
                maxColorValue = 255,
                alpha = (100 - alpha * 100) * 255 / 100)
   t.col
+}
+
+# Calculate the probability density of one group, optionally truncating the extents
+getGroupDensity <- function(group, es, violin.adj, violin.trunc) {
+  groupVals <- es$data[[es$data.col]][es$data[[es$group.col]] == group]
+  # Calculate density
+  d <- stats::density(groupVals, adj = violin.adj)
+
+  # Optionally truncate
+  keep <- NULL
+  if (isTRUE(violin.trunc)) {
+    # Truncate to data extents (isTRUE(violin.trunc)). Ensure density completely encloses data points
+    from <- tail(which(d$x < min(groupVals)), 1)
+    to <- head(which(d$x > max(groupVals)), 1)
+    keep <- seq(from, to)
+    # Extend by 1 step in each direction so that density completely includes data
+    keep <- c(keep[1] - 1, keep, keep[length(keep)] + 1)
+  } else if (is.numeric(violin.trunc) && violin.trunc > 0) {
+    # Truncate to specified probability
+    keep <- which(d$y >= violin.trunc * max(d$y))
+  }
+  if (!is.null(keep)) {
+    d$y <- c(0, d$y[keep], 0)
+    d$x <- c(d$x[keep[1]], d$x[keep], d$x[keep[length(keep)]])
+  }
+
+  d
+}
+
+# Save and restore the random number state. This is done so that we don't
+# interfere with the random number generation of package users
+preserveRNG <- function(expr) {
+  # Save current RNG seed
+  # http://www.cookbook-r.com/Numbers/Saving_the_state_of_the_random_number_generator/
+  if (exists(".Random.seed", .GlobalEnv))
+    oldseed <- .GlobalEnv$.Random.seed
+  else
+    oldseed <- NULL
+  # On exit...
+  on.exit({
+    # Restore old seed
+    if (!is.null(oldseed))
+      .GlobalEnv$.Random.seed <- oldseed
+    else
+      rm(".Random.seed", envir = .GlobalEnv)
+  })
+
+  # Evaluate the expression
+  expr
+}
+
+# Function to return a palette of \code{n} colours, with transparency \code{alpha}.
+pickPalette <- function(n) {
+  # Try to use an RColorBrewer palette
+  pal <- "Set2"
+  if (n > RColorBrewer::brewer.pal.info[pal, "maxcolors"]) {
+    # This is complicated because we want to "randomly" sample available
+    # colours, but in a repeatable way, and without interfering with user's
+    # random number generation, hence we wrap the code in a call to preserveRNG
+    preserveRNG({
+      # Too many colours, concatenate some palettes (thanks to https://stackoverflow.com/a/33144808/1287461)
+      qual_col_pals <- RColorBrewer::brewer.pal.info[RColorBrewer::brewer.pal.info$category == 'qual', ]
+      col_vector <- unlist(mapply(RColorBrewer::brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
+      # Randomly sample n colours from the whole list
+      set.seed(1)
+      # Try to sample without replacement, but allow replacement if there are too many colours needed
+      sample(col_vector, n, replace = n > length(col_vector))
+    })
+  } else {
+    RColorBrewer::brewer.pal(max(3, n), "Set2")
+  }
 }
 
 getErrorBars <- function(es, groupIdx, groupMean, error.bars) {
@@ -56,7 +126,7 @@ plotEffectSize <- function(pwes, xo, yo, group1y, violin.width, mapYFn, xpd = FA
 
 # Plot effect size to the right of the main plot. Only useful when showing a single effect size
 plotEffectSizesRight <- function(es, violin.width, right.ylab) {
-  pwes <- es$pairwise.differences[[1]]
+  pwes <- es$group.differences[[1]]
   y <- es$group.statistics[1, 1]
   y2 <- es$group.statistics[2, 1]
 
@@ -98,12 +168,12 @@ plotEffectSizesBelow <- function(es, violin.width, xlim) { #, mar) {
 
   # Find and return the pairwise difference for the specified 2 groups
   pwDiff <- function(g1, g2) {
-    for (i in seq_len(length(es$pairwise.differences))) {
-      gi <- es$pairwise.differences[[i]]$groups
+    for (i in seq_len(length(es$group.differences))) {
+      gi <- es$group.differences[[i]]$groups
       if (gi[1] == g1 && gi[2] == g2)
-        return(es$pairwise.differences[[i]])
+        return(es$group.differences[[i]])
       if (gi[1] == g2 && gi[2] == g1)
-        return(negatePairwiseDiff(es$pairwise.differences[[i]]))
+        return(negatePairwiseDiff(es$group.differences[[i]]))
     }
   }
 
@@ -147,12 +217,22 @@ plotEffectSizesBelow <- function(es, violin.width, xlim) { #, mar) {
 
 #############################################################################
 
-#' Plot grouped data and effect size in base R.
+#' Simple yet powerful group and effect size plotting in base R.
 #'
 #' Plot grouped data and effect size in base R, with control over a large range
-#' of possible display formats and options.
+#' of possible display formats and options. To plot your data, first calculate
+#' group differences by calling \code{\link{SAKDifference}}, then pass the
+#' result to \code{\link{SAKPlot}}.
+#'
+#' Group data may be visualised in multiple ways: \code{points}, \code{violin},
+#' \code{box} and \code{bar}. Each visualisation type is controlled by a set of
+#' parameters. To display a type, for example box plots, specify \code{box =
+#' TRUE}. Rather than \code{TRUE}, you may specify a colour, which is used is
+#' the border/outline for the boxes. You may also specify a vector of colours,
+#' one for each group.
 #'
 #' @param es Data returned from a call to \code{\link{SAKDifference}}
+#'
 #' @param points Colour of individual points. If FALSE, points are not plotted,
 #'   TRUE plots applies a default colour. May be a vector of colours. If length
 #'   1, all points are drawn with the specified colour. If length is the number
@@ -176,7 +256,7 @@ plotEffectSizesBelow <- function(es, violin.width, xlim) { #, mar) {
 #'   the kernel density bandwidth. Higher values produce a smoother plot.
 #' @param violin.width Width of maximum violin horizontal extents, as a
 #'   proportion of the distance between groups.
-#' @param violin.trunc.at Numeric value that specifies what vertical proportion
+#' @param violin.trunc Numeric value that specifies what vertical proportion
 #'   of the violin is truncated.
 #'
 #' @param box If not FALSE, draw a box-and-whisker plot of the grouped values.
@@ -186,10 +266,14 @@ plotEffectSizesBelow <- function(es, violin.width, xlim) { #, mar) {
 #'   If FALSE or NA, bodies are not filled
 #' @param box.notch If TRUE, draws notches in the sides of the boxes. See
 #'   \code{\link{graphics::boxplot.stats}} for the calculations used.
+#' @param box.pars List with additional graphical parameters to control the box
+#'   plot. See \code{\link{graphics::bxp}} graphical parameters for a complete
+#'   list.
 #'
 #' @return \code{es} invisibly.
 #'
-#' @seealso \code{\link{vipor::offsetX}}
+#' @seealso \code{\link{SAKDifference}}, \code{\link{vipor::offsetX}},
+#'   \code{\link{graphics::boxplot}}, \code{\link{graphics::bxp}}
 #'
 #' @export
 SAKPlot <- function(es,
@@ -200,19 +284,22 @@ SAKPlot <- function(es,
                     pch = 19,
                     points.params = list(),
 
-                    violin = c("left-half", "right-half", "full"),
-                    violin.border = RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"),
-                    violin.fill = transparent(RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"), .8),
+                    violin = isFALSE(box) && isFALSE(bar),
+                    violin.shape = c("left-half", "right-half", "full"),
+                    violin.border = TRUE,
+                    violin.fill = TRUE,
                     violin.adj = 1.5,
                     violin.width = 0.35,
-                    violin.trunc.at = 0.05,
+                    violin.trunc = TRUE,
 
                     box = FALSE,
-                    box.fill = "lightgrey",
+                    box.fill = TRUE,
                     box.notch = FALSE,
+                    box.outline = TRUE,
+                    box.pars = list(boxwex = 0.8, staplewex = 0.5, outwex = 0.5),
 
                     bar = FALSE,
-                    bar.fill = transparent(RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"), .8),
+                    bar.fill = TRUE,
 
                     ef.size = c(TRUE, "right", "below"), # if !FALSE, plot effect size
                     ef.size.density = TRUE, # if TRUE, draw effect size confidence interval
@@ -232,7 +319,7 @@ SAKPlot <- function(es,
   if (!methods::is(es, "SAKDiff"))
     stop("data must be a SAKDiff object")
   if (!isFALSE(violin))
-    violin <- match.arg(violin)
+    violin.shape <- match.arg(violin.shape)
   error.bars <- match.arg(error.bars)
   if (!isFALSE(central.tendency))
     central.tendency <- match.arg(central.tendency)
@@ -246,8 +333,6 @@ SAKPlot <- function(es,
 
   # We allow TRUE/FALSE or colours to be specified for many values. TRUE is equivalent to a default colour
   .boolToDef <- function(arg, def) if (isTRUE(arg)) { def } else { arg }
-  box <- .boolToDef(box, "black")
-  bar <- .boolToDef(bar, RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"))
 
   .show <- function(what) !isFALSE(what) && !is.null(what)
   .isColour <- function(c) tryCatch(is.matrix(grDevices::col2rgb(c)), error = function(e) FALSE)
@@ -257,19 +342,14 @@ SAKPlot <- function(es,
   groups <- es$groups
   nGroups <- length(groups)
 
+  # Prepare some palettes, the border palette has no transparency, the fill palette is 80% transparent
+  defBorderPalette <- pickPalette(nGroups)
+  defFillPalette <- transparent(pickPalette(nGroups), 0.8)
+
   # Calculate densities for violin plots
-  densities <- lapply(groups, function(g) stats::density(data[[es$data.col]][data[[es$group.col]] == g], adj = violin.adj))
+  densities <- lapply(groups, getGroupDensity, es, violin.adj, violin.trunc)
   # Normalise densities heights so they all have desired height (which becomes width)
   densities <- lapply(densities, function(d) { d$y <- d$y / max(d$y) * violin.width; d })
-  # Optionally chop off the tails
-  if (violin.trunc.at > 0) {
-    densities <- lapply(densities, function(d) {
-      keep <- which(d$y > violin.trunc.at * violin.width)
-      d$y <- c(0, d$y[keep], 0)
-      d$x <- c(d$x[keep[1]], d$x[keep], d$x[keep[length(keep)]])
-      d
-    })
-  }
 
   # Calculate plot limits
   xlim <- c(0.5, nGroups + 0.5)
@@ -295,7 +375,7 @@ SAKPlot <- function(es,
         }))
       } else {
         # Get means of each group
-        ym <- max(sapply(groups, function(g) mean(data[[es$data.col]][data[[es$group.col]] == g])))
+        ym <- max(sapply(groups, function(g) mean(data[[es$data.col]][data[[es$group.col]] == group])))
       }
       ylim <- c(0, ym)
     }
@@ -350,12 +430,16 @@ SAKPlot <- function(es,
 
   # Box plot
   if (.show(box)) {
+    box <- .boolToDef(box, defBorderPalette)
+    box.fill <- .boolToDef(box.fill, defFillPalette)
     graphics::boxplot(f, data = data, add = TRUE, axes = FALSE, notch = box.notch,
-            col = .colour(box.fill), border = .colour(box))
+            col = .colour(box.fill), border = .colour(box), pars = box.pars)
   }
 
   # bar chart
   if (.show(bar)) {
+    bar <- .boolToDef(bar, defBorderPalette)
+    bar.fill <- .boolToDef(bar.fill, defFillPalette)
     graphics::barplot(es$group.statistics[, "mean"] ~ factor(groups, levels = groups),
             width = 0.8, space = c(0.75, rep(0.25, nGroups - 1)),
             col = .colour(bar.fill), border = .colour(bar),
@@ -364,13 +448,18 @@ SAKPlot <- function(es,
 
   # Violin plots
   if (.show(violin)) {
+    violin <- .boolToDef(violin, defBorderPalette)
+    violin.fill <- .boolToDef(violin.fill, defFillPalette)
+    borders <- violin
+    if (length(borders) == 1)
+      borders <- rep(borders, nGroups)
     for (i in seq_along(groups)) {
       d <- densities[[i]]
       col <- violin.fill[i]
-      border <- violin.border[i]
-      if (violin == "left-half") {
+      border <- borders[i]
+      if (violin.shape == "left-half") {
         graphics::polygon(i - d$y, d$x, col = col, border = border)
-      } else if (violin == "right-half") {
+      } else if (violin.shape == "right-half") {
         graphics::polygon(i + d$y, d$x, col = col, border = border)
       } else {
         graphics::polygon(c(i - d$y, rev(i + d$y)), c(d$x, rev(d$x)), col = col, border = border)

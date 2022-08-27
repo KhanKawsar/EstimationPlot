@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.R
 \name{SAKPlot}
 \alias{SAKPlot}
-\title{Plot grouped data and effect size in base R.}
+\title{Simple yet powerful group and effect size plotting in base R.}
 \usage{
 SAKPlot(
   es,
@@ -11,19 +11,20 @@ SAKPlot(
     "minout", "tukey", "tukeyDense", "jitter", "overplot"),
   pch = 19,
   points.params = list(),
-  violin = c("left-half", "right-half", "full"),
-  violin.border = RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"),
-  violin.fill = transparent(RColorBrewer::brewer.pal(max(3, length(es$groups)),
-    "Set2"), 0.8),
+  violin = isFALSE(box) && isFALSE(bar),
+  violin.shape = c("left-half", "right-half", "full"),
+  violin.border = TRUE,
+  violin.fill = TRUE,
   violin.adj = 1.5,
   violin.width = 0.35,
   violin.trunc.at = 0.05,
   box = FALSE,
-  box.fill = "lightgrey",
+  box.fill = TRUE,
   box.notch = FALSE,
+  box.outline = TRUE,
+  box.pars = list(boxwex = 0.8, staplewex = 0.5, outwex = 0.5),
   bar = FALSE,
-  bar.fill = transparent(RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"),
-    0.8),
+  bar.fill = TRUE,
   ef.size = c(TRUE, "right", "below"),
   ef.size.density = TRUE,
   paired = es$effect.type == "paired",
@@ -82,13 +83,29 @@ If FALSE or NA, bodies are not filled}
 
 \item{box.notch}{If TRUE, draws notches in the sides of the boxes. See
 \code{\link{graphics::boxplot.stats}} for the calculations used.}
+
+\item{box.pars}{List with additional graphical parameters to control the box
+plot. See \code{\link{graphics::bxp}} graphical parameters for a complete
+list.}
 }
 \value{
 \code{es} invisibly.
 }
 \description{
-.
+Plot grouped data and effect size in base R, with control over a large range
+of possible display formats and options. To plot your data, first calculate
+group differences by calling \code{\link{SAKDifference}}, then pass the
+result to \code{\link{SAKPlot}}.
+}
+\details{
+Group data may be visualised in multiple ways: \code{points}, \code{violin},
+\code{box} and \code{bar}. Each visualisation type is controlled by a set of
+parameters. To display a type, for example box plots, specify \code{box =
+TRUE}. Rather than \code{TRUE}, you may specify a colour, which is used is
+the border/outline for the boxes. You may also specify a vector of colours,
+one for each group.
 }
 \seealso{
-\code{\link{vipor::offsetX}}
+\code{\link{SAKDifference}}, \code{\link{vipor::offsetX}},
+  \code{\link{graphics::boxplot}}, \code{\link{graphics::bxp}}
 }
