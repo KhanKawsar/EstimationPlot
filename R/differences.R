@@ -107,8 +107,33 @@ calcPairDiff <- function(data, pair, data.col, group.col, id.col, effect.type, R
   es
 }
 
-# Returns the negation of the specified pairwise difference (type SAKPWDiff,
-# usually a member of es$pairwise.differences)
+# Takes contrasts as a string, vector of strings, or matrix and returns a matrix
+expandContrasts <- function(contrasts, groups) {
+
+  if (!is.matrix(contrasts)) {
+    if (length(contrasts) == 1) {
+      # Split on commas
+      contrasts <- strsplit(contrasts, ",")[[1]]
+    }
+
+    # Assume syntax "group - group"
+    contrasts <- sapply(contrasts, function(contrast) {
+      # For this contrast, which should look like "group1 - group2",
+      # Find the location of group names within the string
+      found <- sapply(groups, function(group) regexpr(group, contrast, fixed = TRUE)[[1]][1])
+      if (sum(found > 0) != 2)
+        stop(sprintf("Invalid contrast '%s'; must be 'group1 - group2, groups are %s",
+                     contrast, paste0(groups, collapse = ", ")))
+      found <- found[found != -1]
+      names(found)[order(found)]
+    })
+  }
+
+  contrasts
+}
+
+# Returns the negation of the specified group difference (type SAKPWDiff,
+# usually a member of es$group.differences)
 negatePairwiseDiff <- function(pwd) {
   pwd$groups[[1]] <- rev(pwd$groups[[1]])
   pwd$t0 <- -pwd$t0
@@ -123,7 +148,7 @@ negatePairwiseDiff <- function(pwd) {
 
 #' Generate differences
 #'
-#' This is details
+#' TODO details
 #'
 #' @param data A data frame...
 #' @param data.col Name or index of the column within \code{data} containing the
@@ -134,10 +159,10 @@ negatePairwiseDiff <- function(pwd) {
 #' @param effect.type Type of difference
 #' @param groups Vector of group names. Defaults to all groups in \code{data} in
 #'   \emph{natural} order.
-#' @param contrast TODO
+#' @param contrasts Specify the pairs of groups to be compared. By default, all pairs of groups are compared.
 #' @param effect.type Type of group difference to be calculated. Possible types
 #'   are: \code{unstandardised}, difference in group means; \code{cohens},
-#'   Cohen's d; \code{hedges}, Hedge's g, \code{pairwise}, pairwise differences.
+#'   Cohen's d; \code{hedges}, Hedge's g, \code{paired}, paired differences.
 #' @param R The number of bootstrap replicates.
 #' @param ci.type A single character  string representing the type of bootstrap
 #'   interval required. See the \code{type} parameter to the
@@ -151,7 +176,7 @@ negatePairwiseDiff <- function(pwd) {
 #' @return List containing:
 #'   \item{\code{groups}}{Vector of group names}
 #'   \item{\code{group.statistics}}{Matrix with a row for each group, columns are group mean, median, standard deviation, standard error of the mean, lower and upper 95\% confidence intervals of the mean}
-#'   \item{\code{pairwise.differences}}{List of \code{SAKPWDiff} objects, which are \code{boot} objects with added confidence interval information. See \code{\link{boot::boot}} and  \code{\link{boot::boot.ci}}}
+#'   \item{\code{group.differences}}{List of \code{SAKPWDiff} objects, which are \code{boot} objects with added confidence interval information. See \code{\link{boot::boot}} and  \code{\link{boot::boot.ci}}}
 #'   \item{\code{effect.type}}{Value of \code{effect.type} argument}
 #'   \item{\code{effect.name}}{Pretty version of \code{effect.type}}
 #'   \item{\code{data.col}}{Value of \code{data.col} argument}
@@ -175,7 +200,7 @@ SAKDifference <- function(data,
                        #TODO what is this for??? block.col = NULL,
                        id.col,
                        groups = sort(unique(data[[group.col]])),
-                       contrast = c("group 1 - group 2"), # default larger group minus small group TODO
+                       contrasts,
                        effect.type = c("unstandardised", "cohens", "hedges", "paired"),
                        R = 1000,
                        ci.type = "bca",
@@ -234,17 +259,25 @@ SAKDifference <- function(data,
       se = stats::sd(grpVals) / sqrt(length(grpVals)),
       # CI of mean
       CI.lower = ci[1],
-      CI.upper = ci[2]
+      CI.upper = ci[2],
+      n = length(grpVals)
     )
   })
   df <- do.call(rbind, gil)
   rownames(df) <- groups
   es$group.statistics <- df
 
+  if (missing("contrasts") || is.null(contrasts)) {
+    # Compare all pairs of groups.
+    # convert groups to character to handle groups that are factors
+    contrasts <- utils::combn(as.character(rev(groups)), 2)
+  } else {
+    contrasts <- expandContrasts(contrasts, groups)
+  }
+
   ### We will calculate effect size of all pairs (maybe rethink this later)
-  # For each pair of groups... (convert groups to character to handle groups that are factors)
-  es$pairwise.differences <- apply(utils::combn(as.character(groups), 2), 2, function(pair) {
-    pair <- rev(pair)
+  # For each pair of groups...
+  es$group.differences <- apply(contrasts, 2, function(pair) {
     pairData <- data[as.character(data[[group.col]]) %in% pair, ]
     calcPairDiff(pairData, pair, data.col, group.col, id.col, effect.type, R, ci.type)
   })
@@ -270,15 +303,15 @@ print.SAKDiff <- function(x, ...) {
   cat("Groups:\n")
   print(x$group.statistics)
   cat(sprintf("Pairwise %s effect size:\n", x$effect.type))
-  for (i in seq_len(length(x$pairwise.differences))) {
-    print(x$pairwise.differences[[i]])
+  for (i in seq_len(length(x$group.differences))) {
+    print(x$group.differences[[i]])
   }
 }
 
-#' Print a summary of a SAK pairwise difference object
+#' Print a summary of a SAK group difference object
 #'
 #' This is a method for the function \code{print()} for objects of class
-#' "\code{SAKPWDiff}", which is a row in the \code{pairwise.differences} matrix
+#' "\code{SAKPWDiff}", which is a row in the \code{group.differences} matrix
 #' belonging to an object returned by a call to \link{\code{SAKDifference}}.
 #'
 #' @param x An object of class \link{\code{SAKPWDiff}}.

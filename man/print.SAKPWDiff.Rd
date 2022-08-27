@@ -2,7 +2,7 @@
 % Please edit documentation in R/differences.R
 \name{print.SAKPWDiff}
 \alias{print.SAKPWDiff}
-\title{Print a summary of a SAK pairwise difference object}
+\title{Print a summary of a SAK group difference object}
 \usage{
 \method{print}{SAKPWDiff}(x, ...)
 }
@@ -13,6 +13,6 @@
 }
 \description{
 This is a method for the function \code{print()} for objects of class
-"\code{SAKPWDiff}", which is a row in the \code{pairwise.differences} matrix
+"\code{SAKPWDiff}", which is a row in the \code{group.differences} matrix
 belonging to an object returned by a call to \link{\code{SAKDifference}}.
 }

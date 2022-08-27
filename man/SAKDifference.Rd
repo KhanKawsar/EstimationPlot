@@ -10,7 +10,7 @@ SAKDifference(
   group.col,
   id.col,
   groups = sort(unique(data[[group.col]])),
-  contrast = c("group 1 - group 2"),
+  contrasts,
   effect.type = c("unstandardised", "cohens", "hedges", "paired"),
   R = 1000,
   ci.type = "bca",
@@ -32,11 +32,11 @@ the values to group by.}
 \item{groups}{Vector of group names. Defaults to all groups in \code{data} in
 \emph{natural} order.}
 
-\item{contrast}{TODO}
+\item{contrasts}{Specify the pairs of groups to be compared. By default, all pairs of groups are compared.}
 
 \item{effect.type}{Type of group difference to be calculated. Possible types
 are: \code{unstandardised}, difference in group means; \code{cohens},
-Cohen's d; \code{hedges}, Hedge's g, \code{pairwise}, pairwise differences.}
+Cohen's d; \code{hedges}, Hedge's g, \code{paired}, paired differences.}
 
 \item{R}{The number of bootstrap replicates.}
 
@@ -55,7 +55,7 @@ with missing data are stripped.}
 List containing:
   \item{\code{groups}}{Vector of group names}
   \item{\code{group.statistics}}{Matrix with a row for each group, columns are group mean, median, standard deviation, standard error of the mean, lower and upper 95\% confidence intervals of the mean}
-  \item{\code{pairwise.differences}}{List of \code{SAKPWDiff} objects, which are \code{boot} objects with added confidence interval information. See \code{\link{boot::boot}} and  \code{\link{boot::boot.ci}}}
+  \item{\code{group.differences}}{List of \code{SAKPWDiff} objects, which are \code{boot} objects with added confidence interval information. See \code{\link{boot::boot}} and  \code{\link{boot::boot.ci}}}
   \item{\code{effect.type}}{Value of \code{effect.type} argument}
   \item{\code{effect.name}}{Pretty version of \code{effect.type}}
   \item{\code{data.col}}{Value of \code{data.col} argument}
@@ -66,7 +66,7 @@ List containing:
   \item{\code{call}}{how this function was called}
 }
 \description{
-This is details
+TODO details
 }
 \references{
 Lakens, D. (2013). Calculating and reporting effect sizes to facilitate
