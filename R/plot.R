@@ -184,6 +184,7 @@ plotEffectSizesBelow <- function(es, ef.size.violin, violin.width, xlim) {
   # What will we plot?
   plotDiffs <- es$group.differences
   ylim <- range(c(0, sapply(plotDiffs, function(pwes) if (is.null(pwes)) NA else range(pwes$t))), na.rm = TRUE)
+  ylim <- extendrange(ylim)
 
   ### Work out how to map the effect size pseudo region onto user coordinates
   usr <- graphics::par("usr")
