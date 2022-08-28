@@ -288,6 +288,11 @@ plotEffectSizesBelow <- function(es, ef.size.violin, violin.width, xlim) {
 #' @seealso \code{\link{SAKDifference}}, \code{\link{vipor::offsetX}},
 #'   \code{\link{graphics::boxplot}}, \code{\link{graphics::bxp}}
 #'
+#' @references
+#' Gardner, M. J., & Altman, D. G. (1986). Confidence intervals rather than P values: estimation rather than hypothesis testing. Br Med J (Clin Res Ed), 292(6522), 746-750. doi:10.1136/bmj.292.6522.746
+#'
+#' Cumming, G. (2012). Understanding the new statistics : effect sizes, confidence intervals, and meta-analysis (1st edition ed.). New York: Routledge.
+#'
 #' @export
 SAKPlot <- function(es,
 

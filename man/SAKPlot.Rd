@@ -121,6 +121,11 @@ one for each group. For \code{points}, you may specify a colour for each
 individual point. When colours are not specified, they are selected from an
 \code{\link{RColorBrewer}} qualitative palette.
 }
+\references{
+Gardner, M. J., & Altman, D. G. (1986). Confidence intervals rather than P values: estimation rather than hypothesis testing. Br Med J (Clin Res Ed), 292(6522), 746-750. doi:10.1136/bmj.292.6522.746
+
+Cumming, G. (2012). Understanding the new statistics : effect sizes, confidence intervals, and meta-analysis (1st edition ed.). New York: Routledge.
+}
 \seealso{
 \code{\link{SAKDifference}}, \code{\link{vipor::offsetX}},
   \code{\link{graphics::boxplot}}, \code{\link{graphics::bxp}}
