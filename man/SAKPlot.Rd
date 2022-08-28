@@ -21,19 +21,17 @@ SAKPlot(
   box = FALSE,
   box.fill = TRUE,
   box.notch = FALSE,
-  box.outline = TRUE,
   box.pars = list(boxwex = 0.8, staplewex = 0.5, outwex = 0.5),
   bar = FALSE,
   bar.fill = TRUE,
-  ef.size = c(TRUE, "right", "below"),
+  ef.size = c("right", "below"),
   ef.size.violin = TRUE,
   paired = es$effect.type == "paired",
   central.tendency = c("mean", "median"),
   error.bars = c("CI", "SD", "SE"),
-  mean = "grey20",
-  xlab = "",
+  central.tendency.colour = "grey20",
   left.ylab = es$data.col.name,
-  right.ylab = "",
+  right.ylab = es$effect.name,
   ...
 )
 }
@@ -91,7 +89,8 @@ If FALSE or NA, bodies are not filled}
 plot. See \code{\link{graphics::bxp}} graphical parameters for a complete
 list.}
 
-\item{bar}{If not FALSE, draw a bar plot of the group means.}
+\item{bar}{If not FALSE, draw a bar plot of the group means or medians,
+according to \code{central.tendency}.}
 
 \item{bar.fill}{Colour used to fill bars.}
 
@@ -101,6 +100,26 @@ plot and \code{ef.size != "below"}.}
 
 \item{ef.size.violin}{If not FALSE, boostrapped effect size estimates are
 show as a violin plot.}
+
+\item{paired}{If \code{TRUE}, lines are drawn joining the individual data
+points.}
+
+\item{central.tendency}{Should the indicated measure of central tendency be
+\code{"mean"} or \code{"median"}?}
+
+\item{error.bars}{Should error bars depict 95% confidence intervals
+(\code{"CI}), standard deviation (\code{"SD"}) or standard error
+(\code{"SE})?}
+
+\item{central.tendency.colour}{Colour used for mean/median and error bars.}
+
+\item{left.ylab}{Left-hand y-axis label.}
+
+\item{right.ylab}{Right-hand y-axis label. Only used if effect size is shown
+on the right (\code{ef.size = "right"}).}
+
+\item{...}{Additional arguments are past to the \code{\link{graphics::plot}}
+function.}
 }
 \value{
 \code{es} invisibly.
@@ -122,9 +141,13 @@ individual point. When colours are not specified, they are selected from an
 \code{\link{RColorBrewer}} qualitative palette.
 }
 \references{
-Gardner, M. J., & Altman, D. G. (1986). Confidence intervals rather than P values: estimation rather than hypothesis testing. Br Med J (Clin Res Ed), 292(6522), 746-750. doi:10.1136/bmj.292.6522.746
+Gardner, M. J., & Altman, D. G. (1986). Confidence intervals rather than P
+values: estimation rather than hypothesis testing. Br Med J (Clin Res Ed),
+292(6522), 746-750. doi:10.1136/bmj.292.6522.746
 
-Cumming, G. (2012). Understanding the new statistics : effect sizes, confidence intervals, and meta-analysis (1st edition ed.). New York: Routledge.
+Cumming, G. (2012). Understanding the new statistics : effect sizes,
+confidence intervals, and meta-analysis (1st edition ed.). New York:
+Routledge.
 }
 \seealso{
 \code{\link{SAKDifference}}, \code{\link{vipor::offsetX}},

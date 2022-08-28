@@ -36,6 +36,6 @@ par(mfrow = c(1, 2))
 d <- SAKDifference(iris, data.col = "Sepal.Length", group.col = "Species", effect.type = "cohens")
 SAKPlot(d, main = "Cohen's d")
 d <- SAKDifference(iris, data.col = "Sepal.Length", group.col = "Species", effect.type = "hedges")
-SAKPlot(d, main = "Hedge's g")
+SAKPlot(d, ef.size.violin = FALSE, main = "Hedge's g, no effect violins")
 ```
 

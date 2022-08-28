@@ -227,16 +227,34 @@ test_that("difference handles NA", {
   expect_error(SAKDifference(df, effect.type = "paired", id.col = "id", na.rm = TRUE, group.col = 2))
 })
 
+test_that("two groups", {
+  N <- 40
+  df <- data.frame(Measurement = c(rnorm(N, mean = 100, sd = 25),
+                                   rnorm(N, mean = 120, sd = 25)),
+                   Group = c(rep("Control", N),
+                             rep("Treatment", N)),
+                   Gender = rep(c(rep('Male', N/2), rep('Female', N/2)), 2),
+                   ID = rep(1:N, 2)
+  )
+
+  d2 <- SAKDifference(df, data.col = 1, group.col = 2)
+  # This should NOT throw an error
+  expect_error(SAKPlot(d2, ef.size = TRUE, main = "Two groups"), NA)
+  expect_error(SAKPlot(d2, ef.size = "right", main = "Two groups"), NA)
+  expect_error(SAKPlot(d2, ef.size = FALSE, main = "Two groups, no effect size"), NA)
+  expect_error(SAKPlot(d2, ef.size = "below", main = "Two groups, effect size below"), NA)
+})
+
 test_that("three groups", {
   N <- 40
   df <- data.frame(Measurement = c(rnorm(N, mean = 100, sd = 25),
-                                             rnorm(N, mean = 120, sd = 25),
-                                             rnorm(N, mean = 80, sd = 50)),
-                             Group = c(rep("ZControl1", N),
-                                       rep("Group1", N),
-                                       rep("Group2", N)),
-                             Gender = rep(c(rep('Male', N/2), rep('Female', N/2)), 3),
-                             ID = rep(1:N, 3)
+                                   rnorm(N, mean = 120, sd = 25),
+                                   rnorm(N, mean = 80, sd = 50)),
+                   Group = c(rep("ZControl1", N),
+                             rep("Group1", N),
+                             rep("Group2", N)),
+                   Gender = rep(c(rep('Male', N/2), rep('Female', N/2)), 3),
+                   ID = rep(1:N, 3)
   )
 
   d3 <- SAKDifference(df, data.col = 1, group.col = 2)
@@ -485,6 +503,8 @@ test_that("paired works", {
           points = transparent(c("red", "blue"), .5), main = "Paired")
   SAKPlot(es, violin = FALSE, ef.size = FALSE, main = "Paired, no violin, effect size")
   SAKPlot(es, violin = FALSE, ef.size = FALSE, points = FALSE, main = "Paired, no violin, effect size, points")
+  SAKPlot(es, violin.shape = c("left", "right"), violin.width = 0.2)
+
   expect_equal(1, 1)
 })
 
