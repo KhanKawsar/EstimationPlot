@@ -32,8 +32,8 @@ getGroupDensity <- function(group, es, violin.adj, violin.trunc, violin.width) {
   keep <- NULL
   if (isTRUE(violin.trunc)) {
     # Truncate to data extents (isTRUE(violin.trunc)). Ensure density completely encloses data points
-    from <- tail(which(d$x < min(groupVals)), 1)
-    to <- head(which(d$x > max(groupVals)), 1)
+    from <- utils::tail(which(d$x < min(groupVals)), 1)
+    to <- utils::head(which(d$x > max(groupVals)), 1)
     keep <- seq(from, to)
     # Extend by 1 step in each direction so that density completely includes data
     keep <- c(keep[1] - 1, keep, keep[length(keep)] + 1)
@@ -184,7 +184,7 @@ plotEffectSizesBelow <- function(es, ef.size.violin, violin.width, xlim) {
   # What will we plot?
   plotDiffs <- es$group.differences
   ylim <- range(c(0, sapply(plotDiffs, function(pwes) if (is.null(pwes)) NA else range(pwes$t))), na.rm = TRUE)
-  ylim <- extendrange(ylim)
+  ylim <- grDevices::extendrange(ylim)
 
   ### Work out how to map the effect size pseudo region onto user coordinates
   usr <- graphics::par("usr")
@@ -260,6 +260,8 @@ plotEffectSizesBelow <- function(es, ef.size.violin, violin.width, xlim) {
 #'   proportion of the distance between groups.
 #' @param violin.trunc Numeric value that specifies what vertical proportion of
 #'   the violin is truncated.
+#' @param violin.shape Desired violin shape - left-half only (\code{"left"}),
+#'   right-half only (\code{"right"}), or a full violin (\code{"full"}).
 #'
 #' @param box If not FALSE, draw a box-and-whisker plot of the grouped values.
 #'   Value may be a colour, in which case the box borders are plotted with the
@@ -386,7 +388,7 @@ SAKPlot <- function(es,
         }))
       } else {
         # Get means of each group
-        ym <- max(sapply(groups, function(g) mean(data[[es$data.col]][data[[es$group.col]] == group])))
+        ym <- max(sapply(groups, function(g) mean(data[[es$data.col]][data[[es$group.col]] == g])))
       }
       ylim <- c(0, ym)
     }

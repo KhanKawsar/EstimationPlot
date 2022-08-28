@@ -61,6 +61,9 @@ methods.}
 \item{violin}{What type of violin plot to display. If FALSE, violin plot is
 not drawn.}
 
+\item{violin.shape}{Desired violin shape - left-half only (\code{"left"}),
+right-half only (\code{"right"}), or a full violin (\code{"full"}).}
+
 \item{violin.border}{Colours of violin borders.}
 
 \item{violin.fill}{Colour used to fill violins.}

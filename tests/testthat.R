@@ -1,4 +1,4 @@
 library(testthat)
-library(SAKplot)
+library(SAKPlot)
 
-test_check("SAKplot")
+test_check("SAKPlot")

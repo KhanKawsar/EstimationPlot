@@ -6,7 +6,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(SAKplot)
+library(SAKPlot)
 library(datasets)
 data(iris)
 ```
@@ -21,7 +21,7 @@ d <- SAKDifference(iris, groups = c("versicolor", "setosa"), data.col = "Sepal.L
 SAKPlot(d, main = "Two groups")
 par(mar = c(5, 4, 3, 2) + 0.1)
 d <- SAKDifference(iris, data.col = "Sepal.Length", group.col = "Species")
-SAKPlot(d, violin = "right", main = "Three groups")
+SAKPlot(d, violin.shape = "right", main = "Three groups")
 ```
 
 ```{r fig.height=6, fig.width=9}
