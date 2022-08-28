@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.R
 \name{SAKPlot}
 \alias{SAKPlot}
-\title{Simple yet powerful group and effect size plotting in base R.}
+\title{Group and effect size plotting in base R.}
 \usage{
 SAKPlot(
   es,
@@ -17,7 +17,7 @@ SAKPlot(
   violin.fill = TRUE,
   violin.adj = 1.5,
   violin.width = 0.35,
-  violin.trunc.at = 0.05,
+  violin.trunc = TRUE,
   box = FALSE,
   box.fill = TRUE,
   box.notch = FALSE,
@@ -26,7 +26,7 @@ SAKPlot(
   bar = FALSE,
   bar.fill = TRUE,
   ef.size = c(TRUE, "right", "below"),
-  ef.size.density = TRUE,
+  ef.size.violin = TRUE,
   paired = es$effect.type == "paired",
   central.tendency = c("mean", "median"),
   error.bars = c("CI", "SD", "SE"),
@@ -71,8 +71,8 @@ the kernel density bandwidth. Higher values produce a smoother plot.}
 \item{violin.width}{Width of maximum violin horizontal extents, as a
 proportion of the distance between groups.}
 
-\item{violin.trunc.at}{Numeric value that specifies what vertical proportion
-of the violin is truncated.}
+\item{violin.trunc}{Numeric value that specifies what vertical proportion of
+the violin is truncated.}
 
 \item{box}{If not FALSE, draw a box-and-whisker plot of the grouped values.
 Value may be a colour, in which case the box borders are plotted with the
@@ -87,6 +87,17 @@ If FALSE or NA, bodies are not filled}
 \item{box.pars}{List with additional graphical parameters to control the box
 plot. See \code{\link{graphics::bxp}} graphical parameters for a complete
 list.}
+
+\item{bar}{If not FALSE, draw a bar plot of the group means.}
+
+\item{bar.fill}{Colour used to fill bars.}
+
+\item{ef.size}{If not FALSE, effect sizes are plotted. Effect sizes are
+plotted to the right of the main plot if there is only one effect size to
+plot and \code{ef.size != "below"}.}
+
+\item{ef.size.violin}{If not FALSE, boostrapped effect size estimates are
+show as a violin plot.}
 }
 \value{
 \code{es} invisibly.
@@ -103,7 +114,9 @@ Group data may be visualised in multiple ways: \code{points}, \code{violin},
 parameters. To display a type, for example box plots, specify \code{box =
 TRUE}. Rather than \code{TRUE}, you may specify a colour, which is used is
 the border/outline for the boxes. You may also specify a vector of colours,
-one for each group.
+one for each group. For \code{points}, you may specify a colour for each
+individual point. When colours are not specified, they are selected from an
+\code{\link{RColorBrewer}} qualitative palette.
 }
 \seealso{
 \code{\link{SAKDifference}}, \code{\link{vipor::offsetX}},

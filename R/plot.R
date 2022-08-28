@@ -3,14 +3,13 @@
 #### TODO
 #### Unstandardised - y-axis scale should be the same in both components (effect size and data plot)
 
-#### Multiple groups - specify pairings, YES TODO
 #### Scale of cohens d, hedges - scale to look good, perhaps 1/3 of y range, limit axis extents TODO
-#### NO Rename plot function to plot.SAKPlot? Maybe easier to use, harder to locate documentation
 ## magic adjacent/at ? See google raincloud plot for examples
 ####  New options, box_at, box_width, violin_at, points_at, scatter points cex
-## effect size density optional (FALSE) TODO implement ef.size.density
 ## points optional in paired TODO
 ## CI optional/separate with mean: to include with mean SD
+#### Licence
+#### Document data in R/data.R
 
 transparent <-  function(colour, alpha) {
   rgba.val <- grDevices::col2rgb(colour, TRUE)
@@ -21,10 +20,13 @@ transparent <-  function(colour, alpha) {
 }
 
 # Calculate the probability density of one group, optionally truncating the extents
-getGroupDensity <- function(group, es, violin.adj, violin.trunc) {
+getGroupDensity <- function(group, es, violin.adj, violin.trunc, violin.width) {
   groupVals <- es$data[[es$data.col]][es$data[[es$group.col]] == group]
   # Calculate density
   d <- stats::density(groupVals, adj = violin.adj)
+
+  # Normalise density height so all the groups have the same maximum display width
+  d$y <- d$y / max(d$y) * violin.width
 
   # Optionally truncate
   keep <- NULL
@@ -70,9 +72,8 @@ preserveRNG <- function(expr) {
 }
 
 # Function to return a palette of \code{n} colours, with transparency \code{alpha}.
-pickPalette <- function(n) {
+pickPalette <- function(n, pal = "Set2") {
   # Try to use an RColorBrewer palette
-  pal <- "Set2"
   if (n > RColorBrewer::brewer.pal.info[pal, "maxcolors"]) {
     # This is complicated because we want to "randomly" sample available
     # colours, but in a repeatable way, and without interfering with user's
@@ -82,12 +83,12 @@ pickPalette <- function(n) {
       qual_col_pals <- RColorBrewer::brewer.pal.info[RColorBrewer::brewer.pal.info$category == 'qual', ]
       col_vector <- unlist(mapply(RColorBrewer::brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
       # Randomly sample n colours from the whole list
-      set.seed(1)
+      set.seed(3)
       # Try to sample without replacement, but allow replacement if there are too many colours needed
       sample(col_vector, n, replace = n > length(col_vector))
     })
   } else {
-    RColorBrewer::brewer.pal(max(3, n), "Set2")
+    RColorBrewer::brewer.pal(max(3, n), pal)
   }
 }
 
@@ -108,14 +109,16 @@ getErrorBars <- function(es, groupIdx, groupMean, error.bars) {
 }
 
 # Plot a single pairwise effect size
-plotEffectSize <- function(pwes, xo, yo, group1y, violin.width, mapYFn, xpd = FALSE) {
-  d <- stats::density(pwes$t)
-  # Make effect size width half the violin width
-  d$y <- d$y / max(d$y) * violin.width / 2
-  # Diff is group2 - group1, so add to group1 mean make it align with group2
-  graphics::polygon(xo + d$y, mapYFn(yo + group1y + d$x),
-          col = transparent("black", .8),
-          border = "black", xpd = xpd)
+plotEffectSize <- function(pwes, xo, yo, group1y, ef.size.violin, violin.width, mapYFn, xpd = FALSE) {
+  if (ef.size.violin) {
+    d <- stats::density(pwes$t)
+    # Make effect size width half the violin width
+    d$y <- d$y / max(d$y) * violin.width / 2
+    # Diff is group2 - group1, so add to group1 mean make it align with group2
+    graphics::polygon(xo + d$y, mapYFn(yo + group1y + d$x),
+                      col = transparent("black", .8),
+                      border = "black", xpd = xpd)
+  }
 
   # Draw mean of effect size
   graphics::points(xo, mapYFn(yo + group1y + pwes$t0), pch = 19, col = "grey20", cex = 1.5, xpd = xpd)
@@ -125,20 +128,20 @@ plotEffectSize <- function(pwes, xo, yo, group1y, violin.width, mapYFn, xpd = FA
 }
 
 # Plot effect size to the right of the main plot. Only useful when showing a single effect size
-plotEffectSizesRight <- function(es, violin.width, right.ylab) {
+plotEffectSizesRight <- function(es, ef.size.violin, violin.width, right.ylab) {
   pwes <- es$group.differences[[1]]
   y <- es$group.statistics[1, 1]
   y2 <- es$group.statistics[2, 1]
 
   if (es$effect.type %in% c("unstandardised", "paired")) {
     esRange <- range(c(0, pwes$t))
-    plotEffectSize(pwes, 3, 0, y, violin.width, identity)
+    plotEffectSize(pwes, 3, 0, y, ef.size.violin, violin.width, identity)
   } else {
     cat("===========================================================\n")
     cat("TODO position and scale standardised effect size plots TODO\n")
     cat("===========================================================\n")
     esRange <- c(-3, 3)
-    plotEffectSize(pwes, 3, 0, es$group.statistics[2, 1], violin.width, identity)
+    plotEffectSize(pwes, 3, 0, es$group.statistics[2, 1], ef.size.violin, violin.width, identity)
   }
 
   # Horizontal lines from group means, only meaningful for unstandardised differences
@@ -161,8 +164,8 @@ plotEffectSizesRight <- function(es, violin.width, right.ylab) {
 }
 
 # Plot effect size below the main plot. Assumes that bottom margin is large
-# enough to accomodate the effect size plot
-plotEffectSizesBelow <- function(es, violin.width, xlim) { #, mar) {
+# enough to accommodate the effect size plot
+plotEffectSizesBelow <- function(es, ef.size.violin, violin.width, xlim) {
   groups <- es$groups
   nGroups <- length(groups)
 
@@ -175,16 +178,12 @@ plotEffectSizesBelow <- function(es, violin.width, xlim) { #, mar) {
       if (gi[1] == g2 && gi[2] == g1)
         return(negatePairwiseDiff(es$group.differences[[i]]))
     }
+    stop(sprintf("Difference %s - %s not found", g1, g2))
   }
 
   # What will we plot?
-  plotDiffs <- list()
-  plotDiffs[[1]] <- NULL
-  for (g1 in 2:nGroups) {
-    plotDiffs[[g1]] <- pwDiff(groups[g1], groups[1])
-  }
+  plotDiffs <- es$group.differences
   ylim <- range(c(0, sapply(plotDiffs, function(pwes) if (is.null(pwes)) NA else range(pwes$t))), na.rm = TRUE)
-
 
   ### Work out how to map the effect size pseudo region onto user coordinates
   usr <- graphics::par("usr")
@@ -209,7 +208,7 @@ plotEffectSizesBelow <- function(es, violin.width, xlim) { #, mar) {
     if (!is.null(pwes)) {
       gid1 <- which(groups == pwes$groups[1])
       gid2 <- which(groups == pwes$groups[2])
-      plotEffectSize(pwes, gid1, 0, 0, violin.width, mapY, xpd = TRUE)
+      plotEffectSize(pwes, gid1, 0, 0, ef.size.violin, violin.width, mapY, xpd = TRUE)
       graphics::text(gid1, mapY(ylim[1]), sprintf("%s\nminus\n%s", pwes$groups[1], pwes$groups[2]), xpd = TRUE, pos = 1)
     }
   }
@@ -217,7 +216,7 @@ plotEffectSizesBelow <- function(es, violin.width, xlim) { #, mar) {
 
 #############################################################################
 
-#' Simple yet powerful group and effect size plotting in base R.
+#' Group and effect size plotting in base R.
 #'
 #' Plot grouped data and effect size in base R, with control over a large range
 #' of possible display formats and options. To plot your data, first calculate
@@ -229,7 +228,9 @@ plotEffectSizesBelow <- function(es, violin.width, xlim) { #, mar) {
 #' parameters. To display a type, for example box plots, specify \code{box =
 #' TRUE}. Rather than \code{TRUE}, you may specify a colour, which is used is
 #' the border/outline for the boxes. You may also specify a vector of colours,
-#' one for each group.
+#' one for each group. For \code{points}, you may specify a colour for each
+#' individual point. When colours are not specified, they are selected from an
+#' \code{\link{RColorBrewer}} qualitative palette.
 #'
 #' @param es Data returned from a call to \code{\link{SAKDifference}}
 #'
@@ -256,8 +257,8 @@ plotEffectSizesBelow <- function(es, violin.width, xlim) { #, mar) {
 #'   the kernel density bandwidth. Higher values produce a smoother plot.
 #' @param violin.width Width of maximum violin horizontal extents, as a
 #'   proportion of the distance between groups.
-#' @param violin.trunc Numeric value that specifies what vertical proportion
-#'   of the violin is truncated.
+#' @param violin.trunc Numeric value that specifies what vertical proportion of
+#'   the violin is truncated.
 #'
 #' @param box If not FALSE, draw a box-and-whisker plot of the grouped values.
 #'   Value may be a colour, in which case the box borders are plotted with the
@@ -269,6 +270,15 @@ plotEffectSizesBelow <- function(es, violin.width, xlim) { #, mar) {
 #' @param box.pars List with additional graphical parameters to control the box
 #'   plot. See \code{\link{graphics::bxp}} graphical parameters for a complete
 #'   list.
+#'
+#' @param bar If not FALSE, draw a bar plot of the group means.
+#' @param bar.fill Colour used to fill bars.
+#'
+#' @param ef.size If not FALSE, effect sizes are plotted. Effect sizes are
+#'   plotted to the right of the main plot if there is only one effect size to
+#'   plot and \code{ef.size != "below"}.
+#' @param ef.size.violin If not FALSE, boostrapped effect size estimates are
+#'   show as a violin plot.
 #'
 #' @return \code{es} invisibly.
 #'
@@ -302,13 +312,14 @@ SAKPlot <- function(es,
                     bar.fill = TRUE,
 
                     ef.size = c(TRUE, "right", "below"), # if !FALSE, plot effect size
-                    ef.size.density = TRUE, # if TRUE, draw effect size confidence interval
+                    ef.size.violin = TRUE, # if TRUE, draw effect size confidence interval
+
                     paired = es$effect.type == "paired", # if true draw lines between paired points
 
                     central.tendency = c("mean", "median"),
                     error.bars = c("CI", "SD", "SE"), # draw confidence interval line of the data; if box, density, violin is TRUE, CI is FALSE
-
                     mean = "grey20",
+
                     xlab = "",
                     left.ylab = es$data.col.name,
                     right.ylab = "",
@@ -320,7 +331,8 @@ SAKPlot <- function(es,
     stop("data must be a SAKDiff object")
   if (!isFALSE(violin))
     violin.shape <- match.arg(violin.shape)
-  error.bars <- match.arg(error.bars)
+  if (!isFALSE(error.bars))
+    error.bars <- match.arg(error.bars)
   if (!isFALSE(central.tendency))
     central.tendency <- match.arg(central.tendency)
   if (!isFALSE(ef.size)) {
@@ -344,12 +356,10 @@ SAKPlot <- function(es,
 
   # Prepare some palettes, the border palette has no transparency, the fill palette is 80% transparent
   defBorderPalette <- pickPalette(nGroups)
-  defFillPalette <- transparent(pickPalette(nGroups), 0.8)
+  defFillPalette <- transparent(defBorderPalette, 0.8)
 
   # Calculate densities for violin plots
-  densities <- lapply(groups, getGroupDensity, es, violin.adj, violin.trunc)
-  # Normalise densities heights so they all have desired height (which becomes width)
-  densities <- lapply(densities, function(d) { d$y <- d$y / max(d$y) * violin.width; d })
+  densities <- lapply(groups, getGroupDensity, es, violin.adj, violin.trunc, violin.width)
 
   # Calculate plot limits
   xlim <- c(0.5, nGroups + 0.5)
@@ -412,12 +422,7 @@ SAKPlot <- function(es,
   }
 
 
-  # Save current plot parameters and restore on exit. Note that this doesn't
-  # work when effect size is "below". Also, don't save all parameters because
-  # that confuses things if we are inside a layout created by layout or
-  # graphics::par(mfrow)
-
-  ### Prepare plot ###
+  #### Prepare plot ####
   plot(NULL, xlim = xlim, ylim = ylim, type = "n",
        xaxt = "n", xlab = xlab, ylab = left.ylab, ...)
   # Label the groups
@@ -469,7 +474,7 @@ SAKPlot <- function(es,
 
   # Scatter plot of data points
   if (.show(points)) {
-    palette <- transparent(RColorBrewer::brewer.pal(max(3, length(es$groups)), "Set2"), .4)
+    palette <- transparent(defBorderPalette, .4)
     pointCol <- .boolToDef(points, palette[as.numeric(data$.group.as.factor)])
     if (length(pointCol) == nGroups) {
       # If colours specified for each group, expand out to the colours for each point
@@ -534,9 +539,9 @@ SAKPlot <- function(es,
 
   # effect size
   if (ef.size == "right") {
-    plotEffectSizesRight(es, violin.width, right.ylab)
+    plotEffectSizesRight(es, ef.size.violin, violin.width, right.ylab)
   } else if (ef.size == "below") {
-    plotEffectSizesBelow(es, violin.width, xlim) #, mar)
+    plotEffectSizesBelow(es, ef.size.violin, violin.width, xlim)
   }
 
   invisible(es)

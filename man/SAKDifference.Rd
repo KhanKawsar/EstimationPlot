@@ -32,7 +32,13 @@ the values to group by.}
 \item{groups}{Vector of group names. Defaults to all groups in \code{data} in
 \emph{natural} order.}
 
-\item{contrasts}{Specify the pairs of groups to be compared. By default, all pairs of groups are compared.}
+\item{contrasts}{Specify the pairs of groups to be compared. By default, 2nd
+and subsequent groups are compared to the first group. May be a single
+string, a vector of strings, or a matrix. A single string has a format such
+as \code{"group1 - group2, group3 - group4"}. A vector of strings looks
+like \code{c("group1 - group2", "group3 - group4")}. If a matrix is
+specified, it must have a column for each contrast, with the first group in
+row 1 and the second in row 2.}
 
 \item{effect.type}{Type of group difference to be calculated. Possible types
 are: \code{unstandardised}, difference in group means; \code{cohens},
@@ -52,21 +58,29 @@ with missing data are stripped.}
 \item{...}{Any additional parameters are passed to \code{\link{boot::boot}}.}
 }
 \value{
-List containing:
-  \item{\code{groups}}{Vector of group names}
-  \item{\code{group.statistics}}{Matrix with a row for each group, columns are group mean, median, standard deviation, standard error of the mean, lower and upper 95\% confidence intervals of the mean}
-  \item{\code{group.differences}}{List of \code{SAKPWDiff} objects, which are \code{boot} objects with added confidence interval information. See \code{\link{boot::boot}} and  \code{\link{boot::boot.ci}}}
+List containing: \item{\code{groups}}{Vector of group names}
+  \item{\code{group.statistics}}{Matrix with a row for each group, columns
+  are group mean, median, standard deviation, standard error of the mean,
+  lower and upper 95\% confidence intervals of the mean}
+  \item{\code{group.differences}}{List of \code{SAKPWDiff} objects, which are
+  \code{boot} objects with added confidence interval information. See
+  \code{\link{boot::boot}} and  \code{\link{boot::boot.ci}}}
   \item{\code{effect.type}}{Value of \code{effect.type} argument}
   \item{\code{effect.name}}{Pretty version of \code{effect.type}}
   \item{\code{data.col}}{Value of \code{data.col} argument}
   \item{\code{data.col.name}}{Name of the \code{data.col} column}
   \item{\code{group.col}}{Value of \code{group.col} argument}
   \item{\code{group.col.name}}{Name of the \code{group.col} column}
-  \item{\code{data}}{the input data}
-  \item{\code{call}}{how this function was called}
+  \item{\code{data}}{the input data} \item{\code{call}}{how this function was
+  called}
 }
 \description{
 TODO details
+}
+\details{
+Data format - long format, one column with measurement (\code{data.col}),
+another column with group identity (\code{group.col}). For repeated measures,
+a subject identity column is also required (\code{id.col}).
 }
 \references{
 Lakens, D. (2013). Calculating and reporting effect sizes to facilitate
