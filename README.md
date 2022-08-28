@@ -4,6 +4,8 @@ output: html_document
 
 # SAKPlot: Swiss-army-knife of Estimation Plotting
 
+Effect size estimation and plotting is a component of [estimation statistics](https://en.wikipedia.org/wiki/Estimation_statistics).
+
 ## Installation
 
 To install the development version (which is the only version available as yet):
@@ -20,6 +22,6 @@ To install the development version (which is the only version available as yet):
                    group = c(rep("Control", n), rep("Group", n)),
                    id = c(1:n, 1:n))
 
-  d <- difference(df, data.col = "val", group.col = "group")
+  d <- SAKDifference(df, data.col = "val", group.col = "group")
   SAKPlot(d)
 ```
