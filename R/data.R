@@ -10,3 +10,16 @@
 #'
 #' @source TODO
 "insulin"
+
+#' Darwin data TODO
+"darwin_200"
+
+#' Darwin data TODO
+"darwin_237"
+
+#' Fertilisation data TODO
+"fertilisation"
+
+#' Length data TODO
+"length"
+
