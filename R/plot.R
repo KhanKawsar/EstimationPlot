@@ -151,15 +151,15 @@ plotEffectSizesRight <- function(es, ef.size.violin, violin.width, right.ylab) {
 
   # Axis labels on right-hand
   graphics::axis(4, at = y + pretty(esRange),
-       labels = pretty(esRange), las = 1)
+       labels = pretty(esRange), las = 3)
 
   # Add x-axis label for effect size
   graphics::mtext(sprintf("%s\nminus\n%s", es$groups[2], es$groups[1]), at = 3, side = 1, line = 3)
   graphics::axis(1, at = 3, labels = FALSE) # X-axis tick mark
 
   # Optionally label the right y-axis
-  if (!isFALSE(right.ylab)) {
-    graphics::mtext(es$effect.name, side = 4, line = 2.5)
+  if (!isFALSE(right.ylab) && right.ylab != "") {
+    graphics::mtext(right.ylab, side = 4, line = 2.5)
   }
 }
 
@@ -274,7 +274,8 @@ plotEffectSizesBelow <- function(es, ef.size.violin, violin.width, xlim) {
 #'   plot. See \code{\link{graphics::bxp}} graphical parameters for a complete
 #'   list.
 #'
-#' @param bar If not FALSE, draw a bar plot of the group means.
+#' @param bar If not FALSE, draw a bar plot of the group means or medians,
+#'   according to \code{central.tendency}.
 #' @param bar.fill Colour used to fill bars.
 #'
 #' @param ef.size If not FALSE, effect sizes are plotted. Effect sizes are
@@ -283,15 +284,36 @@ plotEffectSizesBelow <- function(es, ef.size.violin, violin.width, xlim) {
 #' @param ef.size.violin If not FALSE, boostrapped effect size estimates are
 #'   show as a violin plot.
 #'
+#' @param paired If \code{TRUE}, lines are drawn joining the individual data
+#'   points.
+#' @param central.tendency Should the indicated measure of central tendency be
+#'   \code{"mean"} or \code{"median"}?
+#' @param central.tendency.colour Colour used for mean/median and error bars.
+#' @param error.bars Should error bars depict 95% confidence intervals
+#'   (\code{"CI}), standard deviation (\code{"SD"}) or standard error
+#'   (\code{"SE})?
+#'
+#' @param left.ylab Left-hand y-axis label.
+#' @param right.ylab Right-hand y-axis label. Only used if effect size is shown
+#'   on the right (\code{ef.size = "right"}).
+#'
+#' @param ... Additional arguments are past to the \code{\link{graphics::plot}}
+#'   function.
+#'
 #' @return \code{es} invisibly.
 #'
 #' @seealso \code{\link{SAKDifference}}, \code{\link{vipor::offsetX}},
 #'   \code{\link{graphics::boxplot}}, \code{\link{graphics::bxp}}
 #'
 #' @references
-#' Gardner, M. J., & Altman, D. G. (1986). Confidence intervals rather than P values: estimation rather than hypothesis testing. Br Med J (Clin Res Ed), 292(6522), 746-750. doi:10.1136/bmj.292.6522.746
 #'
-#' Cumming, G. (2012). Understanding the new statistics : effect sizes, confidence intervals, and meta-analysis (1st edition ed.). New York: Routledge.
+#' Gardner, M. J., & Altman, D. G. (1986). Confidence intervals rather than P
+#' values: estimation rather than hypothesis testing. Br Med J (Clin Res Ed),
+#' 292(6522), 746-750. doi:10.1136/bmj.292.6522.746
+#'
+#' Cumming, G. (2012). Understanding the new statistics : effect sizes,
+#' confidence intervals, and meta-analysis (1st edition ed.). New York:
+#' Routledge.
 #'
 #' @export
 SAKPlot <- function(es,
@@ -313,36 +335,48 @@ SAKPlot <- function(es,
                     box = FALSE,
                     box.fill = TRUE,
                     box.notch = FALSE,
-                    box.outline = TRUE,
                     box.pars = list(boxwex = 0.8, staplewex = 0.5, outwex = 0.5),
 
                     bar = FALSE,
                     bar.fill = TRUE,
 
-                    ef.size = c(TRUE, "right", "below"), # if !FALSE, plot effect size
+                    ef.size = c("right", "below"), # if !FALSE, plot effect size
                     ef.size.violin = TRUE, # if TRUE, draw effect size confidence interval
 
                     paired = es$effect.type == "paired", # if true draw lines between paired points
 
                     central.tendency = c("mean", "median"),
                     error.bars = c("CI", "SD", "SE"), # draw confidence interval line of the data; if box, density, violin is TRUE, CI is FALSE
-                    mean = "grey20",
+                    central.tendency.colour = "grey20",
 
-                    xlab = "",
                     left.ylab = es$data.col.name,
-                    right.ylab = "",
+                    right.ylab = es$effect.name,
                     #col = c("col1", "col2", "col3"), opacity = 0.6, #colour of box, violin, box border, density, col 1 = group 1, col2 = group 2, col3 = ef plot, {col = n+1, n = group no) #
                     ...
 ) {
+
+  # We allow TRUE/FALSE or colours to be specified for many values. TRUE is equivalent to a default colour
+  .boolToDef <- function(arg, def) if (isTRUE(arg)) { def } else { arg }
+  .show <- function(what) !isFALSE(what) && !is.null(what)
+  .isColour <- function(c) tryCatch(is.matrix(grDevices::col2rgb(c)), error = function(e) FALSE)
+  .colour <- function(what) if (.isColour(what)) { what } else { NA }
+
   # Check and process input parameters
   if (!methods::is(es, "SAKDiff"))
     stop("data must be a SAKDiff object")
-  if (!isFALSE(violin))
-    violin.shape <- match.arg(violin.shape)
+  if (!isFALSE(violin)) {
+    # This is tricky - we want to allow multiple shapes, but default to just the
+    # first. That's what several.ok = !missing(violin.shape) does
+    violin.shape <- match.arg(violin.shape, several.ok = !missing(violin.shape))
+  }
   if (!isFALSE(error.bars))
     error.bars <- match.arg(error.bars)
-  if (!isFALSE(central.tendency))
-    central.tendency <- match.arg(central.tendency)
+  if (!isFALSE(central.tendency)) {
+    if (isTRUE(central.tendency))
+      central.tendency <- "mean"
+    else
+      central.tendency <- match.arg(central.tendency)
+  }
   if (!isFALSE(ef.size)) {
     if (isTRUE(ef.size))
       ef.size <- "right"
@@ -351,12 +385,6 @@ SAKPlot <- function(es,
   }
   points.method <- match.arg(points.method)
 
-  # We allow TRUE/FALSE or colours to be specified for many values. TRUE is equivalent to a default colour
-  .boolToDef <- function(arg, def) if (isTRUE(arg)) { def } else { arg }
-
-  .show <- function(what) !isFALSE(what) && !is.null(what)
-  .isColour <- function(c) tryCatch(is.matrix(grDevices::col2rgb(c)), error = function(e) FALSE)
-  .colour <- function(what) if (.isColour(what)) { what } else { NA }
 
   data <- es$data
   groups <- es$groups
@@ -432,7 +460,7 @@ SAKPlot <- function(es,
 
   #### Prepare plot ####
   plot(NULL, xlim = xlim, ylim = ylim, type = "n",
-       xaxt = "n", xlab = xlab, ylab = left.ylab, ...)
+       xaxt = "n", xlab = "", ylab = left.ylab, ...)
   # Label the groups
   graphics::axis(1, at = seq_len(nGroups), labels = groups)
 
@@ -453,7 +481,9 @@ SAKPlot <- function(es,
   if (.show(bar)) {
     bar <- .boolToDef(bar, defBorderPalette)
     bar.fill <- .boolToDef(bar.fill, defFillPalette)
-    graphics::barplot(es$group.statistics[, "mean"] ~ factor(groups, levels = groups),
+    # Use central.tendency as bar height if specified, otherwise mean
+    ct <- if (isFALSE(central.tendency)) "mean" else central.tendency
+    graphics::barplot(es$group.statistics[, ct] ~ factor(groups, levels = groups),
             width = 0.8, space = c(0.75, rep(0.25, nGroups - 1)),
             col = .colour(bar.fill), border = .colour(bar),
             add = TRUE, axes = FALSE, names.arg = FALSE)
@@ -466,13 +496,15 @@ SAKPlot <- function(es,
     borders <- violin
     if (length(borders) == 1)
       borders <- rep(borders, nGroups)
+    if (length(violin.shape) == 1)
+      violin.shape <- rep(violin.shape, nGroups)
     for (i in seq_along(groups)) {
       d <- densities[[i]]
       col <- violin.fill[i]
       border <- borders[i]
-      if (violin.shape == "left-half") {
+      if (violin.shape[i] == "left-half") {
         graphics::polygon(i - d$y, d$x, col = col, border = border)
-      } else if (violin.shape == "right-half") {
+      } else if (violin.shape[i] == "right-half") {
         graphics::polygon(i + d$y, d$x, col = col, border = border)
       } else {
         graphics::polygon(c(i - d$y, rev(i + d$y)), c(d$x, rev(d$x)), col = col, border = border)
@@ -527,9 +559,9 @@ SAKPlot <- function(es,
 
       # plot points or lines
       if (central.tendency == "mean")
-        graphics::points(i, y, pch = 19, cex = 1.5, col = .colour(mean))
+        graphics::points(i, y, pch = 19, cex = 1.5, col = .colour(central.tendency.colour))
       else
-        graphics::segments(i - violin.width, y, i + violin.width, y, col = .colour(mean), lwd = 2)
+        graphics::segments(i - violin.width, y, i + violin.width, y, col = .colour(central.tendency.colour), lwd = 2)
     }
   }
 
@@ -541,7 +573,7 @@ SAKPlot <- function(es,
     for (i in seq_along(groups)) {
       y <- es$group.statistics[i, centre]
       bars <- getErrorBars(es, i, y, error.bars)
-      graphics::segments(i, bars[1], i, bars[2], col = .colour(mean), lty = 1, lwd = 2)
+      graphics::segments(i, bars[1], i, bars[2], col = .colour(central.tendency.colour), lty = 1, lwd = 2)
     }
   }
 

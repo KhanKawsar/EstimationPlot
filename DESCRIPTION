@@ -11,7 +11,8 @@ LazyData: true
 Imports: 
     vipor,
     boot,
-    RColorBrewer
+    RColorBrewer,
+    methods
 Suggests: 
     knitr,
     rmarkdown,

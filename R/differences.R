@@ -1,5 +1,7 @@
 # The difference function
 
+#### TODO check difference calcs for effect.type = "paired". Refer to Altman & Gardner, 1986
+
 ### confidence interval of a group
 CI <- function(x){
   alpha <- 0.95
@@ -222,7 +224,7 @@ SAKDifference <- function(data,
                        # ci.conf = 0.95,
 ) {
 
-  effectNames <- c(unstandardised = "Mean difference", cohens = "Cohen's d", hedges = "Hedge's g")
+  effectNames <- c(unstandardised = "Mean difference", cohens = "Cohen's d", hedges = "Hedge's g", paired = "Paired mean difference")
 
   if (!is.function(effect.type))
     effect.type <- match.arg(effect.type)
