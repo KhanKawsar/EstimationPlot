@@ -29,7 +29,7 @@ stCohensD <- function(x1, x2){
   m2 <- mean(x2)
   SD2 <- stats::sd(x2)
   N2 <- length(x2)
-  x <- sqrt((N1 - 1) * (SD1 * SD1) * (N2 - 1) * (SD2 * SD2) / (N1 + N2 - 2))
+  x <- sqrt(((N1 - 1) * (SD1 * SD1) + (N2 - 1) * (SD2 * SD2)) / (N1 + N2 - 2))
   (m2 - m1) / x
 }
 
@@ -41,9 +41,9 @@ stHedgesD <- function(x1, x2){
   m2 <- mean(x2)
   SD2 <- stats::sd(x2)
   N2 <- length(x2)
-  x <- sqrt((N1 - 1) * (SD1 * SD1) * (N2 - 1) * (SD2 * SD2) / (N1 + N2 - 2))
-  d = (m2 - m1) / x
-  d * (1 - (3 / (4 * (N1 + N2) - 9)))
+  x <- sqrt(((N1 - 1) * (SD1 * SD1) + (N2 - 1) * (SD2 * SD2)) / (N1 + N2 - 2))
+  g <- (m2 - m1) / x
+  g * (1 - (3 / (4 * (N1 + N2) - 9)))
 }
 
 calcPairDiff <- function(data, pair, data.col, group.col, id.col, effect.type, R, ci.type, ...) {
@@ -275,7 +275,7 @@ SAKDifference <- function(data,
       # CI of mean
       CI.lower = ci[1],
       CI.upper = ci[2],
-      n = length(grpVals)
+      N = length(grpVals)
     )
   })
   df <- do.call(rbind, gil)
@@ -335,8 +335,8 @@ print.SAKDiff <- function(x, ...) {
 #' @param ... Ignored
 #' @export
 print.SAKPWDiff <- function(x, ...) {
-  cat(sprintf("  %s - %s: %g, %g%% CI (%s) %g, %g\n",
+  cat(sprintf("  %s - %s: %g, %g%% CI (%s) [%g, %g]\n",
               x$groups[1], x$groups[2],
-              x$t0, x$bca[1], x$ci.type, x$bca[4], x$bca[5]))
+              x$t0, x$bca[1] * 100, x$ci.type, x$bca[4], x$bca[5]))
 }
 

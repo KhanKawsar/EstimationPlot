@@ -26,6 +26,7 @@ SAKPlot(
   bar.fill = TRUE,
   ef.size = c("right", "below"),
   ef.size.violin = TRUE,
+  ef.size.pch = 17,
   paired = es$effect.type == "paired",
   central.tendency = c("mean", "median"),
   error.bars = c("CI", "SD", "SE"),
@@ -96,10 +97,14 @@ according to \code{central.tendency}.}
 
 \item{ef.size}{If not FALSE, effect sizes are plotted. Effect sizes are
 plotted to the right of the main plot if there is only one effect size to
-plot and \code{ef.size != "below"}.}
+plot and \code{ef.size != "below"}. If the effect size is drawn to the
+right, you will need to increase the size of the right margin (see
+\code{\link{par(mar = ...)}}).}
 
 \item{ef.size.violin}{If not FALSE, boostrapped effect size estimates are
 show as a violin plot.}
+
+\item{ef.size.pch}{Symbol to represent mean effect size.}
 
 \item{paired}{If \code{TRUE}, lines are drawn joining the individual data
 points.}
