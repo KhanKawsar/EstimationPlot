@@ -9,6 +9,9 @@
 #### Document data in R/data.R
 #### Graphical depiction for effect size interpretation, e.g. small = 0.2, medium = 0.5 and large = 0.8
 #### y-axis labels horizontal
+#### Effect size shape control (left, right, full)
+#### Allow plot control over group display names
+#### Add las parameter
 
 
 #' Returns a transparent version of the specified colour(s).
@@ -191,7 +194,7 @@ plotEffectSizesRight <- function(es, showViolin, violinCol, violin.width, ef.siz
 
 
   # Add x-axis label for effect size
-  graphics::mtext(sprintf("%s\nminus\n%s", es$groups[2], es$groups[1]), at = 3, side = 1, line = 3)
+  graphics::mtext(sprintf("%s\nminus\n%s", es$groupLabels[2], es$groupLabels[1]), at = 3, side = 1, line = 3)
   graphics::axis(1, at = 3, labels = FALSE) # X-axis tick mark
 
   # Optionally label the right y-axis
@@ -247,7 +250,7 @@ plotEffectSizesBelow <- function(es, showViolin, violinCol, violin.width, ef.siz
       gid1 <- which(groups == pwes$groups[1])
       gid2 <- which(groups == pwes$groups[2])
       plotEffectSize(pwes, gid1, pwes$t0, showViolin, violinCol, violin.width, ef.size.pch, mapY, xpd = TRUE)
-      graphics::text(gid1, mapY(ylim[1]), sprintf("%s\nminus\n%s", pwes$groups[1], pwes$groups[2]), xpd = TRUE, pos = 1)
+      graphics::text(gid1, mapY(ylim[1]), sprintf("%s\nminus\n%s", pwes$groupLabels[1], pwes$groupLabels[2]), xpd = TRUE, pos = 1)
     }
   }
 }
@@ -311,10 +314,13 @@ plotEffectSizesBelow <- function(es, showViolin, violinCol, violin.width, ef.siz
 #' @param box.pars List with additional graphical parameters to control the box
 #'   plot. See \code{\link{graphics::bxp}} graphical parameters for a complete
 #'   list.
+#' @param box.dx Horizontal shift to be applied to each box.
 #'
 #' @param bar If not FALSE, draw a bar plot of the group means or medians,
 #'   according to \code{central.tendency}.
 #' @param bar.fill Colour used to fill bars.
+#' @param bar.width Width of bars.
+#' @param bar.dx Horizontal shift to be applied to each bar.
 #'
 #' @param ef.size If not FALSE, effect sizes are plotted. Effect sizes are
 #'   plotted to the right of the main plot if there is only one effect size to
@@ -378,9 +384,12 @@ SAKPlot <- function(es,
                     box.fill = TRUE,
                     box.notch = FALSE,
                     box.pars = list(boxwex = 0.8, staplewex = 0.5, outwex = 0.5),
+                    box.dx = 0,
 
                     bar = FALSE,
                     bar.fill = TRUE,
+                    bar.width = 0.8,
+                    bar.dx = 0,
 
                     ef.size = c("right", "below"), # if !FALSE, plot effect size
                     ef.size.violin = TRUE, # if TRUE, draw effect size confidence interval
@@ -404,7 +413,7 @@ SAKPlot <- function(es,
   .isColour <- function(c) tryCatch(is.matrix(grDevices::col2rgb(c)), error = function(e) FALSE)
   .colour <- function(what) if (.isColour(what)) { what } else { NA }
   # Extend a vector so that it has length nGroups
-  .extend <- function(x) rep(x, length.out = nGroups)
+  .extend <- function(x) rep_len(x, nGroups)
 
   # Check and process input parameters
   if (!methods::is(es, "SAKDiff"))
@@ -507,7 +516,7 @@ SAKPlot <- function(es,
   plot(NULL, xlim = xlim, ylim = ylim, type = "n",
        xaxt = "n", xlab = "", ylab = left.ylab, ...)
   # Label the groups
-  graphics::axis(1, at = seq_len(nGroups), labels = groups)
+  graphics::axis(1, at = seq_len(nGroups), labels = es$group.names)
 
   ### Add the various components to the plot ###
   # Turn group column into a factor so it can be ordered by the user
@@ -518,20 +527,28 @@ SAKPlot <- function(es,
   if (.show(box)) {
     box <- .boolToDef(box, defBorderPalette)
     box.fill <- .boolToDef(box.fill, defFillPalette)
-    graphics::boxplot(f, data = data, add = TRUE, axes = FALSE, notch = box.notch,
-            col = .colour(box.fill), border = .colour(box), pars = box.pars)
+    box.dx <- .extend(box.dx)
+    graphics::boxplot(f, data = data, at = seq_len(nGroups) + box.dx,
+                      add = TRUE, axes = FALSE, notch = box.notch,
+                      col = .colour(box.fill), border = .colour(box), pars = box.pars)
   }
 
   # bar chart
   if (.show(bar)) {
     bar <- .boolToDef(bar, defBorderPalette)
     bar.fill <- .boolToDef(bar.fill, defFillPalette)
+    bar.width <- .extend(bar.width)
+    bar.dx <- .extend(bar.dx)
+    space <- c(0.75, rep(0.25, nGroups - 1))
+    # reverse engineer space from x positions and widths of bars
+    gap <- diff(c(-bar.width[1] / 2, seq_len(nGroups) + bar.dx))
+    space <- sapply(seq_along(gap), function(i) (gap[i] - bar.width[i]) / bar.width[i])
     # Use central.tendency as bar height if specified, otherwise mean
     ct <- if (isFALSE(central.tendency)) "mean" else central.tendency
     graphics::barplot(es$group.statistics[, ct] ~ factor(groups, levels = groups),
-            width = 0.8, space = c(0.75, rep(0.25, nGroups - 1)),
-            col = .colour(bar.fill), border = .colour(bar),
-            add = TRUE, axes = FALSE, names.arg = FALSE)
+                      width = bar.width, space = space, offset = bar.dx,
+                      col = .colour(bar.fill), border = .colour(bar),
+                      add = TRUE, axes = FALSE, names.arg = FALSE)
   }
 
   # Violin plots
@@ -550,7 +567,7 @@ SAKPlot <- function(es,
       } else if (violin.shape[i] == "right-half") {
         graphics::polygon(i + d$y + dx[i], d$x, col = col, border = border)
       } else {
-        graphics::polygon(c(i - d$y + dx[i], rev(i + d$y)), c(d$x, rev(d$x)), col = col, border = border)
+        graphics::polygon(c(i - d$y, rev(i + d$y)) + dx[i], c(d$x, rev(d$x)), col = col, border = border)
       }
     }
   }

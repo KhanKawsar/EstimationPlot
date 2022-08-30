@@ -23,8 +23,11 @@ SAKPlot(
   box.fill = TRUE,
   box.notch = FALSE,
   box.pars = list(boxwex = 0.8, staplewex = 0.5, outwex = 0.5),
+  box.dx = 0,
   bar = FALSE,
   bar.fill = TRUE,
+  bar.width = 0.8,
+  bar.dx = 0,
   ef.size = c("right", "below"),
   ef.size.violin = TRUE,
   ef.size.pch = 17,
@@ -93,10 +96,16 @@ If FALSE or NA, bodies are not filled}
 plot. See \code{\link{graphics::bxp}} graphical parameters for a complete
 list.}
 
+\item{box.dx}{Horizontal shift to be applied to each box.}
+
 \item{bar}{If not FALSE, draw a bar plot of the group means or medians,
 according to \code{central.tendency}.}
 
 \item{bar.fill}{Colour used to fill bars.}
+
+\item{bar.width}{Width of bars.}
+
+\item{bar.dx}{Horizontal shift to be applied to each bar.}
 
 \item{ef.size}{If not FALSE, effect sizes are plotted. Effect sizes are
 plotted to the right of the main plot if there is only one effect size to

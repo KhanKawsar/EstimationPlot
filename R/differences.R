@@ -46,7 +46,7 @@ stHedgesD <- function(x1, x2){
   g * (1 - (3 / (4 * (N1 + N2) - 9)))
 }
 
-calcPairDiff <- function(data, pair, data.col, group.col, id.col, effect.type, R, ci.type, ...) {
+calcPairDiff <- function(data, pair, pairNames, data.col, group.col, id.col, effect.type, R, ci.type, ...) {
 
   # Function to simplify writing bootstrap statistic functions
   .wrap2GroupStatistic <- function(statisticFn) {
@@ -98,6 +98,7 @@ calcPairDiff <- function(data, pair, data.col, group.col, id.col, effect.type, R
 
   # Save group names
   es$groups <- pair
+  es$groupLabels <- pairNames
   # Remove data because it is in the outer structure
   es$data <- NULL
   # Save CI type
@@ -138,6 +139,7 @@ expandContrasts <- function(contrasts, groups) {
 # usually a member of es$group.differences)
 negatePairwiseDiff <- function(pwd) {
   pwd$groups[[1]] <- rev(pwd$groups[[1]])
+  pwd$groupLabels[[1]] <- rev(pwd$groupLabels[[1]])
   pwd$t0 <- -pwd$t0
   pwd$t[[1]] <- -pwd$t[[1]]
   pwd$bca[4] <- -pwd$bca[4]
@@ -169,7 +171,8 @@ negatePairwiseDiff <- function(pwd) {
 #' @param id.col Name or index of ID column for \code{"paired"} data.
 #' @param effect.type Type of difference
 #' @param groups Vector of group names. Defaults to all groups in \code{data} in
-#'   \emph{natural} order.
+#'   \emph{natural} order. If \code{groups} is a named vector, the names are
+#'   used to identify groups for printing or plotting.
 #' @param contrasts Specify the pairs of groups to be compared. By default, 2nd
 #'   and subsequent groups are compared to the first group. May be a single
 #'   string, a vector of strings, or a matrix. A single string has a format such
@@ -257,6 +260,10 @@ SAKDifference <- function(data,
 
   # Create return structure with administrative info
   .colName <- function(col) ifelse(is.numeric(col), names(data)[col], col)
+  groupLabels <- names(groups)
+  if (is.null(groupLabels))
+    groupLabels <- groups
+  groupLabels <- ifelse(groupLabels == "", groups, groupLabels)
   es <- list(data = data,
              call = match.call(),
              data.col = data.col,
@@ -264,6 +271,7 @@ SAKDifference <- function(data,
              group.col = group.col,
              group.col.name = .colName(group.col),
              groups = groups,
+             group.names = groupLabels,
              effect.type = effect.type,
              effect.name = effectNames[effect.type])
   # Return value has type SAKDiff
@@ -284,7 +292,7 @@ SAKDifference <- function(data,
     )
   })
   df <- do.call(rbind, gil)
-  rownames(df) <- groups
+  rownames(df) <- groupLabels
   es$group.statistics <- df
 
   if ((missing("contrasts") || is.null(contrasts)) && length(groups) > 1) {
@@ -297,11 +305,12 @@ SAKDifference <- function(data,
     contrasts <- expandContrasts(contrasts, groups)
   }
 
-  ### We will calculate effect size of all pairs (maybe rethink this later)
   # For each pair of groups...
   es$group.differences <- apply(contrasts, 2, function(pair) {
     pairData <- data[as.character(data[[group.col]]) %in% pair, ]
-    calcPairDiff(pairData, pair, data.col, group.col, id.col, effect.type, R, ci.type)
+    groupLabels <- c(groupLabels[which(groups == pair[1])],
+                    groupLabels[which(groups == pair[2])])
+    calcPairDiff(pairData, pair, groupLabels, data.col, group.col, id.col, effect.type, R, ci.type)
   })
 
   es
@@ -341,7 +350,7 @@ print.SAKDiff <- function(x, ...) {
 #' @export
 print.SAKPWDiff <- function(x, ...) {
   cat(sprintf("  %s - %s: %g, %g%% CI (%s) [%g, %g]\n",
-              x$groups[1], x$groups[2],
+              x$groupLabels[1], x$groupLabels[2],
               x$t0, x$bca[1] * 100, x$ci.type, x$bca[4], x$bca[5]))
 }
 

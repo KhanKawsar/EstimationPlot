@@ -30,7 +30,8 @@ the values to group by.}
 \item{id.col}{Name or index of ID column for \code{"paired"} data.}
 
 \item{groups}{Vector of group names. Defaults to all groups in \code{data} in
-\emph{natural} order.}
+\emph{natural} order. If \code{groups} is a named vector, the names are
+used to identify groups for printing or plotting.}
 
 \item{contrasts}{Specify the pairs of groups to be compared. By default, 2nd
 and subsequent groups are compared to the first group. May be a single
