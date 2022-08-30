@@ -39,3 +39,7 @@ d <- SAKDifference(iris, data.col = "Sepal.Length", group.col = "Species", effec
 SAKPlot(d, ef.size.violin = FALSE, main = "Hedge's g, no effect violins")
 ```
 
+```{r fig.height=6, fig.width=9}
+d <- SAKDifference(insulin, 1, 2, 3, groups = c("before", "after"), na.rm = TRUE, effect.type = "paired")
+SAKPlot(d, violin.shape = c("left", "right"), violin.dx = c(-0.05, 0.05), violin.width = 0.3, main = "Customised plot")
+```

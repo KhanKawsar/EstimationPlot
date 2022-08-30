@@ -1,15 +1,14 @@
 ### Private functions
 
 #### TODO
-#### Unstandardised - y-axis scale should be the same in both components (effect size and data plot)
-
-#### Scale of cohens d, hedges - scale to look good, perhaps 1/3 of y range, limit axis extents TODO
 ## magic adjacent/at ? See google raincloud plot for examples
 ####  New options, box_at, box_width, violin_at, points_at, scatter points cex
 ## points optional in paired TODO
 ## CI optional/separate with mean: to include with mean SD
 #### Licence
 #### Document data in R/data.R
+#### Graphical depiction for effect size interpretation, e.g. small = 0.2, medium = 0.5 and large = 0.8
+#### y-axis labels horizontal
 
 
 #' Returns a transparent version of the specified colour(s).
@@ -284,13 +283,13 @@ plotEffectSizesBelow <- function(es, showViolin, violinCol, violin.width, ef.siz
 #'   noise to each x-value. See \code{\link{vipor::offsetX}} for remaining
 #'   methods.
 #' @param pch Symbol to use for plotting points.
+#' @param points.dx Horizontal shift to be applied to points in each group.
 #' @param points.params List of named parameters to pass on to
 #'   \code{\link{graphics::points}}, e.g. \code{SAKPlot(es, points = 1, pch =
 #'   21, points.params = list(bg = as.numeric(factor(data$Sex)) + 1))}.
 #'
-#' @param violin What type of violin plot to display. If FALSE, violin plot is
-#'   not drawn.
-#' @param violin.border Colours of violin borders.
+#' @param violin If FALSE, violin plot is not drawn. Otherwise specifies the
+#'   colour of the violin borders.
 #' @param violin.fill Colour used to fill violins.
 #' @param violin.adj Value used to control violin plot smoothness by adjusting
 #'   the kernel density bandwidth. Higher values produce a smoother plot.
@@ -300,6 +299,7 @@ plotEffectSizesBelow <- function(es, showViolin, violinCol, violin.width, ef.siz
 #'   the violin is truncated.
 #' @param violin.shape Desired violin shape - left-half only (\code{"left"}),
 #'   right-half only (\code{"right"}), or a full violin (\code{"full"}).
+#' @param violin.dx Horizontal shift to be applied to each violin.
 #'
 #' @param box If not FALSE, draw a box-and-whisker plot of the grouped values.
 #'   Value may be a colour, in which case the box borders are plotted with the
@@ -363,15 +363,16 @@ SAKPlot <- function(es,
                     points.method = c("quasirandom", "pseudorandom", "smiley", "maxout", "frowney", "minout", "tukey",
                                       "tukeyDense", "jitter", "overplot"),
                     pch = 19,
+                    points.dx = 0,
                     points.params = list(),
 
                     violin = isFALSE(box) && isFALSE(bar),
                     violin.shape = c("left-half", "right-half", "full"),
-                    violin.border = TRUE,
                     violin.fill = TRUE,
                     violin.adj = 1.5,
                     violin.width = 0.35,
                     violin.trunc = TRUE,
+                    violin.dx = 0,
 
                     box = FALSE,
                     box.fill = TRUE,
@@ -402,6 +403,8 @@ SAKPlot <- function(es,
   .show <- function(what) !isFALSE(what) && !is.null(what)
   .isColour <- function(c) tryCatch(is.matrix(grDevices::col2rgb(c)), error = function(e) FALSE)
   .colour <- function(what) if (.isColour(what)) { what } else { NA }
+  # Extend a vector so that it has length nGroups
+  .extend <- function(x) rep(x, length.out = nGroups)
 
   # Check and process input parameters
   if (!methods::is(es, "SAKDiff"))
@@ -534,22 +537,20 @@ SAKPlot <- function(es,
   # Violin plots
   if (.show(violin)) {
     violin <- .boolToDef(violin, defBorderPalette)
-    violin.fill <- .boolToDef(violin.fill, defFillPalette)
-    borders <- violin
-    if (length(borders) == 1)
-      borders <- rep(borders, nGroups)
-    if (length(violin.shape) == 1)
-      violin.shape <- rep(violin.shape, nGroups)
+    borders <- .extend(violin)
+    violin.fill <- .extend(.boolToDef(violin.fill, defFillPalette))
+    violin.shape <- .extend(violin.shape)
+    dx <- .extend(violin.dx)
     for (i in seq_along(groups)) {
       d <- densities[[i]]
       col <- violin.fill[i]
       border <- borders[i]
       if (violin.shape[i] == "left-half") {
-        graphics::polygon(i - d$y, d$x, col = col, border = border)
+        graphics::polygon(i - d$y + dx[i], d$x, col = col, border = border)
       } else if (violin.shape[i] == "right-half") {
-        graphics::polygon(i + d$y, d$x, col = col, border = border)
+        graphics::polygon(i + d$y + dx[i], d$x, col = col, border = border)
       } else {
-        graphics::polygon(c(i - d$y, rev(i + d$y)), c(d$x, rev(d$x)), col = col, border = border)
+        graphics::polygon(c(i - d$y + dx[i], rev(i + d$y)), c(d$x, rev(d$x)), col = col, border = border)
       }
     }
   }
@@ -564,6 +565,10 @@ SAKPlot <- function(es,
     }
 
     x <- as.numeric(data$.group.as.factor)
+    # Optional shift
+    dx <- .extend(points.dx)
+    x <- x + dx[x]
+
     if (.show(paired))
       # If showing paired points, just overplot them
       points.method <- "overplot"

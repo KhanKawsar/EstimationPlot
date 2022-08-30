@@ -10,14 +10,15 @@ SAKPlot(
   points.method = c("quasirandom", "pseudorandom", "smiley", "maxout", "frowney",
     "minout", "tukey", "tukeyDense", "jitter", "overplot"),
   pch = 19,
+  points.dx = 0,
   points.params = list(),
   violin = isFALSE(box) && isFALSE(bar),
   violin.shape = c("left-half", "right-half", "full"),
-  violin.border = TRUE,
   violin.fill = TRUE,
   violin.adj = 1.5,
   violin.width = 0.35,
   violin.trunc = TRUE,
+  violin.dx = 0,
   box = FALSE,
   box.fill = TRUE,
   box.notch = FALSE,
@@ -53,17 +54,17 @@ methods.}
 
 \item{pch}{Symbol to use for plotting points.}
 
+\item{points.dx}{Horizontal shift to be applied to points in each group.}
+
 \item{points.params}{List of named parameters to pass on to
 \code{\link{graphics::points}}, e.g. \code{SAKPlot(es, points = 1, pch =
 21, points.params = list(bg = as.numeric(factor(data$Sex)) + 1))}.}
 
-\item{violin}{What type of violin plot to display. If FALSE, violin plot is
-not drawn.}
+\item{violin}{If FALSE, violin plot is not drawn. Otherwise specifies the
+colour of the violin borders.}
 
 \item{violin.shape}{Desired violin shape - left-half only (\code{"left"}),
 right-half only (\code{"right"}), or a full violin (\code{"full"}).}
-
-\item{violin.border}{Colours of violin borders.}
 
 \item{violin.fill}{Colour used to fill violins.}
 
@@ -75,6 +76,8 @@ proportion of the distance between groups.}
 
 \item{violin.trunc}{Numeric value that specifies what vertical proportion of
 the violin is truncated.}
+
+\item{violin.dx}{Horizontal shift to be applied to each violin.}
 
 \item{box}{If not FALSE, draw a box-and-whisker plot of the grouped values.
 Value may be a colour, in which case the box borders are plotted with the
@@ -138,12 +141,12 @@ result to \code{\link{SAKPlot}}.
 \details{
 Group data may be visualised in multiple ways: \code{points}, \code{violin},
 \code{box} and \code{bar}. Each visualisation type is controlled by a set of
-parameters. To display a type, for example box plots, specify \code{box =
-TRUE}. Rather than \code{TRUE}, you may specify a colour, which is used is
-the border/outline for the boxes. You may also specify a vector of colours,
-one for each group. For \code{points}, you may specify a colour for each
-individual point. When colours are not specified, they are selected from an
-\code{\link{RColorBrewer}} qualitative palette.
+parameters with the same prefix. To display a type, for example box plots,
+specify \code{box = TRUE}. Rather than \code{TRUE}, you may specify a colour,
+which is used as the border/outline for the boxes. You may also specify a
+vector of colours, one for each group. For \code{points}, you may specify a
+colour for each individual point. When colours are not specified, they are
+selected from an \code{\link{RColorBrewer}} qualitative palette.
 }
 \references{
 Gardner, M. J., & Altman, D. G. (1986). Confidence intervals rather than P

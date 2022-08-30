@@ -81,6 +81,11 @@ TODO details
 Data format - long format, one column with measurement (\code{data.col}),
 another column with group identity (\code{group.col}). For repeated measures,
 a subject identity column is also required (\code{id.col}).
+
+The formulae for Cohen's d and Hedge's g are from Lakens (2013), equations 1
+and 4 respectively. The Cohen's d we use is labelled
+\emph{\out{d<sub>s</sub>}} by Lakens (2013). Hedge's g is a corrected version
+of Cohen's d, and is more suitable for small sample sizes.
 }
 \references{
 Lakens, D. (2013). Calculating and reporting effect sizes to facilitate
