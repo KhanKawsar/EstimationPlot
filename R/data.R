@@ -28,9 +28,18 @@
 #' @source Darwin, C. (1877). The effects of cross and self fertilisation in the vegetable kingdom. John Murray, Albemarle Street, London.
 "petunia"
 
-#' Fertilisation data TODO
-"fertilisation"
+#' damselfly data
+#'
+#' #' Data of the body size and weight difference between adult and juvenile male of Xanthagrion erythroneurum damselflies.
+#'
+#' @format A data frame with 77 observations and 3 variables. body length
+#' \describe{
+#'   \item{length}{Measured body length of damselflies}
+#'   \item{weight}{Measured weight of damselflies}
+#'   \item{group}{male age groups; \code{adult} or \code{juvenile} used for body size and weight measurements}
+#' }
+#'
+#' @source Khan, M. K., & Herberstein, M. E. (2021). Male–male interactions select for conspicuous male coloration in damselflies. Animal Behaviour, 176, 157-166.
+"petunia"
 
-#' Length data TODO
-"length"
 
