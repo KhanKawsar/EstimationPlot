@@ -39,7 +39,17 @@ d <- SAKDifference(iris, data.col = "Sepal.Length", group.col = "Species", effec
 SAKPlot(d, ef.size.violin = FALSE, main = "Hedge's g, no effect violins")
 ```
 
-```{r fig.height=6, fig.width=9}
-d <- SAKDifference(insulin, 1, 2, 3, groups = c("before", "after"), na.rm = TRUE, effect.type = "paired")
+```{r fig.height=5, fig.width=10}
+par(mfrow = c(1, 2), mar = c(5, 4, 3, 6) + 0.1)
+d <- SAKDifference(insulin, 1, 2, 3, groups = c("before", "after"), na.rm = TRUE)
 SAKPlot(d, violin.shape = c("left", "right"), violin.dx = c(-0.05, 0.05), violin.width = 0.3, main = "Customised plot")
+
+set.seed(1)
+data <- data.frame(Measurement = unlist(lapply(c(10, 12, 8, 8.5, 9, 9.1), function(m) rnorm(20, m))),
+                   Group = rep(paste0("g", 1:6), each = 20),
+                   Id = rep(1:6, 20))
+d <- SAKDifference(data, 1, 2, 3, groups = c("Control 1" = "g1", "Treatment 1" = "g2", "Control 2" = "g3", "Treatment 2" = "g4", "Control 3" = "g5", "Treatment 3" = "g6"), 
+                   effect.type = "paired", 
+                   contrasts = "g2 - g1, g4 - g3, g6 - g5")
+ SAKPlot(d, box = TRUE, group.dx = c(0.2, -0.2), paired = FALSE, points = "j", box.pars = list(boxwex = 0.4), ef.size.violin = FALSE, main = "Group offsets")
 ```

@@ -1,6 +1,6 @@
 # The difference function
 
-#### TODO check difference calcs for effect.type = "paired". Refer to Altman & Gardner, 1986
+#### TODO check difference calcs for "paired" data. Refer to Altman & Gardner, 1986
 
 ### confidence interval of a group
 CI <- function(x){
@@ -33,20 +33,20 @@ stCohensD <- function(x1, x2){
   (m2 - m1) / x
 }
 
-# Hedges d (group 2 - group 1)
+# Hedges' g (group 2 - group 1)
 stHedgesD <- function(x1, x2){
-  m1 <- mean(x1)
-  SD1 <- stats::sd(x1)
   N1 <- length(x1)
-  m2 <- mean(x2)
-  SD2 <- stats::sd(x2)
   N2 <- length(x2)
-  x <- sqrt(((N1 - 1) * (SD1 * SD1) + (N2 - 1) * (SD2 * SD2)) / (N1 + N2 - 2))
-  g <- (m2 - m1) / x
-  g * (1 - (3 / (4 * (N1 + N2) - 9)))
+  stCohensD(x1, x2) * (1 - (3 / (4 * (N1 + N2) - 9)))
 }
 
-calcPairDiff <- function(data, pair, pairNames, data.col, group.col, id.col, effect.type, R, ci.type, ...) {
+# Cohen's dz, one sample or correlated/paired samples comparison
+stCohensDz <- function(x) mean(x) / stats::sd(x)
+
+# TODO IS THIS CORRECT??? Hedges' g for paired data
+stHedgesGz <- function(x) stCohensDz(x) * (1 - 3 / (4 * length(x) - 9))
+
+calcPairDiff <- function(data, pair, paired, pairNames, data.col, group.col, id.col, effect.type, R, ci.type, ...) {
 
   # Function to simplify writing bootstrap statistic functions
   .wrap2GroupStatistic <- function(statisticFn) {
@@ -58,26 +58,39 @@ calcPairDiff <- function(data, pair, pairNames, data.col, group.col, id.col, eff
       statisticFn(x1, x2)
     }
   }
+  .wrapPairedStatistic <- function(statisticFn) {
+    function(data, indices) {
+      statisticFn(data[indices])
+    }
+  }
 
   # Decide how to calculate the statistic
-  bootstrapData <- data
-  if (effect.type == "unstandardised") {
-    statistic <- .wrap2GroupStatistic(stMeanDiff)
-  } else if (effect.type == "cohens") {
-    statistic <- .wrap2GroupStatistic(stCohensD)
-  } else if (effect.type == "hedges") {
-    statistic <- .wrap2GroupStatistic(stHedgesD)
-  } else if (effect.type == "paired") {
-    if (missing(id.col)) stop("id.col must be specified when effect.type = 'paired'")
+  statistic <- NULL
+  if (paired) {
+    # Paired data
     g1 <- data[data[[group.col]] == pair[1], ]
     g2 <- data[data[[group.col]] == pair[2], ]
     # Pair on ID (don't assume they are sorted)
     g1Idx <- match(g2[[id.col]], g1[[id.col]])
     bootstrapData <- g1[[data.col]][g1Idx] - g2[[data.col]]
-    statistic <- function(data, subset) {
-      mean(data[subset])
+    if (effect.type == "unstandardised") {
+      statistic <- .wrapPairedStatistic(mean)
+    } else if (effect.type == "cohens") {
+      statistic <- .wrapPairedStatistic(stCohensDz)
+    } else if (effect.type == "hedges") {
+      statistic <- .wrapPairedStatistic(stHedgesGz)
     }
   } else {
+    bootstrapData <- data
+    if (effect.type == "unstandardised") {
+      statistic <- .wrap2GroupStatistic(stMeanDiff)
+    } else if (effect.type == "cohens") {
+      statistic <- .wrap2GroupStatistic(stCohensD)
+    } else if (effect.type == "hedges") {
+      statistic <- .wrap2GroupStatistic(stHedgesD)
+    }
+  }
+  if (is.null(statistic)) {
     # User supplied a bootstrap statistic function
     statistic <- effect.type
   }
@@ -123,7 +136,7 @@ expandContrasts <- function(contrasts, groups) {
     contrasts <- sapply(contrasts, function(contrast) {
       # For this contrast, which should look like "group1 - group2",
       # Find the location of group names within the string
-      found <- sapply(groups, function(group) regexpr(group, contrast, fixed = TRUE)[[1]][1])
+      found <- sapply(unname(groups), function(group) regexpr(group, contrast, fixed = TRUE)[[1]][1])
       if (sum(found > 0) != 2)
         stop(sprintf("Invalid contrast '%s'; must be 'group1 - group2, groups are %s",
                      contrast, paste0(groups, collapse = ", ")))
@@ -160,15 +173,17 @@ negatePairwiseDiff <- function(pwd) {
 #'
 #' The formulae for Cohen's d and Hedge's g are from Lakens (2013), equations 1
 #' and 4 respectively. The Cohen's d we use is labelled
-#' \emph{\out{d<sub>s</sub>}} by Lakens (2013). Hedge's g is a corrected version
-#' of Cohen's d, and is more suitable for small sample sizes.
+#' \emph{\out{d<sub>s</sub>}} by Lakens (2013). Hedges' g is a corrected version
+#' of Cohen's d, and is more suitable for small sample sizes. For paired (i.e.
+#' repeated measures) Coken's d, we apply equation 6 (Lakens 2013).
 #'
 #' @param data A data frame...
 #' @param data.col Name or index of the column within \code{data} containing the
 #'   measurement data.
 #' @param group.col Name or index of the column within \code{data} containing
 #'   the values to group by.
-#' @param id.col Name or index of ID column for \code{"paired"} data.
+#' @param id.col Name or index of ID column for repeated measures/paired data.
+#'   For non-paired data, do not specify an \code{id.col}.
 #' @param effect.type Type of difference
 #' @param groups Vector of group names. Defaults to all groups in \code{data} in
 #'   \emph{natural} order. If \code{groups} is a named vector, the names are
@@ -182,16 +197,16 @@ negatePairwiseDiff <- function(pwd) {
 #'   row 1 and the second in row 2.
 #' @param effect.type Type of group difference to be calculated. Possible types
 #'   are: \code{unstandardised}, difference in group means; \code{cohens},
-#'   Cohen's d; \code{hedges}, Hedge's g, \code{paired}, paired differences.
+#'   Cohen's d; \code{hedges}, Hedge's g.
 #' @param R The number of bootstrap replicates.
 #' @param ci.type A single character  string representing the type of bootstrap
 #'   interval required. See the \code{type} parameter to the
-#'   \code{\link{boot::boot.ci}} function for details.
+#'   [boot]{boot.ci} function for details.
 #' @param na.rm a logical evaluating to TRUE or FALSE indicating whether NA
-#'   values should be stripped before the computation proceeds. If NA values are
-#'   stripped and `effect.type` is "paired", all rows (observations) for IDs
-#'   with missing data are stripped.
-#' @param ... Any additional parameters are passed to \code{\link{boot::boot}}.
+#'   values should be stripped before the computation proceeds. If \code{TRUE}
+#'   for "paired" data (i.e. \code{id.col} is specified), all rows
+#'   (observations) for IDs with missing data are stripped.
+#' @param ... Any additional parameters are passed to [boot]{boot}.
 #'
 #' @return List containing: \item{\code{groups}}{Vector of group names}
 #'   \item{\code{group.statistics}}{Matrix with a row for each group, columns
@@ -199,7 +214,7 @@ negatePairwiseDiff <- function(pwd) {
 #'   lower and upper 95\% confidence intervals of the mean}
 #'   \item{\code{group.differences}}{List of \code{SAKPWDiff} objects, which are
 #'   \code{boot} objects with added confidence interval information. See
-#'   \code{\link{boot::boot}} and  \code{\link{boot::boot.ci}}}
+#'   [boot]{boot} and [boot]{boot.ci}}
 #'   \item{\code{effect.type}}{Value of \code{effect.type} argument}
 #'   \item{\code{effect.name}}{Pretty version of \code{effect.type}}
 #'   \item{\code{data.col}}{Value of \code{data.col} argument}
@@ -209,7 +224,7 @@ negatePairwiseDiff <- function(pwd) {
 #'   \item{\code{data}}{the input data} \item{\code{call}}{how this function was
 #'   called}
 #'
-#' @seealso \code{\link{boot::boot}}, \code{\link{boot::boot.ci}}
+#' @seealso [boot]{boot}, [boot]{boot.ci}
 #'
 #' @references
 #'
@@ -224,7 +239,7 @@ SAKDifference <- function(data,
                        id.col,
                        groups = sort(unique(data[[group.col]])),
                        contrasts,
-                       effect.type = c("unstandardised", "cohens", "hedges", "paired"),
+                       effect.type = c("unstandardised", "cohens", "hedges"),
                        R = 1000,
                        ci.type = "bca",
                        na.rm = FALSE,
@@ -232,7 +247,9 @@ SAKDifference <- function(data,
                        # ci.conf = 0.95,
 ) {
 
-  effectNames <- c(unstandardised = "Mean difference", cohens = "Cohen's d", hedges = "Hedge's g", paired = "Paired mean difference")
+  pairedData <- !missing(id.col)
+
+  effectNames <- c(unstandardised = "Mean difference", cohens = "Cohen's d", hedges = "Hedges' g")
 
   if (!is.function(effect.type))
     effect.type <- match.arg(effect.type)
@@ -249,7 +266,7 @@ SAKDifference <- function(data,
   # Optionally handle NA values
   if (na.rm) {
     toKeep <- !is.na(data[[data.col]]) & !is.na(data[[group.col]])
-    if (effect.type == "paired") {
+    if (pairedData) {
       toKeep <- toKeep & !is.na(data[[id.col]])
       # Also delete pairs with missing data
       badPairIds <- unique(data[[id.col]][!toKeep])
@@ -270,6 +287,8 @@ SAKDifference <- function(data,
              data.col.name = .colName(data.col),
              group.col = group.col,
              group.col.name = .colName(group.col),
+             id.col = if (pairedData) id.col else NULL,
+             paired.data = pairedData,
              groups = groups,
              group.names = groupLabels,
              effect.type = effect.type,
@@ -310,7 +329,7 @@ SAKDifference <- function(data,
     pairData <- data[as.character(data[[group.col]]) %in% pair, ]
     groupLabels <- c(groupLabels[which(groups == pair[1])],
                     groupLabels[which(groups == pair[2])])
-    calcPairDiff(pairData, pair, groupLabels, data.col, group.col, id.col, effect.type, R, ci.type)
+    calcPairDiff(pairData, pair, pairedData, groupLabels, data.col, group.col, id.col, effect.type, R, ci.type)
   })
 
   es

@@ -22,5 +22,5 @@ A colour or colours that are transparent versions of \code{colour}.
 Returns a transparent version of the specified colour(s).
 }
 \seealso{
-\code{\link{grDevices::col2rgb}}, \code{\link{grDevices::rgb}}
+[grDevices]{col2rgb}, [grDevices]{rgb}
 }

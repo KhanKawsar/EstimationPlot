@@ -6,11 +6,12 @@
 \usage{
 SAKPlot(
   es,
+  group.dx = 0,
   points = TRUE,
   points.method = c("quasirandom", "pseudorandom", "smiley", "maxout", "frowney",
     "minout", "tukey", "tukeyDense", "jitter", "overplot"),
   pch = 19,
-  points.dx = 0,
+  points.dx = group.dx,
   points.params = list(),
   violin = isFALSE(box) && isFALSE(bar),
   violin.shape = c("left-half", "right-half", "full"),
@@ -18,23 +19,26 @@ SAKPlot(
   violin.adj = 1.5,
   violin.width = 0.35,
   violin.trunc = TRUE,
-  violin.dx = 0,
+  violin.dx = group.dx,
   box = FALSE,
   box.fill = TRUE,
   box.notch = FALSE,
   box.pars = list(boxwex = 0.8, staplewex = 0.5, outwex = 0.5),
-  box.dx = 0,
+  box.dx = group.dx,
   bar = FALSE,
   bar.fill = TRUE,
   bar.width = 0.8,
-  bar.dx = 0,
+  bar.dx = group.dx,
   ef.size = c("right", "below"),
   ef.size.violin = TRUE,
   ef.size.pch = 17,
-  paired = es$effect.type == "paired",
+  ef.size.dx = group.dx,
+  paired = es$paired.data,
   central.tendency = c("mean", "median"),
-  error.bars = c("CI", "SD", "SE"),
   central.tendency.colour = "grey20",
+  central.tendency.dx = group.dx,
+  error.bars = c("CI", "SD", "SE"),
+  axis.dx = group.dx,
   left.ylab = es$data.col.name,
   right.ylab = es$effect.name,
   ...
@@ -42,6 +46,10 @@ SAKPlot(
 }
 \arguments{
 \item{es}{Data returned from a call to \code{\link{SAKDifference}}}
+
+\item{group.dx}{Used to shift group centres horizontally. E.g.,
+\code{group.dx = c(0.1, -0.1)} will group into pairs. Individual components
+can be shifted independently using the appropriate \code{*.dx} parameters.}
 
 \item{points}{Colour of individual points. If FALSE, points are not plotted,
 TRUE plots applies a default colour. May be a vector of colours. If length
@@ -60,7 +68,7 @@ methods.}
 \item{points.dx}{Horizontal shift to be applied to points in each group.}
 
 \item{points.params}{List of named parameters to pass on to
-\code{\link{graphics::points}}, e.g. \code{SAKPlot(es, points = 1, pch =
+[graphics]{points}, e.g. \code{SAKPlot(es, points = 1, pch =
 21, points.params = list(bg = as.numeric(factor(data$Sex)) + 1))}.}
 
 \item{violin}{If FALSE, violin plot is not drawn. Otherwise specifies the
@@ -84,16 +92,16 @@ the violin is truncated.}
 
 \item{box}{If not FALSE, draw a box-and-whisker plot of the grouped values.
 Value may be a colour, in which case the box borders are plotted with the
-colour(s). See \code{\link{graphics::boxplot}}.}
+colour(s). See [graphics]{boxplot}.}
 
 \item{box.fill}{Colour used to fill the bodies of the box-and-whisker plot.
 If FALSE or NA, bodies are not filled}
 
 \item{box.notch}{If TRUE, draws notches in the sides of the boxes. See
-\code{\link{graphics::boxplot.stats}} for the calculations used.}
+[graphics]{boxplot.stats} for the calculations used.}
 
 \item{box.pars}{List with additional graphical parameters to control the box
-plot. See \code{\link{graphics::bxp}} graphical parameters for a complete
+plot. See [graphics]{bxp} graphical parameters for a complete
 list.}
 
 \item{box.dx}{Horizontal shift to be applied to each box.}
@@ -118,24 +126,31 @@ show as a violin plot.}
 
 \item{ef.size.pch}{Symbol to represent mean effect size.}
 
+\item{ef.size.dx}{Horizontal shift to be applied to each effect size.}
+
 \item{paired}{If \code{TRUE}, lines are drawn joining the individual data
 points.}
 
 \item{central.tendency}{Should the indicated measure of central tendency be
 \code{"mean"} or \code{"median"}?}
 
+\item{central.tendency.colour}{Colour used for mean/median and error bars.}
+
+\item{central.tendency.dx}{Horizontal shift to apply to central tendency
+indicator and error bars.}
+
 \item{error.bars}{Should error bars depict 95% confidence intervals
 (\code{"CI}), standard deviation (\code{"SD"}) or standard error
 (\code{"SE})?}
 
-\item{central.tendency.colour}{Colour used for mean/median and error bars.}
+\item{axis.dx}{Horizontal shifts to be applied to each x-axis tick and label.}
 
 \item{left.ylab}{Left-hand y-axis label.}
 
 \item{right.ylab}{Right-hand y-axis label. Only used if effect size is shown
 on the right (\code{ef.size = "right"}).}
 
-\item{...}{Additional arguments are past to the \code{\link{graphics::plot}}
+\item{...}{Additional arguments are past to the [graphics]{plot}
 function.}
 }
 \value{
@@ -168,5 +183,5 @@ Routledge.
 }
 \seealso{
 \code{\link{SAKDifference}}, \code{\link{vipor::offsetX}},
-  \code{\link{graphics::boxplot}}, \code{\link{graphics::bxp}}
+  [graphics]{boxplot}, [graphics]{bxp}
 }

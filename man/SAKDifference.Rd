@@ -11,7 +11,7 @@ SAKDifference(
   id.col,
   groups = sort(unique(data[[group.col]])),
   contrasts,
-  effect.type = c("unstandardised", "cohens", "hedges", "paired"),
+  effect.type = c("unstandardised", "cohens", "hedges"),
   R = 1000,
   ci.type = "bca",
   na.rm = FALSE,
@@ -27,7 +27,8 @@ measurement data.}
 \item{group.col}{Name or index of the column within \code{data} containing
 the values to group by.}
 
-\item{id.col}{Name or index of ID column for \code{"paired"} data.}
+\item{id.col}{Name or index of ID column for repeated measures/paired data.
+For non-paired data, do not specify an \code{id.col}.}
 
 \item{groups}{Vector of group names. Defaults to all groups in \code{data} in
 \emph{natural} order. If \code{groups} is a named vector, the names are
@@ -43,20 +44,20 @@ row 1 and the second in row 2.}
 
 \item{effect.type}{Type of group difference to be calculated. Possible types
 are: \code{unstandardised}, difference in group means; \code{cohens},
-Cohen's d; \code{hedges}, Hedge's g, \code{paired}, paired differences.}
+Cohen's d; \code{hedges}, Hedge's g.}
 
 \item{R}{The number of bootstrap replicates.}
 
 \item{ci.type}{A single character  string representing the type of bootstrap
 interval required. See the \code{type} parameter to the
-\code{\link{boot::boot.ci}} function for details.}
+[boot]{boot.ci} function for details.}
 
 \item{na.rm}{a logical evaluating to TRUE or FALSE indicating whether NA
-values should be stripped before the computation proceeds. If NA values are
-stripped and `effect.type` is "paired", all rows (observations) for IDs
-with missing data are stripped.}
+values should be stripped before the computation proceeds. If \code{TRUE}
+for "paired" data (i.e. \code{id.col} is specified), all rows
+(observations) for IDs with missing data are stripped.}
 
-\item{...}{Any additional parameters are passed to \code{\link{boot::boot}}.}
+\item{...}{Any additional parameters are passed to [boot]{boot}.}
 }
 \value{
 List containing: \item{\code{groups}}{Vector of group names}
@@ -65,7 +66,7 @@ List containing: \item{\code{groups}}{Vector of group names}
   lower and upper 95\% confidence intervals of the mean}
   \item{\code{group.differences}}{List of \code{SAKPWDiff} objects, which are
   \code{boot} objects with added confidence interval information. See
-  \code{\link{boot::boot}} and  \code{\link{boot::boot.ci}}}
+  [boot]{boot} and [boot]{boot.ci}}
   \item{\code{effect.type}}{Value of \code{effect.type} argument}
   \item{\code{effect.name}}{Pretty version of \code{effect.type}}
   \item{\code{data.col}}{Value of \code{data.col} argument}
@@ -85,8 +86,9 @@ a subject identity column is also required (\code{id.col}).
 
 The formulae for Cohen's d and Hedge's g are from Lakens (2013), equations 1
 and 4 respectively. The Cohen's d we use is labelled
-\emph{\out{d<sub>s</sub>}} by Lakens (2013). Hedge's g is a corrected version
-of Cohen's d, and is more suitable for small sample sizes.
+\emph{\out{d<sub>s</sub>}} by Lakens (2013). Hedges' g is a corrected version
+of Cohen's d, and is more suitable for small sample sizes. For paired (i.e.
+repeated measures) Coken's d, we apply equation 6 (Lakens 2013).
 }
 \references{
 Lakens, D. (2013). Calculating and reporting effect sizes to facilitate
@@ -94,5 +96,5 @@ cumulative science: a practical primer for t-tests and ANOVAs. Frontiers in
 Psychology, 4. doi:10.3389/fpsyg.2013.00863
 }
 \seealso{
-\code{\link{boot::boot}}, \code{\link{boot::boot.ci}}
+[boot]{boot}, [boot]{boot.ci}
 }

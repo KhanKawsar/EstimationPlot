@@ -55,12 +55,12 @@ makePairedData <- function(addSomeNAs = FALSE, reverseGroups = FALSE) {
                groups = c("ZControl1", "Group1"),
                na.rm = addSomeNAs,
                data.col = "Measurement", group.col = "Group", R = 1000,
-               effect.type = "paired", id.col = "ID")
+               id.col = "ID")
   } else {
     SAKDifference(data[data$Group %in% c("ZControl1", "Group1"),],
                na.rm = addSomeNAs,
                data.col = "Measurement", group.col = "Group", R = 1000,
-               effect.type = "paired", id.col = "ID")
+               id.col = "ID")
   }
 }
 
@@ -150,7 +150,7 @@ test_that("difference effect types", {
   expect_error(SAKDifference(df, effect.type = "unstandardised", data.col = 1, group.col = 2), NA)
   expect_error(SAKDifference(df, effect.type = "cohens", data.col = 1, group.col = 2), NA)
   expect_error(SAKDifference(df, effect.type = "hedges", data.col = 1, group.col = 2), NA)
-  expect_error(SAKDifference(df, effect.type = "paired", id.col = "id", data.col = 1, group.col = 2), NA)
+  expect_error(SAKDifference(df, effect.type = "unstandardised", id.col = "id", data.col = 1, group.col = 2), NA)
 
   # Check unstandardised diff
   d <- SAKDifference(df, data.col = 1, group.col = 2, id.col = 3, effect.type = "unstandardised")
@@ -161,7 +161,7 @@ test_that("difference effect types", {
   expect_gt(pwd$bca[5], realDiff)
 
   # Check paired diff
-  d <- SAKDifference(df, data.col = 1, group.col = 2, id.col = 3, effect.type = "paired")
+  d <- SAKDifference(df, data.col = 1, group.col = 2, id.col = 3)
   pwd <- d$group.difference[[1]]
   expect_equal(pwd$groups[1], "Group")
   expect_equal(pwd$groups[2], "Control")
@@ -169,7 +169,7 @@ test_that("difference effect types", {
   expect_gt(pwd$bca[5], realDiff)
 
   # Check Cohen's D
-  d <- SAKDifference(df, data.col = 1, group.col = 2, id.col = 3, effect.type = "cohens")
+  d <- SAKDifference(df, data.col = 1, group.col = 2, effect.type = "cohens")
   pwd <- d$group.difference[[1]]
   expect_equal(pwd$groups[1], "Group")
   expect_equal(pwd$groups[2], "Control")
@@ -177,7 +177,7 @@ test_that("difference effect types", {
   expect_lt(pwd$bca[4], 0.918991) # Should be positive but small
   expect_gt(pwd$bca[5], 0.918991)
   # Swap groups
-  d <- SAKDifference(df, groups = c("Group", "Control"), data.col = 1, group.col = 2, id.col = 3, effect.type = "cohens")
+  d <- SAKDifference(df, groups = c("Group", "Control"), data.col = 1, group.col = 2, effect.type = "cohens")
   pwd <- d$group.difference[[1]]
   expect_equal(pwd$groups[1], "Control")
   expect_equal(pwd$groups[2], "Group")
@@ -186,19 +186,19 @@ test_that("difference effect types", {
   expect_gt(pwd$bca[5], -0.918991)
 
   # Check Hedge's g
+  d <- SAKDifference(df, data.col = 1, group.col = 2, id.col = 3, effect.type = "hedges")
+  pwd <- d$group.difference[[1]]
+  expect_equal(pwd$groups[1], "Group")
+  expect_equal(pwd$groups[2], "Control")
   message("\nNot checking Hedge's g!!!")
-  # d <- SAKDifference(df, data.col = 1, group.col = 2, id.col = 3, effect.type = "hedges")
-  # pwd <- d$group.difference[[1]]
-  # expect_equal(pwd$groups[1], "Group")
-  # expect_equal(pwd$groups[2], "Control")
   # expect_equal(pwd$t0, 0.918991, tolerance = 0.0001) # Hedge's g
   # expect_lt(pwd$bca[4], 0.918991) # Should be positive but small
   # expect_gt(pwd$bca[5], 0.918991)
-  # # Swap groups
-  # d <- SAKDifference(df, groups = c("Group", "Control"), data.col = 1, group.col = 2, id.col = 3, effect.type = "hedges")
-  # pwd <- d$group.difference[[1]]
-  # expect_equal(pwd$groups[1], "Control")
-  # expect_equal(pwd$groups[2], "Group")
+  # Swap groups
+  d <- SAKDifference(df, groups = c("Group", "Control"), data.col = 1, group.col = 2, id.col = 3, effect.type = "hedges")
+  pwd <- d$group.difference[[1]]
+  expect_equal(pwd$groups[1], "Control")
+  expect_equal(pwd$groups[2], "Group")
   # expect_equal(pwd$t0, 0.918991, tolerance = 0.0001) # Hedge's g
   # expect_lt(pwd$bca[4], 0.918991) # Should be negative but small
   # expect_gt(pwd$bca[5], 0.918991)
@@ -214,7 +214,7 @@ test_that("group factors", {
   expect_error(SAKDifference(df, effect.type = "unstandardised", data.col = 1, group.col = 2), NA)
   expect_error(SAKDifference(df, effect.type = "cohens", data.col = 1, group.col = 2), NA)
   expect_error(SAKDifference(df, effect.type = "hedges", data.col = 1, group.col = 2), NA)
-  expect_error(SAKDifference(df, effect.type = "paired", id.col = "id", data.col = 1, group.col = 2), NA)
+  expect_error(SAKDifference(df, id.col = "id", data.col = 1, group.col = 2), NA)
 
 })
 
@@ -245,9 +245,9 @@ test_that("two groups", {
   d2 <- SAKDifference(df, data.col = 1, group.col = 2)
   # This should NOT throw an error
   expect_error(SAKPlot(d2, ef.size = TRUE, main = "Two groups"), NA)
-  expect_error(SAKPlot(d2, ef.size = "right", main = "Two groups"), NA)
+  expect_error(SAKPlot(d2, ef.size.pos = "right", main = "Two groups"), NA)
   expect_error(SAKPlot(d2, ef.size = FALSE, main = "Two groups, no effect size"), NA)
-  expect_error(SAKPlot(d2, ef.size = "below", main = "Two groups, effect size below"), NA)
+  expect_error(SAKPlot(d2, ef.size.position = "below", main = "Two groups, effect size below"), NA)
 })
 
 test_that("three groups", {
@@ -323,7 +323,7 @@ test_that("plots work", {
   es <- SAKDifference(data[data$Group %in% c("ZControl1", "Group1"),], data.col = "Measurement", group.col = "Group", R = 1000)
   es2 <- SAKDifference(data[data$Group %in% c("ZControl1", "Group1"),],
                     data.col = "Measurement", group.col = "Group", R = 1000,
-                    effect.type = "paired", id.col = "ID")
+                    id.col = "ID")
 
 
   # Generate some plots
@@ -507,7 +507,7 @@ test_that("paired works", {
           central.tendency = FALSE, error.bars = "CI", ef.size = FALSE,
           points = SAKTransparent(c("red", "blue"), .5), main = "Paired")
   SAKPlot(es, violin = FALSE, ef.size = FALSE, main = "Paired, no violin, effect size")
-  SAKPlot(es, violin = FALSE, ef.size = FALSE, points = FALSE, main = "Paired, no violin, effect size, points")
+  SAKPlot(es, violin = FALSE, ef.size = TRUE, points = FALSE, main = "Paired, no violin, effect size, points")
   SAKPlot(es, violin.shape = c("left", "right"), violin.width = 0.2)
 
   expect_equal(1, 1)
