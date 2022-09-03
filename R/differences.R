@@ -46,7 +46,7 @@ stCohensDz <- function(x) mean(x) / stats::sd(x)
 # TODO IS THIS CORRECT??? Hedges' g for paired data
 stHedgesGz <- function(x) stCohensDz(x) * (1 - 3 / (4 * length(x) - 9))
 
-calcPairDiff <- function(data, pair, paired, pairNames, data.col, group.col, id.col, effect.type, R, ci.type, ...) {
+calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, group.col, id.col, effect.type, R, ci.type, ...) {
 
   # Function to simplify writing bootstrap statistic functions
   .wrap2GroupStatistic <- function(statisticFn) {
@@ -112,6 +112,7 @@ calcPairDiff <- function(data, pair, paired, pairNames, data.col, group.col, id.
   # Save group names
   es$groups <- pair
   es$groupLabels <- pairNames
+  es$groupIndices <- pairIndices
   # Remove data because it is in the outer structure
   es$data <- NULL
   # Save CI type
@@ -327,9 +328,10 @@ SAKDifference <- function(data,
   # For each pair of groups...
   es$group.differences <- apply(contrasts, 2, function(pair) {
     pairData <- data[as.character(data[[group.col]]) %in% pair, ]
-    groupLabels <- c(groupLabels[which(groups == pair[1])],
-                    groupLabels[which(groups == pair[2])])
-    calcPairDiff(pairData, pair, pairedData, groupLabels, data.col, group.col, id.col, effect.type, R, ci.type)
+    groupIndices <- c(which(groups == pair[1]), which(groups == pair[2]))
+    groupLabels <- c(groupLabels[groupIndices[1]],
+                    groupLabels[groupIndices[2]])
+    calcPairDiff(pairData, pair, pairedData, groupLabels, groupIndices, data.col, group.col, id.col, effect.type, R, ci.type)
   })
 
   es

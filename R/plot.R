@@ -5,10 +5,8 @@
 ## points optional in paired TODO
 ## CI optional/separate with mean: to include with mean SD
 #### Licence
-#### Document data in R/data.R
-#### ??? Graphical depiction for effect size interpretation, e.g. small = 0.2, medium = 0.5 and large = 0.8
-#### y-axis labels horizontal, add las parameter
-#### Effect size shape control (left, right, full)
+
+# Perhaps don't do these, just require multiple plots
 #### How should we handle paired data with more than 2 groups? eg petunia
 #### How should we handle more than 1 comparison per group? E.g. all pairwise combinations
 
@@ -642,16 +640,23 @@ SAKPlot <- function(es,
   # Draw lines between paired points
   if (.show(paired)) {
     if (!es$paired.data)
-      stop("To plot paired lines, effect.type must be \"paired\"")
-    p1 <- data[[es$data.col]][data[[es$group.col]] == groups[1]]
-    p2 <- data[[es$data.col]][data[[es$group.col]] == groups[2]]
-    graphics::segments(1.0 + points.dx[1], p1,
-             2.0 + points.dx[2], p2,
-             col = SAKTransparent("grey20", .7),
-             lty = 1, lwd = 1)
+      stop("To plot paired lines, data must be, i.e. id.col specified to SAKDifferences")
+    paired <- .boolToDef(paired, "grey20")
+    # TODO what pairs should we join?
+    # For now, display all contrasts, which can get very ugly if there's more than one
+    for (i in seq_len(length(es$group.differences))) {
+      idx1 <- es$group.differences[[i]]$groupIndices[1]
+      idx2 <- es$group.differences[[i]]$groupIndices[2]
+      p1 <- data[[es$data.col]][data[[es$group.col]] == groups[idx1]]
+      p2 <- data[[es$data.col]][data[[es$group.col]] == groups[idx2]]
+      graphics::segments(idx1 + points.dx[idx1], p1,
+                         idx2 + points.dx[idx2], p2,
+                         col = SAKTransparent(paired, .7),
+                         lty = 1, lwd = 1)
+    }
   }
 
-  ##  mean +SD
+  ## Mean/median
   central.tendency <- .boolToDef(central.tendency, "grey20")
   error.bars <- .boolToDef(error.bars, if (.isColour(central.tendency)) central.tendency else "grey20")
   if (.show(central.tendency)) {

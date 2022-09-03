@@ -289,7 +289,7 @@ test_that("three groups with factor", {
 })
 
 test_that("many groups", {
-  n <- 20
+  n <- 12
   groupMean <- round(rnorm(n, mean = 20, sd = 8))
   val <- c(sapply(groupMean, function(m) rnorm(n, m, 4)))
   trt <- c(sapply(seq_along(groupMean), function(i) rep(paste0("G", i, "-", groupMean[i]), n)))
@@ -333,7 +333,7 @@ test_that("plots work", {
   #par(mfrow = c(2, 4))
   #a)
   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = FALSE, box.fill = FALSE,
-         central.tendency = "median", error.bars = "CI", ef.size = FALSE,
+         central.tendency = "median", error.bars.type = "CI", ef.size = FALSE,
          points = SAKTransparent(c("red", "blue"), .5))
 
   #b)
@@ -348,7 +348,7 @@ test_that("plots work", {
 
   #d)
   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "white", box.fill = "white",
-         central.tendency = "mean", error.bars = "CI", ef.size = FALSE,
+         central.tendency = "mean", error.bars.type = "CI", ef.size = FALSE,
          points = SAKTransparent(c("red", "blue"), .5),)
 
   #e)
@@ -363,25 +363,25 @@ test_that("plots work", {
 
   #g)
   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = SAKTransparent(c("red", "blue"), .5),
-         box.fill = "white",error.bars = "CI",
+         box.fill = "white",error.bars.type = "CI",
          central.tendency = "mean", mean = NA, ef.size = FALSE,
          points = FALSE)
 
   #h)
   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = SAKTransparent(c("red", "blue"), .5),
-         box.fill = "white",error.bars = "CI",
+         box.fill = "white",error.bars.type = "CI",
          central.tendency = "mean", mean = NA, ef.size = FALSE,
          points = SAKTransparent(c("red", "blue"), .5))
 
   #i)
   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = SAKTransparent(c("red", "blue"), .5),
-         box.fill = SAKTransparent(c("red", "blue"), .7),error.bars = "CI",
+         box.fill = SAKTransparent(c("red", "blue"), .7),error.bars.type = "CI",
          central.tendency = "mean", mean = NA, ef.size = FALSE,
          points = FALSE)
 
   #j)
   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = SAKTransparent(c("red", "blue"), .5),
-         box.fill = SAKTransparent(c("red", "blue"), .7),error.bars = "CI",
+         box.fill = SAKTransparent(c("red", "blue"), .7),error.bars.type = "CI",
          central.tendency = "mean", mean = NA, ef.size = FALSE,
          points = SAKTransparent(c("red", "blue"), .5))
 
@@ -392,7 +392,7 @@ test_that("plots work", {
          violin_fill = SAKTransparent(c("red", "blue"), .6),
          box = "white",
          box.fill = "white",
-         error.bars = "CI",
+         error.bars.type = "CI",
          central.tendency = "mean", mean = NA, ef.size = FALSE,
          points = SAKTransparent(c("red", "blue"), .5))
 
@@ -401,7 +401,7 @@ test_that("plots work", {
          violin_border = SAKTransparent(c("red", "blue"), .6),
          violin_fill = SAKTransparent(c("red", "blue"), .6),
          box = SAKTransparent(c("red", "blue"), .5),
-         box.fill = SAKTransparent(c("red", "blue"), .7),error.bars = "CI",
+         box.fill = SAKTransparent(c("red", "blue"), .7),error.bars.type = "CI",
          central.tendency = "mean", mean = NA, ef.size = FALSE,
          points = FALSE)
 
@@ -410,7 +410,7 @@ test_that("plots work", {
          violin_border = SAKTransparent(c("red", "blue"), .6),
          violin_fill = SAKTransparent(c("red", "blue"), .6),
          box = SAKTransparent(c("red", "blue"), .5),
-         box.fill = SAKTransparent(c("red", "blue"), .7),error.bars = "CI",
+         box.fill = SAKTransparent(c("red", "blue"), .7),error.bars.type = "CI",
          central.tendency = "mean", mean = NA, ef.size = FALSE,
          points = SAKTransparent(c("red", "blue"), .5))
 
@@ -420,7 +420,7 @@ test_that("plots work", {
          violin_fill = SAKTransparent(c("red", "blue"), .6),
          box = "white",
          box.fill = "white",
-         error.bars = "CI",
+         error.bars.type = "CI",
          central.tendency = "mean", mean = NA, ef.size = FALSE,
          points = SAKTransparent(c("red", "blue"), .5))
   #o)
@@ -428,7 +428,7 @@ test_that("plots work", {
          violin_border = SAKTransparent(c("red", "blue"), .6),
          violin_fill = SAKTransparent(c("red", "blue"), .6),
          box = SAKTransparent(c("red", "blue"), .5),
-         box.fill = SAKTransparent(c("red", "blue"), .7),error.bars = "CI",
+         box.fill = SAKTransparent(c("red", "blue"), .7),error.bars.type = "CI",
          central.tendency = "mean", mean = NA, ef.size = FALSE,
          points = FALSE)
 
@@ -437,7 +437,7 @@ test_that("plots work", {
          violin_border = SAKTransparent(c("red", "blue"), .6),
          violin_fill = SAKTransparent(c("red", "blue"), .6),
          box = SAKTransparent(c("red", "blue"), .5),
-         box.fill = SAKTransparent(c("red", "blue"), .7),error.bars = "CI",
+         box.fill = SAKTransparent(c("red", "blue"), .7),error.bars.type = "CI",
          central.tendency = "mean", mean = NA, ef.size = FALSE,
          points = SAKTransparent(c("red", "blue"), .5))
 
@@ -446,7 +446,7 @@ test_that("plots work", {
          violin_border = SAKTransparent(c("red", "blue"), .6),
          violin_fill = SAKTransparent(c("red", "blue"), .6),
          box = SAKTransparent(c("red", "blue"), .5),
-         box.fill = SAKTransparent(c("red", "blue"), .7),error.bars = "CI",
+         box.fill = SAKTransparent(c("red", "blue"), .7),error.bars.type = "CI",
          central.tendency = "mean", mean = NA, ef.size = FALSE,
          points = FALSE)
 
@@ -455,7 +455,7 @@ test_that("plots work", {
          violin_border = SAKTransparent(c("red", "blue"), .4),
          violin_fill = SAKTransparent(c("red", "blue"), .8),
          box = SAKTransparent(c("grey10"), .1),
-         box.fill = SAKTransparent(c("red", "blue"), .7),error.bars = "CI",
+         box.fill = SAKTransparent(c("red", "blue"), .7),error.bars.type = "CI",
          central.tendency = "mean", mean = NA, ef.size = TRUE,
          points = SAKTransparent(c("red", "blue"), .5), paired = TRUE)
 
@@ -465,7 +465,7 @@ test_that("plots work", {
          violin_fill = SAKTransparent(c("red", "blue"), .6),
          box = "white",
          box.fill = "white",
-         error.bars = "CI",
+         error.bars.type = "CI",
          central.tendency = "mean", mean = NA, ef.size = FALSE,
          points = SAKTransparent(c("red", "blue"), .5))
 
@@ -475,7 +475,7 @@ test_that("plots work", {
          violin_fill = SAKTransparent(c("red", "blue"), .6),
          box = "white",
          box.fill = "white",
-         error.bars = "CI",
+         error.bars.type = "CI",
          central.tendency = "mean", mean = NA, ef.size = FALSE,
          points = FALSE)
 
@@ -486,7 +486,7 @@ test_that("plots work", {
 test_that("box FALSE works", {
   es <- makeES1()
   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = FALSE, box.fill = FALSE,
-          central.tendency = "median", error.bars = "CI", ef.size = FALSE,
+          central.tendency.type = "median", error.bars.type = "CI", ef.size = FALSE,
           points = SAKTransparent(c("red", "blue"), .5), main = "Violin FALSE, median, no effect size")
   SAKPlot(es, violin = FALSE, central.tendency = FALSE, error.bars = FALSE, ef.size = FALSE,
           main = "No central tendency, error bar, effect size")
@@ -495,21 +495,23 @@ test_that("box FALSE works", {
 
 test_that("central tendency FALSE works", {
   es <- makeES1()
+  expect_false(es$paired.data)
   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "red", box.fill = "blue",
-         central.tendency = FALSE, error.bars = "CI", ef.size = FALSE,
+         central.tendency = FALSE, error.bars.type = "CI", ef.size = FALSE,
          points = SAKTransparent(c("red", "blue"), .5), main = "Central tendency FALSE")
   expect_equal(1, 1)
 })
 
 test_that("paired works", {
   es <- makePairedData()
+  expect_true(es$paired.data)
   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "red", box.fill = "blue",
-          central.tendency = FALSE, error.bars = "CI", ef.size = FALSE,
+          central.tendency = FALSE, error.bars.type = "CI", ef.size = FALSE,
           points = SAKTransparent(c("red", "blue"), .5), main = "Paired")
   SAKPlot(es, violin = FALSE, ef.size = FALSE, main = "Paired, no violin, no effect size")
   op <- par(mar = c(5, 4, 4, 4) + 0.1)
   on.exit(par(op))
-  SAKPlot(es, violin = FALSE, ef.size = TRUE, points = FALSE, main = "Paired, no violin, effect size, points")
+  SAKPlot(es, violin = FALSE, ef.size = TRUE, points = FALSE, main = "Paired, no violin, effect size, no points")
   SAKPlot(es, violin.shape = c("left", "right"), violin.width = 0.2, main = "Custom")
 
   expect_equal(1, 1)
@@ -518,7 +520,7 @@ test_that("paired works", {
 test_that("paired (reversed groups) works", {
   es <- makePairedData(reverseGroups = TRUE)
   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "red", box.fill = "blue",
-         central.tendency = FALSE, error.bars = "CI", ef.size = FALSE,
+         central.tendency = FALSE, error.bars.type = "CI", ef.size = FALSE,
          points = SAKTransparent(c("red", "blue"), .5), main = "Paired with reversed groups")
   expect_equal(1, 1)
 })
@@ -526,7 +528,7 @@ test_that("paired (reversed groups) works", {
 test_that("paired with NAs works", {
   es <- makePairedData(addSomeNAs = TRUE)
   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "red", box.fill = "blue",
-         central.tendency = FALSE, error.bars = "CI", ef.size = FALSE,
+         central.tendency = FALSE, error.bars.type = "CI", ef.size = FALSE,
          points = SAKTransparent(c("red", "blue"), .5), main = "Paired with some NAs")
   expect_equal(1, 1)
 })
@@ -534,7 +536,7 @@ test_that("paired with NAs works", {
 test_that("bar charts work", {
   es <- makeES1()
   SAKPlot(es, bar = TRUE, violin = FALSE, box = FALSE, box.fill = "blue",
-         central.tendency = FALSE, error.bars = "CI", ef.size = FALSE,
+         central.tendency = FALSE, error.bars.type = "CI", ef.size = FALSE,
          points = FALSE, main = "Bar chart")
   expect_equal(1, 1)
 })
@@ -552,9 +554,9 @@ test_that("custom effect axis", {
 
 
   d <- SAKDifference(df, effect.type = "cohens", data.col = 1, group.col = 2)
-  op <- par(mar = c(5, 10, 4, 1))
+  op <- par(mar = c(5, 4, 4, 10))
   on.exit(par(op))
-  expect_error(SAKPlot(d, ef.size.ticks = ef.size.ticks), NA)
+  expect_error(SAKPlot(d, ef.size.ticks = ef.size.ticks, ef.size.las = 1, ef.size.label = "", main = "Cohen's with custom labels"), NA)
 })
 
 test_that("Axis las", {
