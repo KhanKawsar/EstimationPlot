@@ -244,8 +244,8 @@ test_that("two groups", {
 
   d2 <- SAKDifference(df, data.col = 1, group.col = 2)
   # This should NOT throw an error
-  expect_error(SAKPlot(d2, ef.size = TRUE, main = "Two groups"), NA)
-  expect_error(SAKPlot(d2, ef.size.pos = "right", main = "Two groups"), NA)
+  expect_error(SAKPlot(d2, ef.size = TRUE, main = "Two groups, effect size default"), NA)
+  expect_error(SAKPlot(d2, ef.size.pos = "right", main = "Two groups, effect size right"), NA)
   expect_error(SAKPlot(d2, ef.size = FALSE, main = "Two groups, no effect size"), NA)
   expect_error(SAKPlot(d2, ef.size.position = "below", main = "Two groups, effect size below"), NA)
 })
@@ -506,9 +506,11 @@ test_that("paired works", {
   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "red", box.fill = "blue",
           central.tendency = FALSE, error.bars = "CI", ef.size = FALSE,
           points = SAKTransparent(c("red", "blue"), .5), main = "Paired")
-  SAKPlot(es, violin = FALSE, ef.size = FALSE, main = "Paired, no violin, effect size")
+  SAKPlot(es, violin = FALSE, ef.size = FALSE, main = "Paired, no violin, no effect size")
+  op <- par(mar = c(5, 4, 4, 4) + 0.1)
+  on.exit(par(op))
   SAKPlot(es, violin = FALSE, ef.size = TRUE, points = FALSE, main = "Paired, no violin, effect size, points")
-  SAKPlot(es, violin.shape = c("left", "right"), violin.width = 0.2)
+  SAKPlot(es, violin.shape = c("left", "right"), violin.width = 0.2, main = "Custom")
 
   expect_equal(1, 1)
 })
@@ -535,4 +537,32 @@ test_that("bar charts work", {
          central.tendency = FALSE, error.bars = "CI", ef.size = FALSE,
          points = FALSE, main = "Bar chart")
   expect_equal(1, 1)
+})
+
+test_that("custom effect axis", {
+  n <- 100
+  df <- data.frame(val = c(rnorm(n, mean = 10), rnorm(n, mean = 10 + 1)),
+                   group = rep(c("Control", "Group"), each = 2),
+                   id = rep(1:n, each = 2))
+
+  ef.size.ticks = c("Large negative effect" = -0.8,
+                    "Medium negative effect" = -0.5, "Small negative effect" = -0.2,
+                    "No effect" = 0, "Small positive effect" = 0.2,
+                    "Medium positive effect" = 0.5, "Large positive effect" = 0.8)
+
+
+  d <- SAKDifference(df, effect.type = "cohens", data.col = 1, group.col = 2)
+  op <- par(mar = c(5, 10, 4, 1))
+  on.exit(par(op))
+  expect_error(SAKPlot(d, ef.size.ticks = ef.size.ticks), NA)
+})
+
+test_that("Axis las", {
+  n <- 100
+  df <- data.frame(val = c(rnorm(n, mean = 10), rnorm(n, mean = 10 + 1), rnorm(n, mean = 10 + 1.4)),
+                   group = rep(c("Group1", "Group2", "Group3"), each = n))
+  d2 <- SAKDifference(df, groups = c("Group1", "Group2"), data.col = 1, group.col = 2)
+  expect_error(SAKPlot(d2, las = 1, ef.size.las = 1, main = "las horizontal"), NA)
+  d3 <- SAKDifference(df, data.col = 1, group.col = 2)
+  expect_error(SAKPlot(d3, las = 1, ef.size.las = 1, main = "las horizontal"), NA)
 })

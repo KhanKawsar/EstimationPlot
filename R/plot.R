@@ -123,11 +123,23 @@ getErrorBars <- function(es, groupIdx, groupMean, error.bars) {
   bars
 }
 
+# Plot density x and y values as a violin. Since the violin is drawn vertically,
+# density$x is used for y-axis points and density$y for x-axis points.
+plotViolin <- function(shape, centreX, d, ...) {
+  if (shape == "left-half") {
+    graphics::polygon(centreX - d$y, d$x, ...)
+  } else if (shape == "right-half") {
+    graphics::polygon(centreX + d$y, d$x, ...)
+  } else {
+    graphics::polygon(c(centreX - d$y, rev(centreX + d$y)), c(d$x, rev(d$x)), ...)
+  }
+}
+
 # Plot a single pairwise effect size
 #
 # @param mapYFn Function to map logical y values to display coordinates. If not
 #   specified, not mapping is performed.
-plotEffectSize <- function(pwes, xo, centreY, showViolin, violinCol, violin.width, ef.size.pch, mapYFn = identity, xpd = FALSE) {
+plotEffectSize <- function(pwes, xo, centreY, showViolin, violinCol, violin.width, violin.shape, ef.size.col, ef.size.pch, mapYFn = identity, xpd = FALSE) {
   deltaY <- centreY - pwes$t0
   if (showViolin) {
     d <- stats::density(pwes$t, na.rm = TRUE)
@@ -136,46 +148,53 @@ plotEffectSize <- function(pwes, xo, centreY, showViolin, violinCol, violin.widt
     d$y <- d$y / max(d$y) * violin.width / 2
     # Centre vertically on centreY
     d$x <- d$x + deltaY
+    # Map y values as required - note that we show density$x on the y-axis
+    d$x <- mapYFn(d$x)
     fill <- SAKTransparent(violinCol, .8)
-    # Diff is group2 - group1, so add to group1 mean make it align with group2
-    graphics::polygon(xo + d$y, mapYFn(d$x),
-                      col = fill,
-                      border = violinCol, xpd = xpd)
+    plotViolin(violin.shape, xo, d, col = fill, border = violinCol, xpd = xpd)
   }
 
   # Draw mean of effect size
-  graphics::points(xo, mapYFn(pwes$t0 + deltaY), pch = ef.size.pch, col = "grey20", cex = 1.5, xpd = xpd)
+  graphics::points(xo, mapYFn(pwes$t0 + deltaY), pch = ef.size.pch, col = ef.size.col, cex = 1.5, xpd = xpd)
   # Confidence interval of effect size
   graphics::segments(xo, mapYFn(pwes$bca[4] + deltaY), xo, mapYFn(pwes$bca[5] + deltaY),
-           col = "grey20", lty = 1, lwd = 2.0, xpd = xpd)
+           col = ef.size.col, lty = 1, lwd = 2.0, xpd = xpd)
 }
 
 # Plot effect size to the right of the main plot. Only useful when showing a single effect size
-plotEffectSizesRight <- function(es, showViolin, violinCol, violin.width, ef.size.pch, right.ylab) {
+plotEffectSizesRight <- function(es, ef.size.col, ef.size.pch, showViolin, violinCol, violin.width, violin.shape, axisLabel, ticksAt, ef.size.las) {
   pwes <- es$group.differences[[1]]
   y <- es$group.statistics[1, 1]
   y2 <- es$group.statistics[2, 1]
 
   if (es$effect.type == "unstandardised") {
     esRange <- range(c(0, pwes$t))
-    plotEffectSize(pwes, 3, y2, showViolin, violinCol, violin.width, ef.size.pch)
+    plotEffectSize(pwes, 3, y2, showViolin, violinCol, violin.width, violin.shape, ef.size.col, ef.size.pch)
 
     # Axis labels on right-hand
-    graphics::axis(4, at = y + pretty(esRange),
-                   labels = pretty(esRange), las = 3)
+    labels <- names(ticksAt)
+    if (is.null(ticksAt)) {
+      ticksAt <- pretty(esRange)
+      labels <- ticksAt
+    }
+    graphics::axis(4, at = y + ticksAt, labels = labels, las = ef.size.las)
   } else {
     esRange <- range(c(0, pwes$t0))
-    ylim <- c(y, y2)
+    ylim <- range(y, y2)
     # Function to map esRange to ylim
     mapY <- function(y) {
       # Interpolate/extrapolate along the line (esRange[1], ylim[1]), (esRange[2], ylim[2])
       ylim[1] + (y - esRange[1]) * (ylim[2] - ylim[1]) / (esRange[2] - esRange[1])
     }
-    plotEffectSize(pwes, 3, pwes$t0, showViolin, violinCol, violin.width, ef.size.pch, mapYFn = mapY)
+    plotEffectSize(pwes, 3, pwes$t0, showViolin, violinCol, violin.width, violin.shape, ef.size.col, ef.size.pch, mapYFn = mapY)
 
     # Axis labels on right-hand
-    graphics::axis(4, at = mapY(pretty(esRange)),
-                   labels = pretty(esRange), las = 3)
+    labels <- names(ticksAt)
+    if (is.null(ticksAt)) {
+      ticksAt <- pretty(esRange)
+      labels <- ticksAt
+    }
+    graphics::axis(4, at = mapY(ticksAt), labels = labels, las = ef.size.las)
 
     # Preliminary attempt to display effect size interpretation
     # points <- c(0.2, 0.5, 0.8, 1.2)
@@ -191,20 +210,17 @@ plotEffectSizesRight <- function(es, showViolin, violinCol, violin.width, ef.siz
   graphics::segments(1, y, 5, y, col = "grey50", lty = 1, lwd = 1.5)
   graphics::segments(2, y2, 5, y2, col = "grey50", lty = 1, lwd = 1.5)
 
-
   # Add x-axis label for effect size
-  graphics::mtext(sprintf("%s\nminus\n%s", pwes$groupLabels[2], pwes$groupLabels[1]), at = 3, side = 1, line = 3)
+  graphics::mtext(sprintf("%s\nminus\n%s", pwes$groupLabels[1], pwes$groupLabels[2]), at = 3, side = 1, line = 3)
   graphics::axis(1, at = 3, labels = FALSE) # X-axis tick mark
 
-  # Optionally label the right y-axis
-  if (!isFALSE(right.ylab) && right.ylab != "") {
-    graphics::mtext(right.ylab, side = 4, line = 2.5)
-  }
+  # Label the right y-axis
+  graphics::mtext(axisLabel, side = 4, line = 2.5)
 }
 
 # Plot effect size below the main plot. Assumes that bottom margin is large
 # enough to accommodate the effect size plot
-plotEffectSizesBelow <- function(es, showViolin, violinCol, violin.width, ef.size.pch, xlim, central.tendency.dx) {
+plotEffectSizesBelow <- function(es, ef.size.col, ef.size.pch, showViolin, violinCol, violin.width, violin.shape, xlim, central.tendency.dx, ef.size.label, ticksAt, ef.size.las) {
   groups <- es$groups
   nGroups <- length(groups)
 
@@ -238,10 +254,14 @@ plotEffectSizesBelow <- function(es, showViolin, violinCol, violin.width, ef.siz
     stats::approx(ylim, c(uy0, uy1), y)$y
   }
 
-  # Y axis
-  at <- pretty(ylim)
-  graphics::axis(2, at = mapY(at), labels = at, xpd = TRUE)
-  graphics::mtext(es$effect.name, side = 2, at = mapY(mean(ylim)), line = 3)
+  # Y axis ticks and label
+  labels <- names(ticksAt)
+  if (is.null(ticksAt)) {
+    ticksAt <- pretty(ylim)
+    labels <- ticksAt
+  }
+  graphics::axis(2, at = mapY(ticksAt), labels = labels, xpd = TRUE, las = ef.size.las)
+  graphics::mtext(ef.size.label, side = 2, at = mapY(mean(ylim)), line = 3)
 
   # Difference = 0 line, i.e. no effect
   graphics::lines(usr[1:2], c(mapY(0), mapY(0)), col = "grey50", lty = 3, xpd = TRUE)
@@ -250,7 +270,7 @@ plotEffectSizesBelow <- function(es, showViolin, violinCol, violin.width, ef.siz
     if (!is.null(pwes)) {
       gid1 <- which(groups == pwes$groups[1])
       gid2 <- which(groups == pwes$groups[2])
-      plotEffectSize(pwes, gid1 + central.tendency.dx[gid1], pwes$t0, showViolin, violinCol, violin.width, ef.size.pch, mapY, xpd = TRUE)
+      plotEffectSize(pwes, gid1 + central.tendency.dx[gid1], pwes$t0, showViolin, violinCol, violin.width, violin.shape, ef.size.col, ef.size.pch, mapY, xpd = TRUE)
       graphics::text(gid1 + central.tendency.dx[gid1], mapY(ylim[1]), sprintf("%s\nminus\n%s", pwes$groupLabels[1], pwes$groupLabels[2]), xpd = TRUE, pos = 1)
     }
   }
@@ -288,8 +308,7 @@ plotEffectSizesBelow <- function(es, showViolin, violinCol, violin.width, ef.siz
 #'   each data point.
 #' @param points.method Method used to avoid overplotting points. Use
 #'   \code{"overplot"} to overplot points and \code{"jitter"} to add random
-#'   noise to each x-value. See \code{\link{vipor::offsetX}} for remaining
-#'   methods.
+#'   noise to each x-value. See [vipor]{offsetX} for remaining methods.
 #' @param pch Symbol to use for plotting points.
 #' @param points.dx Horizontal shift to be applied to points in each group.
 #' @param points.params List of named parameters to pass on to
@@ -321,43 +340,59 @@ plotEffectSizesBelow <- function(es, showViolin, violinCol, violin.width, ef.siz
 #' @param box.dx Horizontal shift to be applied to each box.
 #'
 #' @param bar If not FALSE, draw a bar plot of the group means or medians,
-#'   according to \code{central.tendency}.
+#'   according to \code{central.tendency}. May be \code{TRUE} or a colour.
 #' @param bar.fill Colour used to fill bars.
 #' @param bar.width Width of bars.
 #' @param bar.dx Horizontal shift to be applied to each bar.
 #'
-#' @param ef.size If not FALSE, effect sizes are plotted.
+#' @param ef.size If not FALSE, effect sizes are plotted. May be \code{TRUE} or
+#'   a colour.
 #' @param ef.size.position Effect sizes are plotted to the right of the main
 #'   plot if there is only one effect size to plot and \code{ef.size.position !=
 #'   "below"}. If the effect size is drawn to the right, you will need to
-#'   increase the size of the right margin (see \code{\link{par(mar = ...)}}).
+#'   increase the size of the right margin before plotting (see
+#'   \code{\link[graphics:par]{par(mar = ...)}}).
 #' @param ef.size.violin If not FALSE, boostrapped effect size estimates are
-#'   show as a violin plot.
+#'   show as a violin plot. May be a colour, used for the violin border, and a
+#'   transparent version is used for the violin fill.
+#' @param ef.size.violin.shape Shape of the effect size violin.
 #' @param ef.size.pch Symbol to represent mean effect size.
 #' @param ef.size.dx Horizontal shift to be applied to each effect size.
+#' @param ef.size.ticks Optional locations and labels for ticks on the effect
+#'   size y-axis. E.g. to interpret effect size using Cohen's default values,
+#'   specif \code{ef.size.ticks = c("Large negative effect" = -0.8, "Medium
+#'   negative effect" = -0.5, "Small negative effect" = -0.2, "No effect" = 0,
+#'   "Small positive effect" = 0.2, "Medium positive effect" = 0.5, "Large
+#'   positive effect" = 0.8)}
+#' @param ef.size.las Orientation of tick labels on the effect size axis (0 =
+#'   parallel to axis, 1 = horizontal).
+#' @param ef.size.label Label to display on y-axis for effect size.
 #'
 #' @param paired If \code{TRUE}, lines are drawn joining the individual data
 #'   points.
-#' @param central.tendency Should the indicated measure of central tendency be
-#'   \code{"mean"} or \code{"median"}?
-#' @param central.tendency.colour Colour used for mean/median and error bars.
+#' @param central.tendency If not FALSE, a visual indicator of central tendency
+#'   is drawn. May be a colour, in which case it is used for mean/median and
+#'   error bars.
+#' @param central.tendency.type Should the indicated measure of central tendency
+#'   be \code{"mean"} or \code{"median"}?
 #' @param central.tendency.dx Horizontal shift to apply to central tendency
 #'   indicator and error bars.
-#' @param error.bars Should error bars depict 95% confidence intervals
+#' @param error.bars Should error bars be displayed? May be the colour to be used for error bars.
+#' @param error.bars.type Should error bars depict 95% confidence intervals
 #'   (\code{"CI}), standard deviation (\code{"SD"}) or standard error
 #'   (\code{"SE})?
 #'
 #' @param axis.dx Horizontal shifts to be applied to each x-axis tick and label.
-#' @param left.ylab Left-hand y-axis label.
-#' @param right.ylab Right-hand y-axis label. Only used if effect size is shown
-#'   on the right (\code{ef.size = "right"}).
 #'
-#' @param ... Additional arguments are past to the [graphics]{plot} function.
+#' @param left.ylab Left-hand y-axis label.
+#' @param left.las Orientation of axis labels on left-hand y-axis label (0 = parallel to axis, 1 = horizontal).
+#'
+#' @param ... Additional arguments are passed on to the [graphics]{plot} function.
 #'
 #' @return \code{es} invisibly.
 #'
-#' @seealso \code{\link{SAKDifference}}, \code{\link{vipor::offsetX}},
-#'   [graphics]{boxplot}, [graphics]{bxp}
+#' @seealso {SAKDifference}, [vipor]{offsetX}, [graphics]{boxplot},
+#'   [graphics]{bxp}
 #'
 #' @references
 #'
@@ -403,19 +438,24 @@ SAKPlot <- function(es,
                     ef.size = TRUE,
                     ef.size.position = c("right", "below"),
                     ef.size.violin = TRUE, # if TRUE, draw effect size confidence interval
+                    ef.size.violin.shape = c("right-half", "left-half", "full"),
                     ef.size.pch = 17,
                     ef.size.dx = group.dx,
+                    ef.size.ticks = NULL,
+                    ef.size.las = 0,
+                    ef.size.label = es$effect.name,
 
                     paired = es$paired.data, # if true draw lines between paired points
 
-                    central.tendency = c("mean", "median"),
-                    central.tendency.colour = "grey20",
+                    central.tendency = TRUE,
+                    central.tendency.type = c("mean", "median"),
                     central.tendency.dx = group.dx,
-                    error.bars = c("CI", "SD", "SE"), # draw confidence interval line of the data; if box, density, violin is TRUE, CI is FALSE
+                    error.bars = central.tendency,
+                    error.bars.type = c("CI", "SD", "SE"), # draw confidence interval line of the data; if box, density, violin is TRUE, CI is FALSE
 
                     axis.dx = group.dx,
                     left.ylab = es$data.col.name,
-                    right.ylab = es$effect.name,
+                    left.las = 0,
                     #col = c("col1", "col2", "col3"), opacity = 0.6, #colour of box, violin, box border, density, col 1 = group 1, col2 = group 2, col3 = ef plot, {col = n+1, n = group no) #
                     ...
 ) {
@@ -436,16 +476,11 @@ SAKPlot <- function(es,
     # first. That's what several.ok = !missing(violin.shape) does
     violin.shape <- match.arg(violin.shape, several.ok = !missing(violin.shape))
   }
-  if (!isFALSE(error.bars))
-    error.bars <- match.arg(error.bars)
-  if (!isFALSE(central.tendency)) {
-    if (isTRUE(central.tendency))
-      central.tendency <- "mean"
-    else
-      central.tendency <- match.arg(central.tendency)
-  }
+  error.bars.type <- match.arg(error.bars.type)
   ef.size.position <- match.arg(ef.size.position)
+  ef.size.violin.shape <- match.arg(ef.size.violin.shape)
   points.method <- match.arg(points.method)
+  central.tendency.type <- match.arg(central.tendency.type)
 
   data <- es$data
   groups <- es$groups
@@ -487,7 +522,7 @@ SAKPlot <- function(es,
       if (.show(error.bars)) {
         ym <- max(sapply(seq_along(groups), function(gi) {
           groupMean <- mean(data[[es$data.col]][data[[es$group.col]] == groups[gi]])
-          getErrorBars(es, gi, groupMean, error.bars)[2]
+          getErrorBars(es, gi, groupMean, error.bars.type)[2]
         }))
       } else {
         # Get means of each group
@@ -527,8 +562,8 @@ SAKPlot <- function(es,
 
   #### Prepare plot ####
   plot(NULL, xlim = xlim, ylim = ylim, type = "n",
-       xaxt = "n", xlab = "", ylab = left.ylab, ...)
-  # Label the groups
+       xaxt = "n", xlab = "", ylab = left.ylab, las = left.las, ...)
+  # Label the groups along the x-axis
   graphics::axis(1, at = seq_len(nGroups) + axis.dx, labels = es$group.names)
 
   ### Add the various components to the plot ###
@@ -554,9 +589,7 @@ SAKPlot <- function(es,
     # reverse engineer space from x positions and widths of bars
     gap <- diff(c(-bar.width[1] / 2, seq_len(nGroups) + bar.dx))
     space <- sapply(seq_along(gap), function(i) (gap[i] - bar.width[i]) / bar.width[i])
-    # Use central.tendency as bar height if specified, otherwise mean
-    ct <- if (isFALSE(central.tendency)) "mean" else central.tendency
-    graphics::barplot(es$group.statistics[, ct] ~ factor(groups, levels = groups),
+    graphics::barplot(es$group.statistics[, central.tendency.type] ~ factor(groups, levels = groups),
                       width = bar.width, space = space, offset = bar.dx,
                       col = .colour(bar.fill), border = .colour(bar),
                       add = TRUE, axes = FALSE, names.arg = FALSE)
@@ -573,13 +606,7 @@ SAKPlot <- function(es,
       d <- densities[[i]]
       col <- violin.fill[i]
       border <- borders[i]
-      if (violin.shape[i] == "left-half") {
-        graphics::polygon(i - d$y + dx[i], d$x, col = col, border = border)
-      } else if (violin.shape[i] == "right-half") {
-        graphics::polygon(i + d$y + dx[i], d$x, col = col, border = border)
-      } else {
-        graphics::polygon(c(i - d$y, rev(i + d$y)) + dx[i], c(d$x, rev(d$x)), col = col, border = border)
-      }
+      plotViolin(violin.shape[i], i + dx[i], d, col = col, border = border)
     }
   }
 
@@ -625,43 +652,40 @@ SAKPlot <- function(es,
   }
 
   ##  mean +SD
+  central.tendency <- .boolToDef(central.tendency, "grey20")
+  error.bars <- .boolToDef(error.bars, if (.isColour(central.tendency)) central.tendency else "grey20")
   if (.show(central.tendency)) {
     for (i in seq_along(groups)) {
 
       # get mean of group
-      y <- es$group.statistics[i, central.tendency]
-
+      y <- es$group.statistics[i, central.tendency.type]
       # plot points or lines
       if (central.tendency == "mean")
         graphics::points(i + central.tendency.dx[i], y,
-                         pch = 19, cex = 1.5, col = .colour(central.tendency.colour))
+                         pch = 19, cex = 1.5, col = .colour(central.tendency))
       else
         graphics::segments(i - violin.width + central.tendency.dx[i], y,
                            i + violin.width + central.tendency.dx[i], y,
-                           col = .colour(central.tendency.colour), lwd = 2)
+                           col = .colour(central.tendency), lwd = 2)
     }
   }
 
   ## add CI/SD/SE error bars
   if (.show(error.bars)) {
-    centre <- central.tendency
-    if (isFALSE(centre))
-      centre <- "mean"
     for (i in seq_along(groups)) {
-      y <- es$group.statistics[i, centre]
-      bars <- getErrorBars(es, i, y, error.bars)
-      graphics::segments(i + central.tendency.dx[i], bars[1], i + central.tendency.dx[i], bars[2], col = .colour(central.tendency.colour), lty = 1, lwd = 2)
+      y <- es$group.statistics[i, central.tendency.type]
+      bars <- getErrorBars(es, i, y, error.bars.type)
+      graphics::segments(i + central.tendency.dx[i], bars[1], i + central.tendency.dx[i], bars[2], col = .colour(error.bars), lty = 1, lwd = 2)
     }
   }
 
   # Effect size. Handle default colour
-  violinCol <- ef.size.violin
-  if (isTRUE(ef.size.violin))
-    violinCol <- "black"
+  ef.size.col <- .boolToDef(ef.size, "black")
+  violinCol <- .boolToDef(ef.size.violin, "grey40")
   if (.show(ef.size) && ef.size.position == "right") {
-    plotEffectSizesRight(es, .show(ef.size.violin), violinCol, violin.width, ef.size.pch, right.ylab)
+    plotEffectSizesRight(es, ef.size.col, ef.size.pch, .show(ef.size.violin), violinCol, violin.width, ef.size.violin.shape, ef.size.label, ef.size.ticks, ef.size.las)
   } else if (.show(ef.size) && ef.size.position == "below") {
-    plotEffectSizesBelow(es, .show(ef.size.violin), violinCol, violin.width, ef.size.pch, xlim, ef.size.dx)
+    plotEffectSizesBelow(es, ef.size.col, ef.size.pch, .show(ef.size.violin), violinCol, violin.width, ef.size.violin.shape, xlim, ef.size.dx, ef.size.label, ef.size.ticks, ef.size.las)
   }
 
   invisible(es)

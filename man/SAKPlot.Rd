@@ -29,18 +29,24 @@ SAKPlot(
   bar.fill = TRUE,
   bar.width = 0.8,
   bar.dx = group.dx,
-  ef.size = c("right", "below"),
+  ef.size = TRUE,
+  ef.size.position = c("right", "below"),
   ef.size.violin = TRUE,
+  ef.size.violin.shape = c("right-half", "left-half", "full"),
   ef.size.pch = 17,
   ef.size.dx = group.dx,
+  ef.size.ticks = NULL,
+  ef.size.las = 0,
+  ef.size.label = es$effect.name,
   paired = es$paired.data,
-  central.tendency = c("mean", "median"),
-  central.tendency.colour = "grey20",
+  central.tendency = TRUE,
+  central.tendency.type = c("mean", "median"),
   central.tendency.dx = group.dx,
-  error.bars = c("CI", "SD", "SE"),
+  error.bars = central.tendency,
+  error.bars.type = c("CI", "SD", "SE"),
   axis.dx = group.dx,
   left.ylab = es$data.col.name,
-  right.ylab = es$effect.name,
+  left.las = 0,
   ...
 )
 }
@@ -60,16 +66,15 @@ each data point.}
 
 \item{points.method}{Method used to avoid overplotting points. Use
 \code{"overplot"} to overplot points and \code{"jitter"} to add random
-noise to each x-value. See \code{\link{vipor::offsetX}} for remaining
-methods.}
+noise to each x-value. See [vipor]{offsetX} for remaining methods.}
 
 \item{pch}{Symbol to use for plotting points.}
 
 \item{points.dx}{Horizontal shift to be applied to points in each group.}
 
 \item{points.params}{List of named parameters to pass on to
-[graphics]{points}, e.g. \code{SAKPlot(es, points = 1, pch =
-21, points.params = list(bg = as.numeric(factor(data$Sex)) + 1))}.}
+[graphics]{points}, e.g. \code{SAKPlot(es, points = 1, pch = 21,
+points.params = list(bg = as.numeric(factor(data$Sex)) + 1))}.}
 
 \item{violin}{If FALSE, violin plot is not drawn. Otherwise specifies the
 colour of the violin borders.}
@@ -101,13 +106,12 @@ If FALSE or NA, bodies are not filled}
 [graphics]{boxplot.stats} for the calculations used.}
 
 \item{box.pars}{List with additional graphical parameters to control the box
-plot. See [graphics]{bxp} graphical parameters for a complete
-list.}
+plot. See [graphics]{bxp} graphical parameters for a complete list.}
 
 \item{box.dx}{Horizontal shift to be applied to each box.}
 
 \item{bar}{If not FALSE, draw a bar plot of the group means or medians,
-according to \code{central.tendency}.}
+according to \code{central.tendency}. May be \code{TRUE} or a colour.}
 
 \item{bar.fill}{Colour used to fill bars.}
 
@@ -115,31 +119,53 @@ according to \code{central.tendency}.}
 
 \item{bar.dx}{Horizontal shift to be applied to each bar.}
 
-\item{ef.size}{If not FALSE, effect sizes are plotted. Effect sizes are
-plotted to the right of the main plot if there is only one effect size to
-plot and \code{ef.size != "below"}. If the effect size is drawn to the
-right, you will need to increase the size of the right margin (see
-\code{\link{par(mar = ...)}}).}
+\item{ef.size}{If not FALSE, effect sizes are plotted. May be \code{TRUE} or
+a colour.}
+
+\item{ef.size.position}{Effect sizes are plotted to the right of the main
+plot if there is only one effect size to plot and \code{ef.size.position !=
+"below"}. If the effect size is drawn to the right, you will need to
+increase the size of the right margin before plotting (see
+\code{\link[graphics:par]{par(mar = ...)}}).}
 
 \item{ef.size.violin}{If not FALSE, boostrapped effect size estimates are
-show as a violin plot.}
+show as a violin plot. May be a colour, used for the violin border, and a
+transparent version is used for the violin fill.}
+
+\item{ef.size.violin.shape}{Shape of the effect size violin.}
 
 \item{ef.size.pch}{Symbol to represent mean effect size.}
 
 \item{ef.size.dx}{Horizontal shift to be applied to each effect size.}
 
+\item{ef.size.ticks}{Optional locations and labels for ticks on the effect
+size y-axis. E.g. to interpret effect size using Cohen's default values,
+specif \code{ef.size.ticks = c("Large negative effect" = -0.8, "Medium
+negative effect" = -0.5, "Small negative effect" = -0.2, "No effect" = 0,
+"Small positive effect" = 0.2, "Medium positive effect" = 0.5, "Large
+positive effect" = 0.8)}}
+
+\item{ef.size.las}{Orientation of tick labels on the effect size axis (0 =
+parallel to axis, 1 = horizontal).}
+
+\item{ef.size.label}{Label to display on y-axis for effect size.}
+
 \item{paired}{If \code{TRUE}, lines are drawn joining the individual data
 points.}
 
-\item{central.tendency}{Should the indicated measure of central tendency be
-\code{"mean"} or \code{"median"}?}
+\item{central.tendency}{If not FALSE, a visual indicator of central tendency
+is drawn. May be a colour, in which case it is used for mean/median and
+error bars.}
 
-\item{central.tendency.colour}{Colour used for mean/median and error bars.}
+\item{central.tendency.type}{Should the indicated measure of central tendency
+be \code{"mean"} or \code{"median"}?}
 
 \item{central.tendency.dx}{Horizontal shift to apply to central tendency
 indicator and error bars.}
 
-\item{error.bars}{Should error bars depict 95% confidence intervals
+\item{error.bars}{Should error bars be displayed? May be the colour to be used for error bars.}
+
+\item{error.bars.type}{Should error bars depict 95% confidence intervals
 (\code{"CI}), standard deviation (\code{"SD"}) or standard error
 (\code{"SE})?}
 
@@ -147,11 +173,9 @@ indicator and error bars.}
 
 \item{left.ylab}{Left-hand y-axis label.}
 
-\item{right.ylab}{Right-hand y-axis label. Only used if effect size is shown
-on the right (\code{ef.size = "right"}).}
+\item{left.las}{Orientation of axis labels on left-hand y-axis label (0 = parallel to axis, 1 = horizontal).}
 
-\item{...}{Additional arguments are past to the [graphics]{plot}
-function.}
+\item{...}{Additional arguments are passed on to the [graphics]{plot} function.}
 }
 \value{
 \code{es} invisibly.
@@ -182,6 +206,6 @@ confidence intervals, and meta-analysis (1st edition ed.). New York:
 Routledge.
 }
 \seealso{
-\code{\link{SAKDifference}}, \code{\link{vipor::offsetX}},
-  [graphics]{boxplot}, [graphics]{bxp}
+{SAKDifference}, [vipor]{offsetX}, [graphics]{boxplot},
+  [graphics]{bxp}
 }

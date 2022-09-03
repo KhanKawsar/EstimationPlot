@@ -49,7 +49,16 @@ data <- data.frame(Measurement = unlist(lapply(c(10, 12, 8, 8.5, 9, 9.1), functi
                    Group = rep(paste0("g", 1:6), each = 20),
                    Id = rep(1:6, 20))
 d <- SAKDifference(data, 1, 2, 3, groups = c("Control 1" = "g1", "Treatment 1" = "g2", "Control 2" = "g3", "Treatment 2" = "g4", "Control 3" = "g5", "Treatment 3" = "g6"), 
-                   effect.type = "paired", 
                    contrasts = "g2 - g1, g4 - g3, g6 - g5")
- SAKPlot(d, box = TRUE, group.dx = c(0.2, -0.2), paired = FALSE, points = "j", box.pars = list(boxwex = 0.4), ef.size.violin = FALSE, main = "Group offsets")
+SAKPlot(d, box = TRUE, group.dx = c(0.2, -0.2), paired = FALSE, points = "j", box.pars = list(boxwex = 0.4), ef.size.violin = FALSE, main = "Group offsets")
+```
+
+```{r fig.height=10, fig.width=10}
+par(mar = c(5, 4, 3, 10) + 0.1)
+effectSizes <- c("Large negative effect" = -0.8, "Medium negative effect" = -0.5, "Small negative effect" = -0.2, "No effect" = 0, "Small positive effect" = 0.2, "Medium positive effect" = 0.5, "Large positive effect" = 0.8)
+d <- SAKDifference(damselfly, 2, 3, effect.type = "cohen", groups = c("Juvenile" = "juvenile", "Adult" = "adult"), na.rm = TRUE)
+SAKPlot(d, violin.shape = c("left", "right"), violin.dx = c(-0.05, 0.05), violin.width = 0.3, main = "Effect size interpretation", ef.size.ticks = effectSizes, ef.size.label = "", ef.size.las = 1)
+
+par(mar = c(5, 10, 3, 1) + 0.1)
+SAKPlot(d, box = TRUE, ef.size.ticks = effectSizes, ef.size.position = "below", ef.size.las = 1, main = "Group offsets", ef.size.label = "")
 ```
