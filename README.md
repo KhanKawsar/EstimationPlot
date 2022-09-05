@@ -1,7 +1,3 @@
----
-output: html_document
----
-
 # SAKPlot: Swiss-army-knife of Estimation Plotting
 
 Effect size estimation and plotting is a component of [estimation statistics](https://en.wikipedia.org/wiki/Estimation_statistics).
