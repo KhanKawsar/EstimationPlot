@@ -1,5 +1,8 @@
 #### TODO test different values of ci.type
 
+# To report test coverage, run
+# devtools::test_coverage()
+
 makeData <- function(N = 40) {
   set.seed(1)
   data <- data.frame(Measurement = c(rnorm(N, mean = 100, sd = 25),
@@ -96,6 +99,19 @@ test_that("contrast plots", {
   expect_equal(d$group.differences[[3]]$groups[1], "Group3")
   expect_equal(d$group.differences[[3]]$groups[2], "ZControl1")
   SAKPlot(d, main = "Explicit contrasts")
+})
+
+test_that("plots", {
+  d <- makeES1()
+  expected <- paste0("Bootstrapped effect size\\n",
+                     "  Measurement ~ Group\\n",
+                     "Groups:\\n",
+                     "              mean   median       sd       se  CI\\.lower CI\\.upper  N\\n",
+                     "Group1    122\\.9210 118\\.8367 21\\.31850 3\\.370750 116\\.10300 129\\.7390 40\\n",
+                     "ZControl1 102\\.3007 103\\.2276 22\\.16668 3\\.504859  95\\.21141 109\\.3899 40\\n",
+                     "Pairwise unstandardised effect size:\\n",
+                     "  ZControl1 - Group1: -20\\.[0-9]+, 95% CI \\(bca\\) \\[-30\\.[0-9]+, -10\\.[0-9]+\\]")
+  expect_output(print(d), expected)
 })
 
 test_that("contrasts", {
@@ -306,6 +322,7 @@ test_that("three groups", {
   # This should NOT throw an error
   expect_error(SAKPlot(d3, bar = FALSE, box = FALSE, main = "Three groups"), NA)
   expect_error(SAKPlot(d3, violin.trunc = FALSE, main = "No violin truncation"), NA)
+  expect_error(SAKPlot(d3, violin.trunc = 0.05, main = "0.05 violin truncation"), NA)
   expect_error(SAKPlot(d3, ef.size.violin = FALSE, main = "No effect size violin"), NA)
 })
 
@@ -341,183 +358,183 @@ test_that("many groups", {
 test_that("plots work", {
   #### This fails with "figure margins too large"
   if (FALSE) {
-  N <- 40
-  set.seed(1)
-  data <- data.frame(Measurement = c(rnorm(N, mean = 100, sd = 25),
-                                     rnorm(N, mean = 100, sd = 50),
-                                     rnorm(N, mean = 120, sd = 25),
-                                     rnorm(N, mean = 80, sd = 50),
-                                     rnorm(N, mean = 100, sd = 12),
-                                     rnorm(N, mean = 100, sd = 50)),
-                     Group = c(rep("ZControl1", N),
-                               rep("Control2", N),
-                               rep("Group1", N),
-                               rep("Group2", N),
-                               rep("Group3", N),
-                               rep("Group4", N)),
-                     Gender = rep(c(rep('Male', N/2), rep('Female', N/2)), 6),
-                     ID = rep(1:N, 6)
-  )
-  # Shuffle
-  data <- data[sample(nrow(data)), ]
-  es <- SAKDifference(data[data$Group %in% c("ZControl1", "Group1"),], data.col = "Measurement", group.col = "Group", R = 1000)
-  es2 <- SAKDifference(data[data$Group %in% c("ZControl1", "Group1"),],
-                    data.col = "Measurement", group.col = "Group", R = 1000,
-                    id.col = "ID")
+    N <- 40
+    set.seed(1)
+    data <- data.frame(Measurement = c(rnorm(N, mean = 100, sd = 25),
+                                       rnorm(N, mean = 100, sd = 50),
+                                       rnorm(N, mean = 120, sd = 25),
+                                       rnorm(N, mean = 80, sd = 50),
+                                       rnorm(N, mean = 100, sd = 12),
+                                       rnorm(N, mean = 100, sd = 50)),
+                       Group = c(rep("ZControl1", N),
+                                 rep("Control2", N),
+                                 rep("Group1", N),
+                                 rep("Group2", N),
+                                 rep("Group3", N),
+                                 rep("Group4", N)),
+                       Gender = rep(c(rep('Male', N/2), rep('Female', N/2)), 6),
+                       ID = rep(1:N, 6)
+    )
+    # Shuffle
+    data <- data[sample(nrow(data)), ]
+    es <- SAKDifference(data[data$Group %in% c("ZControl1", "Group1"),], data.col = "Measurement", group.col = "Group", R = 1000)
+    es2 <- SAKDifference(data[data$Group %in% c("ZControl1", "Group1"),],
+                         data.col = "Measurement", group.col = "Group", R = 1000,
+                         id.col = "ID")
 
 
-  # Generate some plots
-  l <- layout(matrix(c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), nrow = 4, ncol = 5, byrow =  TRUE))
-  #layout.show(l)
+    # Generate some plots
+    l <- layout(matrix(c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), nrow = 4, ncol = 5, byrow =  TRUE))
+    #layout.show(l)
 
-  #par(mfrow = c(2, 4))
-  #a)
-  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = FALSE, box.fill = FALSE,
-         central.tendency = "median", error.bars.type = "CI", ef.size = FALSE,
-         points = SAKTransparent(c("red", "blue"), .5))
+    #par(mfrow = c(2, 4))
+    #a)
+    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = FALSE, box.fill = FALSE,
+            central.tendency = "median", error.bars.type = "CI", ef.size = FALSE,
+            points = SAKTransparent(c("red", "blue"), .5))
 
-  #b)
-  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "white", box.fill = "white",
-         central.tendency = "median", error.bars = "SD", ef.size = FALSE,
-         points = SAKTransparent(c("red", "blue"), .5),)
+    #b)
+    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "white", box.fill = "white",
+            central.tendency = "median", error.bars = "SD", ef.size = FALSE,
+            points = SAKTransparent(c("red", "blue"), .5),)
 
-  #c)
-  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "white", box.fill = "white",
-         central.tendency = "median", error.bars = "SE", ef.size = FALSE,
-         points = SAKTransparent(c("red", "blue"), .5),)
+    #c)
+    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "white", box.fill = "white",
+            central.tendency = "median", error.bars = "SE", ef.size = FALSE,
+            points = SAKTransparent(c("red", "blue"), .5),)
 
-  #d)
-  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "white", box.fill = "white",
-         central.tendency = "mean", error.bars.type = "CI", ef.size = FALSE,
-         points = SAKTransparent(c("red", "blue"), .5),)
+    #d)
+    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "white", box.fill = "white",
+            central.tendency.type = "mean", error.bars.type = "CI", ef.size = FALSE,
+            points = SAKTransparent(c("red", "blue"), .5),)
 
-  #e)
-  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "white", box.fill = "white",
-         central.tendency = "mean", error.bars = "SD", ef.size = FALSE,
-         points = SAKTransparent(c("red", "blue"), .5),)
+    #e)
+    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "white", box.fill = "white",
+            central.tendency.type = "mean", error.bars = "SD", ef.size = FALSE,
+            points = SAKTransparent(c("red", "blue"), .5),)
 
-  #f)
-  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "white", box.fill = "white",
-         central.tendency = "mean", error.bars = "SE", ef.size = FALSE,
-         points = SAKTransparent(c("red", "blue"), .5),)
+    #f)
+    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "white", box.fill = "white",
+            central.tendency.type = "mean", error.bars = "SE", ef.size = FALSE,
+            points = SAKTransparent(c("red", "blue"), .5),)
 
-  #g)
-  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = SAKTransparent(c("red", "blue"), .5),
-         box.fill = "white",error.bars.type = "CI",
-         central.tendency = "mean", mean = NA, ef.size = FALSE,
-         points = FALSE)
+    #g)
+    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = SAKTransparent(c("red", "blue"), .5),
+            box.fill = "white", error.bars.type = "CI",
+            central.tendency.type = "mean", central.tendency = FALSE, ef.size = FALSE,
+            points = FALSE)
 
-  #h)
-  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = SAKTransparent(c("red", "blue"), .5),
-         box.fill = "white",error.bars.type = "CI",
-         central.tendency = "mean", mean = NA, ef.size = FALSE,
-         points = SAKTransparent(c("red", "blue"), .5))
+    #h)
+    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = SAKTransparent(c("red", "blue"), .5),
+            box.fill = "white", error.bars.type = "CI",
+            central.tendency.type = "mean", central.tendency = FALSE, ef.size = FALSE,
+            points = SAKTransparent(c("red", "blue"), .5))
 
-  #i)
-  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = SAKTransparent(c("red", "blue"), .5),
-         box.fill = SAKTransparent(c("red", "blue"), .7),error.bars.type = "CI",
-         central.tendency = "mean", mean = NA, ef.size = FALSE,
-         points = FALSE)
+    #i)
+    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = SAKTransparent(c("red", "blue"), .5),
+            box.fill = SAKTransparent(c("red", "blue"), .7), error.bars.type = "CI",
+            central.tendency.type = "mean", central.tendency = FALSE, ef.size = FALSE,
+            points = FALSE)
 
-  #j)
-  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = SAKTransparent(c("red", "blue"), .5),
-         box.fill = SAKTransparent(c("red", "blue"), .7),error.bars.type = "CI",
-         central.tendency = "mean", mean = NA, ef.size = FALSE,
-         points = SAKTransparent(c("red", "blue"), .5))
+    #j)
+    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = SAKTransparent(c("red", "blue"), .5),
+            box.fill = SAKTransparent(c("red", "blue"), .7), error.bars.type = "CI",
+            central.tendency.type = "mean", central.tendency = FALSE, ef.size = FALSE,
+            points = SAKTransparent(c("red", "blue"), .5))
 
 
-  #k)
-  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = "left-half",
-         violin_border = SAKTransparent(c("red", "blue"), .6),
-         violin_fill = SAKTransparent(c("red", "blue"), .6),
-         box = "white",
-         box.fill = "white",
-         error.bars.type = "CI",
-         central.tendency = "mean", mean = NA, ef.size = FALSE,
-         points = SAKTransparent(c("red", "blue"), .5))
+    #k)
+    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin.shape = "left-half",
+            violin = SAKTransparent(c("red", "blue"), .6),
+            violin.fill = SAKTransparent(c("red", "blue"), .6),
+            box = "white",
+            box.fill = "white",
+            error.bars.type = "CI",
+            central.tendency.type = "mean", central.tendency = FALSE, ef.size = FALSE,
+            points = SAKTransparent(c("red", "blue"), .5))
 
-  #l)
-  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = "left-half",
-         violin_border = SAKTransparent(c("red", "blue"), .6),
-         violin_fill = SAKTransparent(c("red", "blue"), .6),
-         box = SAKTransparent(c("red", "blue"), .5),
-         box.fill = SAKTransparent(c("red", "blue"), .7),error.bars.type = "CI",
-         central.tendency = "mean", mean = NA, ef.size = FALSE,
-         points = FALSE)
+    #l)
+    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin.shape = "left-half",
+            violin = SAKTransparent(c("red", "blue"), .6),
+            violin.fill = SAKTransparent(c("red", "blue"), .6),
+            box = SAKTransparent(c("red", "blue"), .5),
+            box.fill = SAKTransparent(c("red", "blue"), .7), error.bars.type = "CI",
+            central.tendency.type = "mean", central.tendency = FALSE, ef.size = FALSE,
+            points = FALSE)
 
-  ##m)
-  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = "left-half",
-         violin_border = SAKTransparent(c("red", "blue"), .6),
-         violin_fill = SAKTransparent(c("red", "blue"), .6),
-         box = SAKTransparent(c("red", "blue"), .5),
-         box.fill = SAKTransparent(c("red", "blue"), .7),error.bars.type = "CI",
-         central.tendency = "mean", mean = NA, ef.size = FALSE,
-         points = SAKTransparent(c("red", "blue"), .5))
+    ##m)
+    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin.shape = "left-half",
+            violin = SAKTransparent(c("red", "blue"), .6),
+            violin.fill = SAKTransparent(c("red", "blue"), .6),
+            box = SAKTransparent(c("red", "blue"), .5),
+            box.fill = SAKTransparent(c("red", "blue"), .7), error.bars.type = "CI",
+            central.tendency.type = "mean", central.tendency = FALSE, ef.size = FALSE,
+            points = SAKTransparent(c("red", "blue"), .5))
 
-  #n)
-  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = "right-half",
-         violin_border = SAKTransparent(c("red", "blue"), .6),
-         violin_fill = SAKTransparent(c("red", "blue"), .6),
-         box = "white",
-         box.fill = "white",
-         error.bars.type = "CI",
-         central.tendency = "mean", mean = NA, ef.size = FALSE,
-         points = SAKTransparent(c("red", "blue"), .5))
-  #o)
-  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = "right-half",
-         violin_border = SAKTransparent(c("red", "blue"), .6),
-         violin_fill = SAKTransparent(c("red", "blue"), .6),
-         box = SAKTransparent(c("red", "blue"), .5),
-         box.fill = SAKTransparent(c("red", "blue"), .7),error.bars.type = "CI",
-         central.tendency = "mean", mean = NA, ef.size = FALSE,
-         points = FALSE)
+    #n)
+    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin.shape = "right-half",
+            violin = SAKTransparent(c("red", "blue"), .6),
+            violin.fill = SAKTransparent(c("red", "blue"), .6),
+            box = "white",
+            box.fill = "white",
+            error.bars.type = "CI",
+            central.tendency.type = "mean", central.tendency = FALSE, ef.size = FALSE,
+            points = SAKTransparent(c("red", "blue"), .5))
+    #o)
+    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin.shape = "right-half",
+            violin = SAKTransparent(c("red", "blue"), .6),
+            violin.fill = SAKTransparent(c("red", "blue"), .6),
+            box = SAKTransparent(c("red", "blue"), .5),
+            box.fill = SAKTransparent(c("red", "blue"), .7), error.bars.type = "CI",
+            central.tendency.type = "mean", central.tendency = FALSE, ef.size = FALSE,
+            points = FALSE)
 
-  #p)
-  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = "right-half",
-         violin_border = SAKTransparent(c("red", "blue"), .6),
-         violin_fill = SAKTransparent(c("red", "blue"), .6),
-         box = SAKTransparent(c("red", "blue"), .5),
-         box.fill = SAKTransparent(c("red", "blue"), .7),error.bars.type = "CI",
-         central.tendency = "mean", mean = NA, ef.size = FALSE,
-         points = SAKTransparent(c("red", "blue"), .5))
+    #p)
+    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin.shape = "right-half",
+            violin = SAKTransparent(c("red", "blue"), .6),
+            violin.fill = SAKTransparent(c("red", "blue"), .6),
+            box = SAKTransparent(c("red", "blue"), .5),
+            box.fill = SAKTransparent(c("red", "blue"), .7), error.bars.type = "CI",
+            central.tendency.type = "mean", central.tendency = FALSE, ef.size = FALSE,
+            points = SAKTransparent(c("red", "blue"), .5))
 
-  #q)
-  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = "full",
-         violin_border = SAKTransparent(c("red", "blue"), .6),
-         violin_fill = SAKTransparent(c("red", "blue"), .6),
-         box = SAKTransparent(c("red", "blue"), .5),
-         box.fill = SAKTransparent(c("red", "blue"), .7),error.bars.type = "CI",
-         central.tendency = "mean", mean = NA, ef.size = FALSE,
-         points = FALSE)
+    #q)
+    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin.shape = "full",
+            violin = SAKTransparent(c("red", "blue"), .6),
+            violin.fill = SAKTransparent(c("red", "blue"), .6),
+            box = SAKTransparent(c("red", "blue"), .5),
+            box.fill = SAKTransparent(c("red", "blue"), .7), error.bars.type = "CI",
+            central.tendency.type = "mean", central.tendency = FALSE, ef.size = FALSE,
+            points = FALSE)
 
-  #r)
-  SAKPlot(es2, bar = FALSE, bar.fill = FALSE, violin = "full",
-         violin_border = SAKTransparent(c("red", "blue"), .4),
-         violin_fill = SAKTransparent(c("red", "blue"), .8),
-         box = SAKTransparent(c("grey10"), .1),
-         box.fill = SAKTransparent(c("red", "blue"), .7),error.bars.type = "CI",
-         central.tendency = "mean", mean = NA, ef.size = TRUE,
-         points = SAKTransparent(c("red", "blue"), .5), paired = TRUE)
+    #r)
+    SAKPlot(es2, bar = FALSE, bar.fill = FALSE, violin.shape = "full",
+            violin = SAKTransparent(c("red", "blue"), .4),
+            violin.fill = SAKTransparent(c("red", "blue"), .8),
+            box = SAKTransparent(c("grey10"), .1),
+            box.fill = SAKTransparent(c("red", "blue"), .7), error.bars.type = "CI",
+            central.tendency.type = "mean", central.tendency = FALSE, ef.size = TRUE,
+            points = SAKTransparent(c("red", "blue"), .5), paired = TRUE)
 
-  #s)
-  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = "full",
-         violin_border = SAKTransparent(c("red", "blue"), .6),
-         violin_fill = SAKTransparent(c("red", "blue"), .6),
-         box = "white",
-         box.fill = "white",
-         error.bars.type = "CI",
-         central.tendency = "mean", mean = NA, ef.size = FALSE,
-         points = SAKTransparent(c("red", "blue"), .5))
+    #s)
+    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin.shape = "full",
+            violin = SAKTransparent(c("red", "blue"), .6),
+            violin.fill = SAKTransparent(c("red", "blue"), .6),
+            box = "white",
+            box.fill = "white",
+            error.bars.type = "CI",
+            central.tendency.type = "mean", central.tendency = FALSE, ef.size = FALSE,
+            points = SAKTransparent(c("red", "blue"), .5))
 
-  #t)
-  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = "full",
-         violin_border = SAKTransparent(c("red", "blue"), .6),
-         violin_fill = SAKTransparent(c("red", "blue"), .6),
-         box = "white",
-         box.fill = "white",
-         error.bars.type = "CI",
-         central.tendency = "mean", mean = NA, ef.size = FALSE,
-         points = FALSE)
+    #t)
+    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin.shape = "full",
+            violin = SAKTransparent(c("red", "blue"), .6),
+            violin.fill = SAKTransparent(c("red", "blue"), .6),
+            box = "white",
+            box.fill = "white",
+            error.bars.type = "CI",
+            central.tendency.type = "mean", central.tendency = FALSE, ef.size = FALSE,
+            points = FALSE)
 
   }
   expect_equal(1, 1)

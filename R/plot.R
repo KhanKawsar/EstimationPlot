@@ -221,18 +221,6 @@ plotEffectSizesBelow <- function(es, ef.size.col, ef.size.pch, showViolin, violi
   groups <- es$groups
   nGroups <- length(groups)
 
-  # Find and return the pairwise difference for the specified 2 groups
-  pwDiff <- function(g1, g2) {
-    for (i in seq_len(length(es$group.differences))) {
-      gi <- es$group.differences[[i]]$groups
-      if (gi[1] == g1 && gi[2] == g2)
-        return(es$group.differences[[i]])
-      if (gi[1] == g2 && gi[2] == g1)
-        return(negatePairwiseDiff(es$group.differences[[i]]))
-    }
-    stop(sprintf("Difference %s - %s not found", g1, g2))
-  }
-
   # What will we plot?
   plotDiffs <- es$group.differences
   ylim <- range(c(0, sapply(plotDiffs, function(pwes) if (is.null(pwes)) NA else range(pwes$t, na.rm = TRUE))), na.rm = TRUE)

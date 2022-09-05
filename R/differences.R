@@ -153,17 +153,18 @@ expandContrasts <- function(contrasts, groups) {
   contrasts
 }
 
-# Returns the negation of the specified group difference (type SAKPWDiff,
-# usually a member of es$group.differences)
-negatePairwiseDiff <- function(pwd) {
-  pwd$groups[[1]] <- rev(pwd$groups[[1]])
-  pwd$groupLabels[[1]] <- rev(pwd$groupLabels[[1]])
-  pwd$t0 <- -pwd$t0
-  pwd$t[[1]] <- -pwd$t[[1]]
-  pwd$bca[4] <- -pwd$bca[4]
-  pwd$bca[5] <- -pwd$bca[5]
-  pwd
-}
+### NOT USED
+# # Returns the negation of the specified group difference (type SAKPWDiff,
+# # usually a member of es$group.differences)
+# negatePairwiseDiff <- function(pwd) {
+#   pwd$groups[[1]] <- rev(pwd$groups[[1]])
+#   pwd$groupLabels[[1]] <- rev(pwd$groupLabels[[1]])
+#   pwd$t0 <- -pwd$t0
+#   pwd$t[[1]] <- -pwd$t[[1]]
+#   pwd$bca[4] <- -pwd$bca[4]
+#   pwd$bca[5] <- -pwd$bca[5]
+#   pwd
+# }
 
 
 #############################################################################
