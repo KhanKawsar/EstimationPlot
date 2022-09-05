@@ -1,7 +1,6 @@
 <!-- badges: start -->
-[![check-standard](https://github.com/KhanKawsar/EstimationPlot/workflows/check-standard/badge.svg)](https://github.com/KhanKawsar/EstimationPlot/actions)
-[![Codecov test coverage](https://codecov.io/gh/KhanKawsar/EstimationPlot/branch/main/graph/badge.svg)](https://app.codecov.io/gh/KhanKawsar/EstimationPlot?branch=main)
 [![R-CMD-check](https://github.com/KhanKawsar/EstimationPlot/workflows/R-CMD-check/badge.svg)](https://github.com/KhanKawsar/EstimationPlot/actions)
+[![Codecov test coverage](https://codecov.io/gh/KhanKawsar/EstimationPlot/branch/main/graph/badge.svg)](https://app.codecov.io/gh/KhanKawsar/EstimationPlot?branch=main)
 <!-- badges: end -->
 
 
