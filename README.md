@@ -1,3 +1,8 @@
+<!-- badges: start -->
+[![test-coverage](https://github.com/KhanKawsar/EstimationPlot/workflows/test-coverage/badge.svg)](https://github.com/KhanKawsar/EstimationPlot/actions)
+<!-- badges: end -->
+
+
 # SAKPlot: Swiss-army-knife of Estimation Plotting
 
 Effect size estimation and plotting is a component of [estimation statistics](https://en.wikipedia.org/wiki/Estimation_statistics).
