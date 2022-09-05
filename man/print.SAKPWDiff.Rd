@@ -7,12 +7,15 @@
 \method{print}{SAKPWDiff}(x, ...)
 }
 \arguments{
-\item{x}{An object of class \link{\code{SAKPWDiff}}.}
+\item{x}{An object of class \code{SAKPWDiff}.}
 
 \item{...}{Ignored}
 }
 \description{
 This is a method for the function \code{print()} for objects of class
-"\code{SAKPWDiff}", which is a row in the \code{group.differences} matrix
-belonging to an object returned by a call to \link{\code{SAKDifference}}.
+\code{SAKPWDiff}, which is a row in the \code{group.differences} matrix
+belonging to an object returned by a call to \code{\link{SAKDifference}}.
+}
+\seealso{
+\code{\link{SAKDifference}}, \code{\link{print.SAKDiff}}
 }
