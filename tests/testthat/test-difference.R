@@ -66,7 +66,7 @@ makePairedData <- function(addSomeNAs = FALSE, reverseGroups = FALSE) {
 
 compareDiffs <- function(d1, d2) {
   expect_equal(names(d1), names(d2))
-  expect_equal(d1$t0, d2$t0, tolerance = )
+  expect_equal(d1$t0, d2$t0)
   expect_equal(d1$R, d2$R)
   expect_equal(d1$bca, d2$bca)
 }
@@ -135,6 +135,13 @@ test_that("contrasts", {
 
   expect_error(SAKDifference(data, "Measurement", "Group", contrasts = "Group2:ZControl"))
   expect_error(SAKDifference(data, "Measurement", "Group", contrasts = "ZControl"))
+  expect_error(SAKDifference(data, "Measurement", "Group", contrasts = ""))
+  expect_error(SAKDifference(data, "Measurement", "Group", contrasts = "Group 2 - Group 1"))
+
+  # Wildcard contrasts
+  d <- SAKDifference(data, "Measurement", "Group", effect.type = "cohen", contrasts = "*")
+  ng <- length(unique(data$Group))
+  expect_equal(length(d$group.differences), ng * (ng - 1) / 2)
 })
 
 test_that("difference effect types", {
@@ -151,20 +158,15 @@ test_that("difference effect types", {
   expect_error(SAKDifference(df, effect.type = "cohens", data.col = 1, group.col = 2), NA)
   expect_error(SAKDifference(df, effect.type = "hedges", data.col = 1, group.col = 2), NA)
   expect_error(SAKDifference(df, effect.type = "unstandardised", id.col = "id", data.col = 1, group.col = 2), NA)
+  expect_error(SAKDifference(df, effect.type = "cohens", id.col = "id", data.col = 1, group.col = 2), NA)
+  expect_error(SAKDifference(df, effect.type = "hedges", id.col = "id", data.col = 1, group.col = 2), NA)
 
   # Check unstandardised diff
-  d <- SAKDifference(df, data.col = 1, group.col = 2, id.col = 3, effect.type = "unstandardised")
+  d <- SAKDifference(df, data.col = 1, group.col = 2, effect.type = "unstandardised")
   pwd <- d$group.difference[[1]]
   expect_equal(pwd$groups[1], "Group")
   expect_equal(pwd$groups[2], "Control")
-  expect_lt(pwd$bca[4], realDiff)
-  expect_gt(pwd$bca[5], realDiff)
-
-  # Check paired diff
-  d <- SAKDifference(df, data.col = 1, group.col = 2, id.col = 3)
-  pwd <- d$group.difference[[1]]
-  expect_equal(pwd$groups[1], "Group")
-  expect_equal(pwd$groups[2], "Control")
+  expect_lt(pwd$t0, realDiff)
   expect_lt(pwd$bca[4], realDiff)
   expect_gt(pwd$bca[5], realDiff)
 
@@ -176,6 +178,8 @@ test_that("difference effect types", {
   expect_equal(pwd$t0, 0.918991, tolerance = 0.0001) # Cohen's d
   expect_lt(pwd$bca[4], 0.918991) # Should be positive but small
   expect_gt(pwd$bca[5], 0.918991)
+  # Save Cohen's d for later
+  cohensD <- pwd$t0
   # Swap groups
   d <- SAKDifference(df, groups = c("Group", "Control"), data.col = 1, group.col = 2, effect.type = "cohens")
   pwd <- d$group.difference[[1]]
@@ -186,22 +190,56 @@ test_that("difference effect types", {
   expect_gt(pwd$bca[5], -0.918991)
 
   # Check Hedge's g
+  d <- SAKDifference(df, data.col = 1, group.col = 2, effect.type = "hedges")
+  pwd <- d$group.difference[[1]]
+  expect_equal(pwd$groups[1], "Group")
+  expect_equal(pwd$groups[2], "Control")
+  # Estimate Hedges' g by correcting Cohen's d (Lakens 2013, p. 3 eqn 4)
+  n1 <- d$group.statistics[2,"N"]
+  n2 <- d$group.statistics[1,"N"]
+  hedgesG <- cohensD * (1 - 3 / (4 * (n1 + n2) - 9))
+  expect_equal(pwd$t0, hedgesG, tolerance = 0.0001) # Hedge's g
+  expect_lt(pwd$bca[4], 0.918991) # Should be positive but small
+  expect_gt(pwd$bca[5], 0.918991)
+  # Swap groups
+  d <- SAKDifference(df, groups = c("Group", "Control"), data.col = 1, group.col = 2, effect.type = "hedges")
+  pwd <- d$group.difference[[1]]
+  expect_equal(pwd$groups[1], "Control")
+  expect_equal(pwd$groups[2], "Group")
+  expect_equal(pwd$t0, -hedgesG, tolerance = 0.0001) # Hedge's g
+  expect_lt(pwd$bca[4], -hedgesG) # Should be negative but small
+  expect_gt(pwd$bca[5], -hedgesG)
+
+  ### Paired effect sizes ###
+  # Check unstandardised diff
+  d <- SAKDifference(df, data.col = 1, group.col = 2, id.col = 3, effect.type = "unstandardised")
+  pwd <- d$group.difference[[1]]
+  expect_equal(pwd$groups[1], "Group")
+  expect_equal(pwd$groups[2], "Control")
+  expect_lt(pwd$t0, realDiff)
+  expect_lt(pwd$bca[4], realDiff)
+  expect_gt(pwd$bca[5], realDiff)
+
+  # Check Cohen's D
+  d <- SAKDifference(df, data.col = 1, group.col = 2, id.col = 3, effect.type = "cohens")
+  pwd <- d$group.difference[[1]]
+  expect_equal(pwd$groups[1], "Group")
+  expect_equal(pwd$groups[2], "Control")
+  diffs <- df$val[df$group == "Group"] - df$val[df$group == "Control"]
+  cohensD <- mean(diffs) / sd(diffs)
+  expect_equal(pwd$t0, cohensD)
+  expect_lt(pwd$bca[4], cohensD) # Should be positive but small
+  expect_gt(pwd$bca[5], cohensD)
+
   d <- SAKDifference(df, data.col = 1, group.col = 2, id.col = 3, effect.type = "hedges")
   pwd <- d$group.difference[[1]]
   expect_equal(pwd$groups[1], "Group")
   expect_equal(pwd$groups[2], "Control")
-  message("\nNot checking Hedge's g!!!")
-  # expect_equal(pwd$t0, 0.918991, tolerance = 0.0001) # Hedge's g
-  # expect_lt(pwd$bca[4], 0.918991) # Should be positive but small
-  # expect_gt(pwd$bca[5], 0.918991)
-  # Swap groups
-  d <- SAKDifference(df, groups = c("Group", "Control"), data.col = 1, group.col = 2, id.col = 3, effect.type = "hedges")
-  pwd <- d$group.difference[[1]]
-  expect_equal(pwd$groups[1], "Control")
-  expect_equal(pwd$groups[2], "Group")
-  # expect_equal(pwd$t0, 0.918991, tolerance = 0.0001) # Hedge's g
-  # expect_lt(pwd$bca[4], 0.918991) # Should be negative but small
-  # expect_gt(pwd$bca[5], 0.918991)
+  # Estimate Hedges' g by correcting Cohen's d (Lakens 2013, p. 3 eqn 4)
+  hedgesG <- cohensD * (1 - 3 / (4 * n - 9))
+  expect_equal(pwd$t0, hedgesG)
+  expect_lt(pwd$bca[4], hedgesG) # Should be positive but small
+  expect_gt(pwd$bca[5], hedgesG)
 })
 
 test_that("group factors", {
@@ -244,8 +282,10 @@ test_that("two groups", {
 
   d2 <- SAKDifference(df, data.col = 1, group.col = 2)
   # This should NOT throw an error
+  op <- par(mar = c(5, 4, 4, 4) + 0.1)
   expect_error(SAKPlot(d2, ef.size = TRUE, main = "Two groups, effect size default"), NA)
   expect_error(SAKPlot(d2, ef.size.pos = "right", main = "Two groups, effect size right"), NA)
+  par(op)
   expect_error(SAKPlot(d2, ef.size = FALSE, main = "Two groups, no effect size"), NA)
   expect_error(SAKPlot(d2, ef.size.position = "below", main = "Two groups, effect size below"), NA)
 })
@@ -564,7 +604,9 @@ test_that("Axis las", {
   df <- data.frame(val = c(rnorm(n, mean = 10), rnorm(n, mean = 10 + 1), rnorm(n, mean = 10 + 1.4)),
                    group = rep(c("Group1", "Group2", "Group3"), each = n))
   d2 <- SAKDifference(df, groups = c("Group1", "Group2"), data.col = 1, group.col = 2)
+  op <- par(mar = c(5, 4, 4, 4))
   expect_error(SAKPlot(d2, las = 1, ef.size.las = 1, main = "las horizontal"), NA)
+  par(op)
   d3 <- SAKDifference(df, data.col = 1, group.col = 2)
   expect_error(SAKPlot(d3, las = 1, ef.size.las = 1, main = "las horizontal"), NA)
 })

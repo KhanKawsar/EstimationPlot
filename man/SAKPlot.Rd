@@ -165,9 +165,9 @@ indicator and error bars.}
 
 \item{error.bars}{Should error bars be displayed? May be the colour to be used for error bars.}
 
-\item{error.bars.type}{Should error bars depict 95% confidence intervals
-(\code{"CI}), standard deviation (\code{"SD"}) or standard error
-(\code{"SE})?}
+\item{error.bars.type}{Should error bars depict 95%% confidence intervals
+(\code{"CI"}), standard deviation (\code{"SD"}) or standard error
+(\code{"SE"})?}
 
 \item{axis.dx}{Horizontal shifts to be applied to each x-axis tick and label.}
 
@@ -206,6 +206,6 @@ confidence intervals, and meta-analysis (1st edition ed.). New York:
 Routledge.
 }
 \seealso{
-{SAKDifference}, [vipor]{offsetX}, [graphics]{boxplot},
-  [graphics]{bxp}
+\code{\link{SAKDifference}}, \code{\link[vipor]{offsetX}}, \code{\link[graphics]{boxplot}},
+  \code{\link[graphics]{bxp}}
 }

@@ -1,6 +1,5 @@
 # The difference function
 
-#### TODO check difference calcs for "paired" data. Refer to Altman & Gardner, 1986
 
 ### confidence interval of a group
 CI <- function(x){
@@ -34,10 +33,10 @@ stCohensD <- function(x1, x2){
 }
 
 # Hedges' g (group 2 - group 1)
-stHedgesD <- function(x1, x2){
+stHedgesG <- function(x1, x2){
   N1 <- length(x1)
   N2 <- length(x2)
-  stCohensD(x1, x2) * (1 - (3 / (4 * (N1 + N2) - 9)))
+  stCohensD(x1, x2) * (1 - 3 / (4 * (N1 + N2) - 9))
 }
 
 # Cohen's dz, one sample or correlated/paired samples comparison
@@ -87,7 +86,7 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
     } else if (effect.type == "cohens") {
       statistic <- .wrap2GroupStatistic(stCohensD)
     } else if (effect.type == "hedges") {
-      statistic <- .wrap2GroupStatistic(stHedgesD)
+      statistic <- .wrap2GroupStatistic(stHedgesG)
     }
   }
   if (is.null(statistic)) {
@@ -127,6 +126,11 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
 # Takes contrasts as a string, vector of strings, or matrix and returns a matrix
 expandContrasts <- function(contrasts, groups) {
 
+  # Special value "*" means all possible pairs
+  if (is.character(contrasts) && length(contrasts) == 1 && trimws(contrasts) == "*") {
+    contrasts <- utils::combn(rev(groups), 2)
+  }
+
   if (!is.matrix(contrasts)) {
     if (length(contrasts) == 1) {
       # Split on commas
@@ -164,9 +168,10 @@ negatePairwiseDiff <- function(pwd) {
 
 #############################################################################
 
-#' Generate differences
+#' Calculate group mean differences
 #'
-#' TODO details
+#' Calculates differences between groups ready for printing or plotting by
+#' \code{\link{SAKPlot}}.
 #'
 #' Data format - long format, one column with measurement (\code{data.col}),
 #' another column with group identity (\code{group.col}). For repeated measures,
@@ -176,9 +181,10 @@ negatePairwiseDiff <- function(pwd) {
 #' and 4 respectively. The Cohen's d we use is labelled
 #' \emph{\out{d<sub>s</sub>}} by Lakens (2013). Hedges' g is a corrected version
 #' of Cohen's d, and is more suitable for small sample sizes. For paired (i.e.
-#' repeated measures) Coken's d, we apply equation 6 (Lakens 2013).
+#' repeated measures) Cohen's d, we apply equation 6 (Lakens 2013). For paired
+#' Hedges' g, we simply apply Hedges' correction to the paired Cohen's d.
 #'
-#' @param data A data frame...
+#' @param data A data frame containing values to be compared.
 #' @param data.col Name or index of the column within \code{data} containing the
 #'   measurement data.
 #' @param group.col Name or index of the column within \code{data} containing
@@ -192,8 +198,9 @@ negatePairwiseDiff <- function(pwd) {
 #' @param contrasts Specify the pairs of groups to be compared. By default, 2nd
 #'   and subsequent groups are compared to the first group. May be a single
 #'   string, a vector of strings, or a matrix. A single string has a format such
-#'   as \code{"group1 - group2, group3 - group4"}. A vector of strings looks
-#'   like \code{c("group1 - group2", "group3 - group4")}. If a matrix is
+#'   as \code{"group1 - group2, group3 - group4"}. A single asterisk, \code{"*"}
+#'   creates contrasts for all possible pairs of groups. A vector of strings
+#'   looks like \code{c("group1 - group2", "group3 - group4")}. If a matrix is
 #'   specified, it must have a column for each contrast, with the first group in
 #'   row 1 and the second in row 2.
 #' @param effect.type Type of group difference to be calculated. Possible types
@@ -201,13 +208,13 @@ negatePairwiseDiff <- function(pwd) {
 #'   Cohen's d; \code{hedges}, Hedge's g.
 #' @param R The number of bootstrap replicates.
 #' @param ci.type A single character  string representing the type of bootstrap
-#'   interval required. See the \code{type} parameter to the
-#'   [boot]{boot.ci} function for details.
+#'   interval required. See the \code{type} parameter to the [boot]{boot.ci}
+#'   function for details.
 #' @param na.rm a logical evaluating to TRUE or FALSE indicating whether NA
 #'   values should be stripped before the computation proceeds. If \code{TRUE}
 #'   for "paired" data (i.e. \code{id.col} is specified), all rows
 #'   (observations) for IDs with missing data are stripped.
-#' @param ... Any additional parameters are passed to [boot]{boot}.
+#' @param ... Any additional parameters are passed to \code{\link[boot]{boot}}.
 #'
 #' @return List containing: \item{\code{groups}}{Vector of group names}
 #'   \item{\code{group.statistics}}{Matrix with a row for each group, columns
@@ -215,17 +222,18 @@ negatePairwiseDiff <- function(pwd) {
 #'   lower and upper 95\% confidence intervals of the mean}
 #'   \item{\code{group.differences}}{List of \code{SAKPWDiff} objects, which are
 #'   \code{boot} objects with added confidence interval information. See
-#'   [boot]{boot} and [boot]{boot.ci}}
+#'   \code{\link[boot]{boot}} and \code{\link[boot]{boot.ci}}}
 #'   \item{\code{effect.type}}{Value of \code{effect.type} argument}
 #'   \item{\code{effect.name}}{Pretty version of \code{effect.type}}
 #'   \item{\code{data.col}}{Value of \code{data.col} argument}
 #'   \item{\code{data.col.name}}{Name of the \code{data.col} column}
 #'   \item{\code{group.col}}{Value of \code{group.col} argument}
 #'   \item{\code{group.col.name}}{Name of the \code{group.col} column}
-#'   \item{\code{data}}{the input data} \item{\code{call}}{how this function was
-#'   called}
+#'   \item{\code{data}}{The input data frame} \item{\code{call}}{how this
+#'   function was called}
 #'
-#' @seealso [boot]{boot}, [boot]{boot.ci}
+#' @seealso \code{\link[boot]{boot}}, \code{\link[boot]{boot.ci}},
+#'   \code{\link{SAKPlot}}, \code{\link{print.SAKDiff}}
 #'
 #' @references
 #'
@@ -343,10 +351,12 @@ SAKDifference <- function(data,
 #' Print a summary of a SAK Difference object
 #'
 #' This is a method for the function \code{print()} for objects of class
-#' "\code{SAKDiff}" created by a call to \link{\code{SAKDifference}}.
+#' \code{SAKDiff} created by a call to {SAKDifference}.
 #'
-#' @param x An object of class \link{\code{SAKDifference}}.
+#' @param x An object of class \code{SAKDiff}.
 #' @param ... Ignored
+#'
+#' @seealso \code{\link{print.SAKPWDiff}}
 #'
 #' @export
 print.SAKDiff <- function(x, ...) {
@@ -363,11 +373,13 @@ print.SAKDiff <- function(x, ...) {
 #' Print a summary of a SAK group difference object
 #'
 #' This is a method for the function \code{print()} for objects of class
-#' "\code{SAKPWDiff}", which is a row in the \code{group.differences} matrix
-#' belonging to an object returned by a call to \link{\code{SAKDifference}}.
+#' \code{SAKPWDiff}, which is a row in the \code{group.differences} matrix
+#' belonging to an object returned by a call to \code{\link{SAKDifference}}.
 #'
-#' @param x An object of class \link{\code{SAKPWDiff}}.
+#' @param x An object of class \code{SAKPWDiff}.
 #' @param ... Ignored
+#'
+#' @seealso \code{\link{SAKDifference}}, \code{\link{print.SAKDiff}}
 #' @export
 print.SAKPWDiff <- function(x, ...) {
   cat(sprintf("  %s - %s: %g, %g%% CI (%s) [%g, %g]\n",

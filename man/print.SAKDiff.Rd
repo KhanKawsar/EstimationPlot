@@ -7,11 +7,14 @@
 \method{print}{SAKDiff}(x, ...)
 }
 \arguments{
-\item{x}{An object of class \link{\code{SAKDifference}}.}
+\item{x}{An object of class \code{SAKDiff}.}
 
 \item{...}{Ignored}
 }
 \description{
 This is a method for the function \code{print()} for objects of class
-"\code{SAKDiff}" created by a call to \link{\code{SAKDifference}}.
+\code{SAKDiff} created by a call to {SAKDifference}.
+}
+\seealso{
+\code{\link{print.SAKPWDiff}}
 }

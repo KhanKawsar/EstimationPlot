@@ -2,11 +2,10 @@
 
 #### TODO
 ####  New options scatter points cex
-## points optional in paired TODO
 ## CI optional/separate with mean: to include with mean SD
 #### Licence
 
-# Perhaps don't do these, just require multiple plots
+# Perhaps don't do these, just require people to create more than 1 plot:
 #### How should we handle paired data with more than 2 groups? eg petunia
 #### How should we handle more than 1 comparison per group? E.g. all pairwise combinations
 
@@ -376,9 +375,9 @@ plotEffectSizesBelow <- function(es, ef.size.col, ef.size.pch, showViolin, violi
 #' @param central.tendency.dx Horizontal shift to apply to central tendency
 #'   indicator and error bars.
 #' @param error.bars Should error bars be displayed? May be the colour to be used for error bars.
-#' @param error.bars.type Should error bars depict 95% confidence intervals
-#'   (\code{"CI}), standard deviation (\code{"SD"}) or standard error
-#'   (\code{"SE})?
+#' @param error.bars.type Should error bars depict 95%% confidence intervals
+#'   (\code{"CI"}), standard deviation (\code{"SD"}) or standard error
+#'   (\code{"SE"})?
 #'
 #' @param axis.dx Horizontal shifts to be applied to each x-axis tick and label.
 #'
@@ -389,8 +388,8 @@ plotEffectSizesBelow <- function(es, ef.size.col, ef.size.pch, showViolin, violi
 #'
 #' @return \code{es} invisibly.
 #'
-#' @seealso {SAKDifference}, [vipor]{offsetX}, [graphics]{boxplot},
-#'   [graphics]{bxp}
+#' @seealso \code{\link{SAKDifference}}, \code{\link[vipor]{offsetX}}, \code{\link[graphics]{boxplot}},
+#'   \code{\link[graphics]{bxp}}
 #'
 #' @references
 #'
