@@ -6,6 +6,12 @@ output: html_document
 
 Effect size estimation and plotting is a component of [estimation statistics](https://en.wikipedia.org/wiki/Estimation_statistics).
 
+## Citation
+
+If you use `SAKPlot` in your research, please cite (and read) the article:
+
+`SAKPlot`: An R package for estimating and plotting effect sizes 
+
 ## Installation
 
 To install the development version (which is the only version available as yet):
@@ -19,8 +25,7 @@ To install the development version (which is the only version available as yet):
 ```{R}
   n <- 100
   df <- data.frame(val = c(rnorm(n), rnorm(n, mean = 1)),
-                   group = c(rep("Control", n), rep("Group", n)),
-                   id = c(1:n, 1:n))
+                   group = c(rep("Control", n), rep("Group", n)))
 
   d <- SAKDifference(df, data.col = "val", group.col = "group")
   SAKPlot(d)
