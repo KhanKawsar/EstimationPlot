@@ -1,9 +1,7 @@
 ### Private functions
 
 #### TODO
-####  New options scatter points cex
 ## CI optional/separate with mean: to include with mean SD
-#### Licence
 
 # Perhaps don't do these, just require people to create more than 1 plot:
 #### How should we handle paired data with more than 2 groups? eg petunia
@@ -297,7 +295,7 @@ plotEffectSizesBelow <- function(es, ef.size.col, ef.size.pch, showViolin, violi
 #' @param pch Symbol to use for plotting points.
 #' @param points.dx Horizontal shift to be applied to points in each group.
 #' @param points.params List of named parameters to pass on to
-#'   [graphics]{points}, e.g. \code{SAKPlot(es, points = 1, pch = 21,
+#'   [graphics]{points}, e.g. \code{SAKPlot(es, points = "black", pch = 21,
 #'   points.params = list(bg = as.numeric(factor(data$Sex)) + 1))}.
 #'
 #' @param violin If FALSE, violin plot is not drawn. Otherwise specifies the
