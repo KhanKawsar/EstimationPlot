@@ -2,8 +2,8 @@ Package: SAKPlot
 Type: Package
 Title: Effect Size Plotting in Base R
 Version: 0.1.0
-Author: MD Kawsar Khan, Jim McLean
-Maintainer: Jim McLean <jim_mclean@optusnet.com.au>
+Author: Kawsar Khan, Jim McLean
+Maintainer: Jim McLean <jim_mclean@optusnet.com.au>, Kawsar Khan <bmbkawsar@gmail.com>
 Description: Swiss-army-knife of effect size plotting in base R.
 License: MIT + file LICENSE
 Encoding: UTF-8
