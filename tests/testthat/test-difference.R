@@ -205,7 +205,7 @@ test_that("difference effect types", {
   expect_lt(pwd$bca[4], -0.918991) # Should be negative but small
   expect_gt(pwd$bca[5], -0.918991)
 
-  # Check Hedge's g
+  # Check Hedges' g
   d <- SAKDifference(df, data.col = 1, group.col = 2, effect.type = "hedges")
   pwd <- d$group.difference[[1]]
   expect_equal(pwd$groups[1], "Group")
@@ -214,7 +214,7 @@ test_that("difference effect types", {
   n1 <- d$group.statistics[2,"N"]
   n2 <- d$group.statistics[1,"N"]
   hedgesG <- cohensD * (1 - 3 / (4 * (n1 + n2) - 9))
-  expect_equal(pwd$t0, hedgesG, tolerance = 0.0001) # Hedge's g
+  expect_equal(pwd$t0, hedgesG, tolerance = 0.0001)
   expect_lt(pwd$bca[4], 0.918991) # Should be positive but small
   expect_gt(pwd$bca[5], 0.918991)
   # Swap groups
@@ -222,7 +222,7 @@ test_that("difference effect types", {
   pwd <- d$group.difference[[1]]
   expect_equal(pwd$groups[1], "Control")
   expect_equal(pwd$groups[2], "Group")
-  expect_equal(pwd$t0, -hedgesG, tolerance = 0.0001) # Hedge's g
+  expect_equal(pwd$t0, -hedgesG, tolerance = 0.0001)
   expect_lt(pwd$bca[4], -hedgesG) # Should be negative but small
   expect_gt(pwd$bca[5], -hedgesG)
 
@@ -261,8 +261,14 @@ test_that("difference effect types", {
 test_that("group factors", {
   n <- 100
   df <- data.frame(val = c(rnorm(n), rnorm(n, mean = 1)),
-                   group = factor(c(rep("Control", n), rep("Group", n))),
+                   group = factor(c(rep("Control", n), rep("Treatment", n))),
                    id = c(1:n, 1:n))
+
+  d <- SAKDifference(df, effect.type = "unstandardised", data.col = 1, group.col = 2)
+  pwd <- d$group.difference[[1]]
+  expect_equal(d$group.names, c("Control", "Treatment"))
+  expect_equal(pwd$groups[1], "Treatment")
+  expect_equal(pwd$groups[2], "Control")
 
   # Check all effect types
   expect_error(SAKDifference(df, effect.type = "unstandardised", data.col = 1, group.col = 2), NA)
@@ -626,4 +632,17 @@ test_that("Axis las", {
   par(op)
   d3 <- SAKDifference(df, data.col = 1, group.col = 2)
   expect_error(SAKPlot(d3, las = 1, ef.size.las = 1, main = "las horizontal"), NA)
+})
+
+test_that("Other data frame classes", {
+  n <- 40
+  df <- tibble::tibble(val = c(rnorm(n, mean = 10), rnorm(n, mean = 10 + 1), rnorm(n, mean = 10 + 1.4)),
+                   group = rep(c("Group1", "Group2", "Group3"), each = n))
+  d <- SAKDifference(df, data.col = 1, group.col = 2)
+  expect_error(SAKPlot(d, main = "Tibble"), NA)
+
+  df <- data.table::data.table(val = c(rnorm(n, mean = 10), rnorm(n, mean = 10 + 1), rnorm(n, mean = 10 + 1.4)),
+                               group = rep(c("Group1", "Group2", "Group3"), each = n))
+  d <- SAKDifference(df, data.col = 1, group.col = 2)
+  expect_error(SAKPlot(d, main = "Data.table"), NA)
 })

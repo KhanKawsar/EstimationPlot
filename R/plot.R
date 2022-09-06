@@ -1,6 +1,7 @@
 ### Private functions
 
 #### TODO
+## Control over visual representation of central tendency
 ## CI optional/separate with mean: to include with mean SD
 
 # Perhaps don't do these, just require people to create more than 1 plot:
@@ -462,7 +463,11 @@ SAKPlot <- function(es,
   error.bars.type <- match.arg(error.bars.type)
   ef.size.position <- match.arg(ef.size.position)
   ef.size.violin.shape <- match.arg(ef.size.violin.shape)
-  points.method <- match.arg(points.method)
+  # Default for points.method depends on whether plot is paired
+  if (missing(points.method) && paired)
+    points.method <- "overplot"
+  else
+    points.method <- match.arg(points.method)
   central.tendency.type <- match.arg(central.tendency.type)
 
   data <- es$data
@@ -487,7 +492,8 @@ SAKPlot <- function(es,
 
   # Calculate plot limits
   xlim <- c(0.5, nGroups + 0.5)
-  ylim <- range(data[[es$data.col]])
+  rowsToBePlotted <- data[[es$group.col]] %in% groups
+  ylim <- range(data[[es$data.col]][rowsToBePlotted])
 
   # If needed, extend y range to encompass violin plots
   if (.show(violin)) {
@@ -499,7 +505,7 @@ SAKPlot <- function(es,
   # If needed, extend y range to encompass bar plots
   if (.show(bar)) {
     if (.show(points)) {
-      ylim <- c(0, max(data[[es$data.col]]))
+      ylim <- c(0, max(data[[es$data.col]][rowsToBePlotted]))
     } else {
       # Are we drawing error bars?
       if (.show(error.bars)) {
@@ -606,9 +612,6 @@ SAKPlot <- function(es,
     # Optional shift
     x <- x + points.dx[x]
 
-    if (.show(paired))
-      # If showing paired points, just overplot them
-      points.method <- "overplot"
     if (points.method == "overplot") {
       # Do nothing
     } else if (points.method == "jitter") {
@@ -646,17 +649,12 @@ SAKPlot <- function(es,
   error.bars <- .boolToDef(error.bars, if (.isColour(central.tendency)) central.tendency else "grey20")
   if (.show(central.tendency)) {
     for (i in seq_along(groups)) {
-
-      # get mean of group
+      # Get estimate of central tendency
       y <- es$group.statistics[i, central.tendency.type]
-      # plot points or lines
-      if (central.tendency == "mean")
-        graphics::points(i + central.tendency.dx[i], y,
-                         pch = 19, cex = 1.5, col = .colour(central.tendency))
-      else
-        graphics::segments(i - violin.width + central.tendency.dx[i], y,
-                           i + violin.width + central.tendency.dx[i], y,
-                           col = .colour(central.tendency), lwd = 2)
+      # Plot lines TODO allow symbols? More control of line?
+      graphics::segments(i - violin.width + central.tendency.dx[i], y,
+                         i + violin.width + central.tendency.dx[i], y,
+                         col = .colour(central.tendency), lwd = 2)
     }
   }
 

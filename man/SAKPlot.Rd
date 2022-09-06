@@ -73,7 +73,7 @@ noise to each x-value. See [vipor]{offsetX} for remaining methods.}
 \item{points.dx}{Horizontal shift to be applied to points in each group.}
 
 \item{points.params}{List of named parameters to pass on to
-[graphics]{points}, e.g. \code{SAKPlot(es, points = 1, pch = 21,
+[graphics]{points}, e.g. \code{SAKPlot(es, points = "black", pch = 21,
 points.params = list(bg = as.numeric(factor(data$Sex)) + 1))}.}
 
 \item{violin}{If FALSE, violin plot is not drawn. Otherwise specifies the

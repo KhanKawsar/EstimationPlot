@@ -24,7 +24,11 @@ library(SAKPlot)
 
 `SAKPlot` is an R package that aims to simplify the estimation and communication of one type of effect size: differences in means. It provides a function, `SAKDifference`, to estimate raw or standardised mean differences. It provides `print` methods to display the calculated differences. Perhaps most importantly, it provides a single function, `SAKPlot`, that will create a plot for visualising both the original data and the effect size, providing a diverse range of display options.
 
-### Calculating mean differences
+
+
+### Estimating mean differences
+
+
 
 ### Visualising mean differrences
 

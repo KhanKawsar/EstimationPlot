@@ -45,7 +45,7 @@ stCohensDz <- function(x) mean(x) / stats::sd(x)
 # TODO IS THIS CORRECT??? Hedges' g for paired data
 stHedgesGz <- function(x) stCohensDz(x) * (1 - 3 / (4 * length(x) - 9))
 
-calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, group.col, id.col, effect.type, R, ci.type, ...) {
+calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, group.col, id.col, effect.type, R, ci.conf, ci.type, ...) {
 
   # Function to simplify writing bootstrap statistic functions
   .wrap2GroupStatistic <- function(statisticFn) {
@@ -71,6 +71,13 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
     g2 <- data[data[[group.col]] == pair[2], ]
     # Pair on ID (don't assume they are sorted)
     g1Idx <- match(g2[[id.col]], g1[[id.col]])
+    if (any(is.na(g1Idx))) {
+      idColName <- id.col
+      if (is.numeric(idColName))
+        idColName <- names(data)[id.col]
+      nBad <- sum(is.na(g1Idx))
+      stop(sprintf("%d %s%s are not matched across groups", nBad, idColName, if (nBad == 1) "" else "s"))
+    }
     bootstrapData <- g1[[data.col]][g1Idx] - g2[[data.col]]
     if (effect.type == "unstandardised") {
       statistic <- .wrapPairedStatistic(mean)
@@ -98,7 +105,7 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
   es <- boot::boot(bootstrapData, statistic, R = R, ...)
 
   # Calculate confidence interval
-  ci <- boot::boot.ci(es, type = ci.type)
+  ci <- boot::boot.ci(es, type = ci.type, conf = ci.conf)
 
   # Save some parts of the CI data into the returned value (don't need values that are already there or misleading)
   es[["ci.type"]] <- ci.type
@@ -178,7 +185,7 @@ expandContrasts <- function(contrasts, groups) {
 #' another column with group identity (\code{group.col}). For repeated measures,
 #' a subject identity column is also required (\code{id.col}).
 #'
-#' The formulae for Cohen's d and Hedge's g are from Lakens (2013), equations 1
+#' The formulae for Cohen's d and Hedges' g are from Lakens (2013), equations 1
 #' and 4 respectively. The Cohen's d we use is labelled
 #' \emph{\out{d<sub>s</sub>}} by Lakens (2013). Hedges' g is a corrected version
 #' of Cohen's d, and is more suitable for small sample sizes. For paired (i.e.
@@ -206,8 +213,9 @@ expandContrasts <- function(contrasts, groups) {
 #'   row 1 and the second in row 2.
 #' @param effect.type Type of group difference to be calculated. Possible types
 #'   are: \code{unstandardised}, difference in group means; \code{cohens},
-#'   Cohen's d; \code{hedges}, Hedge's g.
+#'   Cohen's d; \code{hedges}, Hedges' g.
 #' @param R The number of bootstrap replicates.
+#' @param ci.conf Numeric confidence level of the required confidence interval.
 #' @param ci.type A single character  string representing the type of bootstrap
 #'   interval required. See the \code{type} parameter to the [boot]{boot.ci}
 #'   function for details.
@@ -245,17 +253,18 @@ expandContrasts <- function(contrasts, groups) {
 #' @export
 SAKDifference <- function(data,
                        data.col, group.col,
-                       #TODO what is this for??? block.col = NULL,
                        id.col,
                        groups = sort(unique(data[[group.col]])),
                        contrasts,
                        effect.type = c("unstandardised", "cohens", "hedges"),
                        R = 1000,
+                       ci.conf = 0.95,
                        ci.type = "bca",
                        na.rm = FALSE,
                        ...
-                       # ci.conf = 0.95,
 ) {
+  # If data is a data.table, it breaks things, so convert to a data.frame
+  data <- as.data.frame(data)
 
   pairedData <- !missing(id.col)
 
@@ -288,9 +297,11 @@ SAKDifference <- function(data,
   # Create return structure with administrative info
   .colName <- function(col) ifelse(is.numeric(col), names(data)[col], col)
   groupLabels <- names(groups)
-  if (is.null(groupLabels))
-    groupLabels <- groups
-  groupLabels <- ifelse(groupLabels == "", groups, groupLabels)
+  if (is.null(groupLabels)) {
+    groupLabels <- as.character(groups)
+  } else {
+    groupLabels <- ifelse(groupLabels == "", as.character(groups), groupLabels)
+  }
   es <- list(data = data,
              call = match.call(),
              data.col = data.col,
@@ -340,7 +351,7 @@ SAKDifference <- function(data,
     groupIndices <- c(which(groups == pair[1]), which(groups == pair[2]))
     groupLabels <- c(groupLabels[groupIndices[1]],
                     groupLabels[groupIndices[2]])
-    calcPairDiff(pairData, pair, pairedData, groupLabels, groupIndices, data.col, group.col, id.col, effect.type, R, ci.type)
+    calcPairDiff(pairData, pair, pairedData, groupLabels, groupIndices, data.col, group.col, id.col, effect.type, R, ci.conf, ci.type)
   })
 
   es

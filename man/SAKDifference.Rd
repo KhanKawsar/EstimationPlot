@@ -13,6 +13,7 @@ SAKDifference(
   contrasts,
   effect.type = c("unstandardised", "cohens", "hedges"),
   R = 1000,
+  ci.conf = 0.95,
   ci.type = "bca",
   na.rm = FALSE,
   ...
@@ -45,9 +46,11 @@ row 1 and the second in row 2.}
 
 \item{effect.type}{Type of group difference to be calculated. Possible types
 are: \code{unstandardised}, difference in group means; \code{cohens},
-Cohen's d; \code{hedges}, Hedge's g.}
+Cohen's d; \code{hedges}, Hedges' g.}
 
 \item{R}{The number of bootstrap replicates.}
+
+\item{ci.conf}{Numeric confidence level of the required confidence interval.}
 
 \item{ci.type}{A single character  string representing the type of bootstrap
 interval required. See the \code{type} parameter to the [boot]{boot.ci}
@@ -86,7 +89,7 @@ Data format - long format, one column with measurement (\code{data.col}),
 another column with group identity (\code{group.col}). For repeated measures,
 a subject identity column is also required (\code{id.col}).
 
-The formulae for Cohen's d and Hedge's g are from Lakens (2013), equations 1
+The formulae for Cohen's d and Hedges' g are from Lakens (2013), equations 1
 and 4 respectively. The Cohen's d we use is labelled
 \emph{\out{d<sub>s</sub>}} by Lakens (2013). Hedges' g is a corrected version
 of Cohen's d, and is more suitable for small sample sizes. For paired (i.e.
