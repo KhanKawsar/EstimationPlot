@@ -28,7 +28,9 @@ library(SAKPlot)
 
 ### Estimating mean differences
 
+#### Multiple groups, multiple comparisons
 
+The `contrasts` parameters to `SAKDifference` and `SAKPlot` ...
 
 ### Visualising mean differrences
 

@@ -6,11 +6,12 @@
 \usage{
 SAKPlot(
   es,
+  contrasts,
   group.dx = 0,
   points = TRUE,
   points.method = c("quasirandom", "pseudorandom", "smiley", "maxout", "frowney",
     "minout", "tukey", "tukeyDense", "jitter", "overplot"),
-  pch = 19,
+  points.pch = 19,
   points.dx = group.dx,
   points.params = list(),
   violin = isFALSE(box) && isFALSE(bar),
@@ -22,6 +23,7 @@ SAKPlot(
   violin.dx = group.dx,
   box = FALSE,
   box.fill = TRUE,
+  box.outline = TRUE,
   box.notch = FALSE,
   box.pars = list(boxwex = 0.8, staplewex = 0.5, outwex = 0.5),
   box.dx = group.dx,
@@ -53,31 +55,44 @@ SAKPlot(
 \arguments{
 \item{es}{Data returned from a call to \code{\link{SAKDifference}}}
 
+\item{contrasts}{Set of contrasts (i.e. group comparisons) to be plotted. By
+default, plots all contrasts in \code{es}. May be a single string, a vector
+of strings, or a matrix. A single string has a format such as \code{"group1
+- group2, group3 - group4"}. A single asterisk, \code{"*"} creates
+contrasts for all possible pairs of groups. A single string such as
+\code{".- control"} compares all groups against the \code{"control"} group,
+i.e. the \code{"."} expands to all groups except the named group. A vector
+of strings looks like \code{c("group1 - group2", "group3 - group4")}. If a
+matrix is specified, it must have a column for each contrast, with the
+first group in row 1 and the second in row 2. See also the \code{contrasts}
+parameter to \code{\link{SAKDifference}}.}
+
 \item{group.dx}{Used to shift group centres horizontally. E.g.,
 \code{group.dx = c(0.1, -0.1)} will group into pairs. Individual components
 can be shifted independently using the appropriate \code{*.dx} parameters.}
 
-\item{points}{Colour of individual points. If FALSE, points are not plotted,
-TRUE plots applies a default colour. May be a vector of colours. If length
-1, all points are drawn with the specified colour. If length is the number
-of groups, points in each group are drawn with the appropriate colour.
-Otherwise, \code{points} should be a vector of colours with a value for
-each data point.}
+\item{points}{If not FALSE, points are plotted. If \code{TRUE}, points are
+displayed with a default colour. May be a vector of colours. If length 1,
+all points are drawn with the specified colour. If length is less than the
+number of data points, points in each group are drawn with the appropriate
+colour (extra colours are ignored). Otherwise, \code{points} should be a
+vector of colours with a value for each data point.}
 
 \item{points.method}{Method used to avoid overplotting points. Use
 \code{"overplot"} to overplot points and \code{"jitter"} to add random
 noise to each x-value. See [vipor]{offsetX} for remaining methods.}
 
-\item{pch}{Symbol to use for plotting points.}
+\item{points.pch}{Symbol to use for plotting points.}
 
 \item{points.dx}{Horizontal shift to be applied to points in each group.}
 
 \item{points.params}{List of named parameters to pass on to
-[graphics]{points}, e.g. \code{SAKPlot(es, points = "black", pch = 21,
-points.params = list(bg = as.numeric(factor(data$Sex)) + 1))}.}
+[graphics]{points}, e.g. \code{SAKPlot(es, points = "black", points.pch =
+21, points.params = list(bg = as.numeric(factor(data$Sex)) + 1))}.}
 
-\item{violin}{If FALSE, violin plot is not drawn. Otherwise specifies the
-colour of the violin borders.}
+\item{violin}{If not FALSE, violin plots are drawn. If \code{TRUE}, violins
+are drawn in default colours. Otherwise specifies the colour of the violin
+borders.}
 
 \item{violin.shape}{Desired violin shape - left-half only (\code{"left"}),
 right-half only (\code{"right"}), or a full violin (\code{"full"}).}
@@ -101,6 +116,8 @@ colour(s). See [graphics]{boxplot}.}
 
 \item{box.fill}{Colour used to fill the bodies of the box-and-whisker plot.
 If FALSE or NA, bodies are not filled}
+
+\item{box.outline}{If FALSE, don't draw outliers with the box plot.}
 
 \item{box.notch}{If TRUE, draws notches in the sides of the boxes. See
 [graphics]{boxplot.stats} for the calculations used.}
@@ -163,7 +180,8 @@ be \code{"mean"} or \code{"median"}?}
 \item{central.tendency.dx}{Horizontal shift to apply to central tendency
 indicator and error bars.}
 
-\item{error.bars}{Should error bars be displayed? May be the colour to be used for error bars.}
+\item{error.bars}{Should error bars be displayed? May be the colour to be
+used for error bars.}
 
 \item{error.bars.type}{Should error bars depict 95%% confidence intervals
 (\code{"CI"}), standard deviation (\code{"SD"}) or standard error
@@ -173,9 +191,11 @@ indicator and error bars.}
 
 \item{left.ylab}{Left-hand y-axis label.}
 
-\item{left.las}{Orientation of axis labels on left-hand y-axis label (0 = parallel to axis, 1 = horizontal).}
+\item{left.las}{Orientation of axis labels on left-hand y-axis label (0 =
+parallel to axis, 1 = horizontal).}
 
-\item{...}{Additional arguments are passed on to the [graphics]{plot} function.}
+\item{...}{Additional arguments are passed on to the [graphics]{plot}
+function.}
 }
 \value{
 \code{es} invisibly.
@@ -206,6 +226,6 @@ confidence intervals, and meta-analysis (1st edition ed.). New York:
 Routledge.
 }
 \seealso{
-\code{\link{SAKDifference}}, \code{\link[vipor]{offsetX}}, \code{\link[graphics]{boxplot}},
-  \code{\link[graphics]{bxp}}
+\code{\link{SAKDifference}}, \code{\link[vipor]{offsetX}},
+  \code{\link[graphics]{boxplot}}, \code{\link[graphics]{bxp}}
 }

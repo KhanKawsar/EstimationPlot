@@ -76,7 +76,7 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
       if (is.numeric(idColName))
         idColName <- names(data)[id.col]
       nBad <- sum(is.na(g1Idx))
-      stop(sprintf("%d %s%s are not matched across groups", nBad, idColName, if (nBad == 1) "" else "s"))
+      stop(sprintf("%d %s%s are not matched across groups in paired data", nBad, idColName, if (nBad == 1) "" else "s"))
     }
     bootstrapData <- g1[[data.col]][g1Idx] - g2[[data.col]]
     if (effect.type == "unstandardised") {
@@ -130,12 +130,78 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
   es
 }
 
+
 # Takes contrasts as a string, vector of strings, or matrix and returns a matrix
 expandContrasts <- function(contrasts, groups) {
+
+  # This implementation is complicated because we allow any characters in group
+  # names, although we will assume they do not start or end in whitespace
+
+  # Returns TRUE if group is the first group in the contrast
+  .group1 <- function(group, contrast) {
+    # Does the string start with the group, ignoring whitespace?
+    contrast <- trimws(contrast)
+    if (!startsWith(contrast, group)) {
+      return(FALSE)
+    }
+    # It must now be followed by a "-"
+    remainder <- trimws(substring(contrast, nchar(group) + 1))
+    startsWith(remainder, "-")
+  }
+
+  # Returns TRUE if group is the second group in the contrast
+  .group2 <- function(group, contrast) {
+    # Does the string end with the group, ignoring whitespace?
+    contrast <- trimws(contrast)
+    if (!endsWith(contrast, group)) {
+      return(FALSE)
+    }
+    # It must now be preceeded by a "-"
+    remainder <- trimws(substring(contrast, 1, nchar(contrast) - nchar(group)))
+    endsWith(remainder, "-")
+  }
+
+  # Returns 1 if group is the first group in the contrast, 2 if it's the 2nd, otherwise 0
+  .findGroup <- function(group, contrast) {
+    if (.group1(group, contrast)) {
+      1
+    } else if (.group2(group, contrast)) {
+      2
+    } else {
+      0
+    }
+  }
+
+  # Need at least 2 groups for a comparison
+  if (length(groups) < 2)
+    return(NULL)
 
   # Special value "*" means all possible pairs
   if (is.character(contrasts) && length(contrasts) == 1 && trimws(contrasts) == "*") {
     contrasts <- utils::combn(rev(groups), 2)
+  }
+
+  # Handle special value, ". - groupX" or "groupX - .", where "." means all groups except groupX
+  if (is.character(contrasts) && length(contrasts) == 1) {
+    dotFirst <- .group1(".", contrasts)
+    dotSecond <- .group2(".", contrasts)
+
+    if (dotFirst || dotSecond) {
+      # Found a dot, is there a group as well?
+      gotControl <- sapply(unname(groups), function(group) if (dotFirst) .group2(group, contrasts) else .group1(group, contrasts))
+      if (sum(gotControl) == 1) {
+        # Now we have a dot and a group
+        controlGroup <- groups[gotControl]
+        controlIdx <- which(gotControl)
+        # Create a matrix (all except control - control)
+        contrasts <- rbind(groups[-controlIdx], rep(controlGroup, length(groups) - 1))
+
+        # Check if we need to swap control and groups
+        if (dotSecond) {
+          contrasts <- rbind(contrasts[2, ], contrasts[1, ])
+        }
+      }
+    }
   }
 
   if (!is.matrix(contrasts)) {
@@ -147,31 +213,22 @@ expandContrasts <- function(contrasts, groups) {
     # Assume syntax "group - group"
     contrasts <- sapply(contrasts, function(contrast) {
       # For this contrast, which should look like "group1 - group2",
-      # Find the location of group names within the string
-      found <- sapply(unname(groups), function(group) regexpr(group, contrast, fixed = TRUE)[[1]][1])
+      # find the location of group names within the string
+      found <- sapply(unname(groups), function(group) .findGroup(group, contrast))
       if (sum(found > 0) != 2)
         stop(sprintf("Invalid contrast '%s'; must be 'group1 - group2, groups are %s",
                      contrast, paste0(groups, collapse = ", ")))
-      found <- found[found != -1]
+      found <- found[found != 0]
       names(found)[order(found)]
     })
   }
 
-  contrasts
-}
+  # Convert from factor matrix to character matrix
+  if (is.factor(contrasts))
+    contrasts <- structure(as.character(contrasts), dim = dim(contrasts))
 
-### NOT USED
-# # Returns the negation of the specified group difference (type SAKPWDiff,
-# # usually a member of es$group.differences)
-# negatePairwiseDiff <- function(pwd) {
-#   pwd$groups[[1]] <- rev(pwd$groups[[1]])
-#   pwd$groupLabels[[1]] <- rev(pwd$groupLabels[[1]])
-#   pwd$t0 <- -pwd$t0
-#   pwd$t[[1]] <- -pwd$t[[1]]
-#   pwd$bca[4] <- -pwd$bca[4]
-#   pwd$bca[5] <- -pwd$bca[5]
-#   pwd
-# }
+  unname(contrasts)
+}
 
 
 #############################################################################
@@ -203,14 +260,16 @@ expandContrasts <- function(contrasts, groups) {
 #' @param groups Vector of group names. Defaults to all groups in \code{data} in
 #'   \emph{natural} order. If \code{groups} is a named vector, the names are
 #'   used to identify groups for printing or plotting.
-#' @param contrasts Specify the pairs of groups to be compared. By default, 2nd
-#'   and subsequent groups are compared to the first group. May be a single
-#'   string, a vector of strings, or a matrix. A single string has a format such
-#'   as \code{"group1 - group2, group3 - group4"}. A single asterisk, \code{"*"}
-#'   creates contrasts for all possible pairs of groups. A vector of strings
-#'   looks like \code{c("group1 - group2", "group3 - group4")}. If a matrix is
-#'   specified, it must have a column for each contrast, with the first group in
-#'   row 1 and the second in row 2.
+#' @param contrasts Specify the pairs of groups to be compared. By default, all
+#'   pairwise differences are generated. May be a single string, a vector of
+#'   strings, or a matrix. A single string has a format such as \code{"group1 -
+#'   group2, group3 - group4"}. A single asterisk, \code{"*"} creates contrasts
+#'   for all possible pairs of groups. A single string such as \code{".-
+#'   control"} compares all groups against the \code{"control"} group, i.e. the
+#'   \code{"."} expands to all groups except the named group. A vector of
+#'   strings looks like \code{c("group1 - group2", "group3 - group4")}. If a
+#'   matrix is specified, it must have a column for each contrast, with the
+#'   first group in row 1 and the second in row 2.
 #' @param effect.type Type of group difference to be calculated. Possible types
 #'   are: \code{unstandardised}, difference in group means; \code{cohens},
 #'   Cohen's d; \code{hedges}, Hedges' g.
@@ -255,7 +314,7 @@ SAKDifference <- function(data,
                        data.col, group.col,
                        id.col,
                        groups = sort(unique(data[[group.col]])),
-                       contrasts,
+                       contrasts = "*",
                        effect.type = c("unstandardised", "cohens", "hedges"),
                        R = 1000,
                        ci.conf = 0.95,
@@ -335,15 +394,8 @@ SAKDifference <- function(data,
   rownames(df) <- groupLabels
   es$group.statistics <- df
 
-  if ((missing("contrasts") || is.null(contrasts)) && length(groups) > 1) {
-    # convert groups to character to handle groups that are factors
-    gc <- as.character(groups)
-    # Compare 2nd and subsequent groups to first
-    contrasts <- matrix(c(gc[2:length(gc)], rep(gc[1], length(gc) - 1)),
-                        byrow = TRUE, nrow = 2)
-  } else {
-    contrasts <- expandContrasts(contrasts, groups)
-  }
+  # Interpret the contrasts
+  contrasts <- expandContrasts(contrasts, groups)
 
   # For each pair of groups...
   es$group.differences <- apply(contrasts, 2, function(pair) {

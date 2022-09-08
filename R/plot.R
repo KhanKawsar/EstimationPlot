@@ -3,31 +3,54 @@
 #### TODO
 ## Control over visual representation of central tendency
 ## CI optional/separate with mean: to include with mean SD
+## Add contrasts to plot
 
 # Perhaps don't do these, just require people to create more than 1 plot:
 #### How should we handle paired data with more than 2 groups? eg petunia
 #### How should we handle more than 1 comparison per group? E.g. all pairwise combinations
 
 
-#' Returns a transparent version of the specified colour(s).
-#'
-#' @param colour The R colour (or colours) to be made transparent. May be a
-#'   colour name, a hexadecimal string such as \code{"#ffbc48"} or a positive
-#'   integer.
-#' @param alpha Transparency, from \code{0} meaning fully opaque (\code{colour}
-#'   is returned unchanged), through to \code{1} which is completely transparent
-#'   (i.e. invisible).
-#'
-#' @returns A colour or colours that are transparent versions of \code{colour}.
-#'
-#' @seealso [grDevices]{col2rgb}, [grDevices]{rgb}
-#'
-#' @export
-SAKTransparent <-  function(colour, alpha) {
-  rgba.val <- grDevices::col2rgb(colour, TRUE)
-  grDevices::rgb(rgba.val[1, ], rgba.val[2, ], rgba.val[3, ],
-               maxColorValue = 255,
-               alpha = (100 - alpha * 100) * 255 / 100)
+
+# Returns the negation of the specified group difference (type SAKPWDiff,
+# usually a member of es$group.differences)
+negatePairwiseDiff <- function(pwd) {
+  pwd$groups <- rev(pwd$groups)
+  pwd$groupLabels <- rev(pwd$groupLabels)
+  pwd$groupIndices <- rev(pwd$groupIndices)
+  pwd$t0 <- -pwd$t0
+  pwd$t <- -pwd$t
+  pwd$bca[4] <- -pwd$bca[4]
+  pwd$bca[5] <- -pwd$bca[5]
+  pwd
+}
+
+# Given a pair of groups, finds (in diffs) the comparison for pair[1] - pair[2].
+# If the comparison pair[2] - pair[1] is found, it is negated and returned.
+findDiff <- function(pair, diffs) {
+  # For each existing comparison...
+  for (diff in diffs) {
+    # Is this the requested comparison?
+    if (diff$groupLabels[1] == pair[1] && diff$groupLabels[2] == pair[2]) {
+      return(diff)
+
+      # Is this the negation of the requested comparison?
+    } else if (diff$groupLabels[1] == pair[2] && diff$groupLabels[2] == pair[1]) {
+      #browser()
+      return(negatePairwiseDiff(diff))
+    }
+  }
+  stop(sprintf("Contrast %s - %s does not exist, check the contrasts argument in your call to SAKDifference",
+               pair[1], pair[2]))
+}
+
+# Given a string representation of the required contrasts, returns a list of
+# SAKPWDiff objects, one for each contrast. The SAKPWDiff objects are extracted
+# from es$group.differences, so must already have been calculated by
+# SAKDifference
+buildPlotDiffs <- function(contrasts, es) {
+  pairs <- expandContrasts(contrasts, es$groups)
+  # For each specified contrast, find the corresponding group difference
+  apply(pairs, 2, findDiff, es$group.differences)
 }
 
 # Calculate the probability density of one group, optionally truncating the extents
@@ -158,14 +181,17 @@ plotEffectSize <- function(pwes, xo, centreY, showViolin, violinCol, violin.widt
 }
 
 # Plot effect size to the right of the main plot. Only useful when showing a single effect size
-plotEffectSizesRight <- function(es, ef.size.col, ef.size.pch, showViolin, violinCol, violin.width, violin.shape, axisLabel, ticksAt, ef.size.las) {
-  pwes <- es$group.differences[[1]]
-  y <- es$group.statistics[1, 1]
-  y2 <- es$group.statistics[2, 1]
+plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch, showViolin, violinCol, violin.width, violin.shape, axisLabel, ticksAt, ef.size.las) {
+
+  # Get the means of the 2 groups
+  y <- es$group.statistics[pwes$groupIndices[pwes$groupIndices[1]], 1]
+  y2 <- es$group.statistics[pwes$groupIndices[pwes$groupIndices[2]], 1]
+
+  x <- length(es$groups) + 1
 
   if (es$effect.type == "unstandardised") {
     esRange <- range(c(0, pwes$t))
-    plotEffectSize(pwes, 3, y2, showViolin, violinCol, violin.width, violin.shape, ef.size.col, ef.size.pch)
+    plotEffectSize(pwes, x, y2, showViolin, violinCol, violin.width, violin.shape, ef.size.col, ef.size.pch)
 
     # Axis labels on right-hand
     labels <- names(ticksAt)
@@ -182,7 +208,7 @@ plotEffectSizesRight <- function(es, ef.size.col, ef.size.pch, showViolin, violi
       # Interpolate/extrapolate along the line (esRange[1], ylim[1]), (esRange[2], ylim[2])
       ylim[1] + (y - esRange[1]) * (ylim[2] - ylim[1]) / (esRange[2] - esRange[1])
     }
-    plotEffectSize(pwes, 3, pwes$t0, showViolin, violinCol, violin.width, violin.shape, ef.size.col, ef.size.pch, mapYFn = mapY)
+    plotEffectSize(pwes, x, pwes$t0, showViolin, violinCol, violin.width, violin.shape, ef.size.col, ef.size.pch, mapYFn = mapY)
 
     # Axis labels on right-hand
     labels <- names(ticksAt)
@@ -191,24 +217,15 @@ plotEffectSizesRight <- function(es, ef.size.col, ef.size.pch, showViolin, violi
       labels <- ticksAt
     }
     graphics::axis(4, at = mapY(ticksAt), labels = labels, las = ef.size.las)
-
-    # Preliminary attempt to display effect size interpretation
-    # points <- c(0.2, 0.5, 0.8, 1.2)
-    # cols <- RColorBrewer::brewer.pal(length(points), "OrRd")
-    # # cols <- grDevices::hcl.colors(length(points), "Dynamic")
-    # for (i in seq_along(points)) {
-    #   graphics::axis(4, at = mapY(points[i]), tcl = points[i], labels = FALSE, col.ticks = cols[i], lwd = 2)
-    #   graphics::axis(4, at = mapY(-points[i]), tcl = points[i], labels = FALSE, col.ticks = cols[i], lwd = 2)
-    # }
   }
 
   # Horizontal lines from group means
-  graphics::segments(1, y, 5, y, col = "grey50", lty = 1, lwd = 1.5)
-  graphics::segments(2, y2, 5, y2, col = "grey50", lty = 1, lwd = 1.5)
+  graphics::segments(1, y, x + 2, y, col = "grey50", lty = 1, lwd = 1.5)
+  graphics::segments(2, y2, x + 2, y2, col = "grey50", lty = 1, lwd = 1.5)
 
   # Add x-axis label for effect size
-  graphics::mtext(sprintf("%s\nminus\n%s", pwes$groupLabels[1], pwes$groupLabels[2]), at = 3, side = 1, line = 3)
-  graphics::axis(1, at = 3, labels = FALSE) # X-axis tick mark
+  graphics::mtext(sprintf("%s\nminus\n%s", pwes$groupLabels[1], pwes$groupLabels[2]), at = x, side = 1, line = 3)
+  graphics::axis(1, at = x, labels = FALSE) # X-axis tick mark
 
   # Label the right y-axis
   graphics::mtext(axisLabel, side = 4, line = 2.5)
@@ -216,12 +233,11 @@ plotEffectSizesRight <- function(es, ef.size.col, ef.size.pch, showViolin, violi
 
 # Plot effect size below the main plot. Assumes that bottom margin is large
 # enough to accommodate the effect size plot
-plotEffectSizesBelow <- function(es, ef.size.col, ef.size.pch, showViolin, violinCol, violin.width, violin.shape, xlim, central.tendency.dx, ef.size.label, ticksAt, ef.size.las) {
+plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch, showViolin, violinCol, violin.width, violin.shape, xlim, central.tendency.dx, ef.size.label, ticksAt, ef.size.las) {
   groups <- es$groups
   nGroups <- length(groups)
 
   # What will we plot?
-  plotDiffs <- es$group.differences
   ylim <- range(c(0, sapply(plotDiffs, function(pwes) if (is.null(pwes)) NA else range(pwes$t, na.rm = TRUE))), na.rm = TRUE)
   ylim <- grDevices::extendrange(ylim)
 
@@ -262,6 +278,27 @@ plotEffectSizesBelow <- function(es, ef.size.col, ef.size.pch, showViolin, violi
 
 #############################################################################
 
+#' Returns a transparent version of the specified colour(s).
+#'
+#' @param colour The R colour (or colours) to be made transparent. May be a
+#'   colour name, a hexadecimal string such as \code{"#ffbc48"} or a positive
+#'   integer.
+#' @param alpha Transparency, from \code{0} meaning fully opaque (\code{colour}
+#'   is returned unchanged), through to \code{1} which is completely transparent
+#'   (i.e. invisible).
+#'
+#' @returns A colour or colours that are transparent versions of \code{colour}.
+#'
+#' @seealso [grDevices]{col2rgb}, [grDevices]{rgb}
+#'
+#' @export
+SAKTransparent <-  function(colour, alpha) {
+  rgba.val <- grDevices::col2rgb(colour, TRUE)
+  grDevices::rgb(rgba.val[1, ], rgba.val[2, ], rgba.val[3, ],
+                 maxColorValue = 255,
+                 alpha = (100 - alpha * 100) * 255 / 100)
+}
+
 #' Group and effect size plotting in base R.
 #'
 #' Plot grouped data and effect size in base R, with control over a large range
@@ -280,27 +317,40 @@ plotEffectSizesBelow <- function(es, ef.size.col, ef.size.pch, showViolin, violi
 #'
 #' @param es Data returned from a call to \code{\link{SAKDifference}}
 #'
+#' @param contrasts Set of contrasts (i.e. group comparisons) to be plotted. By
+#'   default, plots all contrasts in \code{es}. May be a single string, a vector
+#'   of strings, or a matrix. A single string has a format such as \code{"group1
+#'   - group2, group3 - group4"}. A single asterisk, \code{"*"} creates
+#'   contrasts for all possible pairs of groups. A single string such as
+#'   \code{".- control"} compares all groups against the \code{"control"} group,
+#'   i.e. the \code{"."} expands to all groups except the named group. A vector
+#'   of strings looks like \code{c("group1 - group2", "group3 - group4")}. If a
+#'   matrix is specified, it must have a column for each contrast, with the
+#'   first group in row 1 and the second in row 2. See also the \code{contrasts}
+#'   parameter to \code{\link{SAKDifference}}.
+#'
 #' @param group.dx Used to shift group centres horizontally. E.g.,
 #'   \code{group.dx = c(0.1, -0.1)} will group into pairs. Individual components
 #'   can be shifted independently using the appropriate \code{*.dx} parameters.
 #'
-#' @param points Colour of individual points. If FALSE, points are not plotted,
-#'   TRUE plots applies a default colour. May be a vector of colours. If length
-#'   1, all points are drawn with the specified colour. If length is the number
-#'   of groups, points in each group are drawn with the appropriate colour.
-#'   Otherwise, \code{points} should be a vector of colours with a value for
-#'   each data point.
+#' @param points If not FALSE, points are plotted. If \code{TRUE}, points are
+#'   displayed with a default colour. May be a vector of colours. If length 1,
+#'   all points are drawn with the specified colour. If length is less than the
+#'   number of data points, points in each group are drawn with the appropriate
+#'   colour (extra colours are ignored). Otherwise, \code{points} should be a
+#'   vector of colours with a value for each data point.
 #' @param points.method Method used to avoid overplotting points. Use
 #'   \code{"overplot"} to overplot points and \code{"jitter"} to add random
 #'   noise to each x-value. See [vipor]{offsetX} for remaining methods.
-#' @param pch Symbol to use for plotting points.
+#' @param points.pch Symbol to use for plotting points.
 #' @param points.dx Horizontal shift to be applied to points in each group.
 #' @param points.params List of named parameters to pass on to
-#'   [graphics]{points}, e.g. \code{SAKPlot(es, points = "black", pch = 21,
-#'   points.params = list(bg = as.numeric(factor(data$Sex)) + 1))}.
+#'   [graphics]{points}, e.g. \code{SAKPlot(es, points = "black", points.pch =
+#'   21, points.params = list(bg = as.numeric(factor(data$Sex)) + 1))}.
 #'
-#' @param violin If FALSE, violin plot is not drawn. Otherwise specifies the
-#'   colour of the violin borders.
+#' @param violin If not FALSE, violin plots are drawn. If \code{TRUE}, violins
+#'   are drawn in default colours. Otherwise specifies the colour of the violin
+#'   borders.
 #' @param violin.fill Colour used to fill violins.
 #' @param violin.adj Value used to control violin plot smoothness by adjusting
 #'   the kernel density bandwidth. Higher values produce a smoother plot.
@@ -317,6 +367,7 @@ plotEffectSizesBelow <- function(es, ef.size.col, ef.size.pch, showViolin, violi
 #'   colour(s). See [graphics]{boxplot}.
 #' @param box.fill Colour used to fill the bodies of the box-and-whisker plot.
 #'   If FALSE or NA, bodies are not filled
+#' @param box.outline If FALSE, don't draw outliers with the box plot.
 #' @param box.notch If TRUE, draws notches in the sides of the boxes. See
 #'   [graphics]{boxplot.stats} for the calculations used.
 #' @param box.pars List with additional graphical parameters to control the box
@@ -361,7 +412,8 @@ plotEffectSizesBelow <- function(es, ef.size.col, ef.size.pch, showViolin, violi
 #'   be \code{"mean"} or \code{"median"}?
 #' @param central.tendency.dx Horizontal shift to apply to central tendency
 #'   indicator and error bars.
-#' @param error.bars Should error bars be displayed? May be the colour to be used for error bars.
+#' @param error.bars Should error bars be displayed? May be the colour to be
+#'   used for error bars.
 #' @param error.bars.type Should error bars depict 95%% confidence intervals
 #'   (\code{"CI"}), standard deviation (\code{"SD"}) or standard error
 #'   (\code{"SE"})?
@@ -369,14 +421,16 @@ plotEffectSizesBelow <- function(es, ef.size.col, ef.size.pch, showViolin, violi
 #' @param axis.dx Horizontal shifts to be applied to each x-axis tick and label.
 #'
 #' @param left.ylab Left-hand y-axis label.
-#' @param left.las Orientation of axis labels on left-hand y-axis label (0 = parallel to axis, 1 = horizontal).
+#' @param left.las Orientation of axis labels on left-hand y-axis label (0 =
+#'   parallel to axis, 1 = horizontal).
 #'
-#' @param ... Additional arguments are passed on to the [graphics]{plot} function.
+#' @param ... Additional arguments are passed on to the [graphics]{plot}
+#'   function.
 #'
 #' @return \code{es} invisibly.
 #'
-#' @seealso \code{\link{SAKDifference}}, \code{\link[vipor]{offsetX}}, \code{\link[graphics]{boxplot}},
-#'   \code{\link[graphics]{bxp}}
+#' @seealso \code{\link{SAKDifference}}, \code{\link[vipor]{offsetX}},
+#'   \code{\link[graphics]{boxplot}}, \code{\link[graphics]{bxp}}
 #'
 #' @references
 #'
@@ -391,12 +445,14 @@ plotEffectSizesBelow <- function(es, ef.size.col, ef.size.pch, showViolin, violi
 #' @export
 SAKPlot <- function(es,
 
+                    contrasts,
+
                     group.dx = 0,
 
                     points = TRUE,
                     points.method = c("quasirandom", "pseudorandom", "smiley", "maxout", "frowney", "minout", "tukey",
                                       "tukeyDense", "jitter", "overplot"),
-                    pch = 19,
+                    points.pch = 19,
                     points.dx = group.dx,
                     points.params = list(),
 
@@ -410,6 +466,7 @@ SAKPlot <- function(es,
 
                     box = FALSE,
                     box.fill = TRUE,
+                    box.outline = TRUE,
                     box.notch = FALSE,
                     box.pars = list(boxwex = 0.8, staplewex = 0.5, outwex = 0.5),
                     box.dx = group.dx,
@@ -474,6 +531,20 @@ SAKPlot <- function(es,
   groups <- es$groups
   nGroups <- length(groups)
 
+  # What contrasts are to be displayed?
+  if (missing(contrasts)) {
+    # Default to all calculated contrasts
+    plotDiffs <- es$group.differences
+  } else if (is.character(contrasts)) {
+    # Interpret string description
+    plotDiffs <- buildPlotDiffs(contrasts, es)
+  } else if (is.list(contrasts) && all(sapply(contrasts, function(x) methods::is(x, "SAKPWDiff")))) {
+    # Contrasts were passed directly
+    plotDiffs <- contrasts
+  } else if (!is.null(contrasts)) {
+    stop("Invalid plot contrasts argument, must be character string or list of SAKPWDiff objects")
+  }
+
   # Recycle all the *.dx arguments
   box.dx <- .extend(box.dx)
   bar.dx <- .extend(bar.dx)
@@ -522,9 +593,9 @@ SAKPlot <- function(es,
   }
 
   # If needed extend x range to encompass effect size
-  if (nGroups < 2) {
+  if (length(plotDiffs) < 1) {
     ef.size <- FALSE # There's nothing to see here
-  } else if (nGroups > 2) {
+  } else if (length(plotDiffs) > 1) {
     # Can't show more than one effect size to the right
     ef.size.position <- "below"
   }
@@ -566,6 +637,7 @@ SAKPlot <- function(es,
     box.fill <- .boolToDef(box.fill, defFillPalette)
     graphics::boxplot(f, data = data, at = seq_len(nGroups) + box.dx,
                       add = TRUE, axes = FALSE, notch = box.notch,
+                      outline = box.outline,
                       col = .colour(box.fill), border = .colour(box), pars = box.pars)
   }
 
@@ -601,9 +673,10 @@ SAKPlot <- function(es,
 
   # Scatter plot of data points
   if (.show(points)) {
-    palette <- SAKTransparent(defBorderPalette, .4)
-    pointCol <- .boolToDef(points, palette[as.numeric(data$.group.as.factor)])
-    if (length(pointCol) == nGroups) {
+    defPalette <- SAKTransparent(defBorderPalette, .4)
+    pointCol <- .boolToDef(points, defPalette[as.numeric(data$.group.as.factor)])
+    # If there are less colours than points, assume the colours are intended to be per group
+    if (length(pointCol) < nrow(data)) {
       # If colours specified for each group, expand out to the colours for each point
       pointCol <- pointCol[as.numeric(data$.group.as.factor)]
     }
@@ -622,7 +695,7 @@ SAKPlot <- function(es,
                               method = points.method, varwidth = TRUE, adjust = violin.width)
     }
     # Complicated way of calling is to allow user to pass in arbitrary parameters
-    do.call(graphics::points, c(list(x = x, y = data[[es$data.col]], pch = pch, col = .colour(pointCol)), points.params))
+    do.call(graphics::points, c(list(x = x, y = data[[es$data.col]], pch = points.pch, col = .colour(pointCol)), points.params))
   }
 
   # Draw lines between paired points
@@ -671,9 +744,9 @@ SAKPlot <- function(es,
   ef.size.col <- .boolToDef(ef.size, "black")
   violinCol <- .boolToDef(ef.size.violin, "grey40")
   if (.show(ef.size) && ef.size.position == "right") {
-    plotEffectSizesRight(es, ef.size.col, ef.size.pch, .show(ef.size.violin), violinCol, violin.width, ef.size.violin.shape, ef.size.label, ef.size.ticks, ef.size.las)
+    plotEffectSizesRight(es, plotDiffs[[1]], ef.size.col, ef.size.pch, .show(ef.size.violin), violinCol, violin.width, ef.size.violin.shape, ef.size.label, ef.size.ticks, ef.size.las)
   } else if (.show(ef.size) && ef.size.position == "below") {
-    plotEffectSizesBelow(es, ef.size.col, ef.size.pch, .show(ef.size.violin), violinCol, violin.width, ef.size.violin.shape, xlim, ef.size.dx, ef.size.label, ef.size.ticks, ef.size.las)
+    plotEffectSizesBelow(es, plotDiffs, ef.size.col, ef.size.pch, .show(ef.size.violin), violinCol, violin.width, ef.size.violin.shape, xlim, ef.size.dx, ef.size.label, ef.size.ticks, ef.size.las)
   }
 
   invisible(es)

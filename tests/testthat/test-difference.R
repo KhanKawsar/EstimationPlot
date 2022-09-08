@@ -80,12 +80,11 @@ compareDiffs <- function(d1, d2) {
 test_that("contrast plots", {
   data <- makeData()
   groups <- c("ZControl1", "Group1", "Group2", "Group3")
-  #data <- data[data$Group %in% groups, ]
 
   # Default contrasts
   d <- SAKDifference(data, "Measurement", "Group", groups = groups)
   ng <- length(d$groups)
-  expect_equal(length(d$group.differences), ng - 1)
+  expect_equal(length(d$group.differences), ng * (ng - 1) / 2)
   SAKPlot(d, main = "Default contrasts")
 
   # 2 contrasts
@@ -99,6 +98,17 @@ test_that("contrast plots", {
   expect_equal(d$group.differences[[3]]$groups[1], "Group3")
   expect_equal(d$group.differences[[3]]$groups[2], "ZControl1")
   SAKPlot(d, main = "Explicit contrasts")
+
+  # Shorthand for same as above
+  d <- SAKDifference(data, "Measurement", "Group", groups = groups, contrasts = ". - ZControl1")
+  expect_equal(length(d$group.differences), 3)
+  expect_equal(d$group.differences[[1]]$groups[1], "Group1")
+  expect_equal(d$group.differences[[1]]$groups[2], "ZControl1")
+  expect_equal(d$group.differences[[2]]$groups[1], "Group2")
+  expect_equal(d$group.differences[[2]]$groups[2], "ZControl1")
+  expect_equal(d$group.differences[[3]]$groups[1], "Group3")
+  expect_equal(d$group.differences[[3]]$groups[2], "ZControl1")
+  SAKPlot(d, main = "Explicit contrast shorthand")
 })
 
 test_that("plots", {
@@ -120,7 +130,7 @@ test_that("contrasts", {
   # Default contrasts
   d <- SAKDifference(data, "Measurement", "Group")
   ng <- length(d$groups)
-  expect_equal(length(d$group.differences), ng - 1)
+  expect_equal(length(d$group.differences), ng * (ng - 1) / 2)
 
   # All in 1 string
   contrasts = "Group1 - ZControl1, Group2 - ZControl1, Group3 - ZControl1, Group4 - ZControl1"
@@ -358,7 +368,9 @@ test_that("many groups", {
   trt <- c(sapply(seq_along(groupMean), function(i) rep(paste0("G", i, "-", groupMean[i]), n)))
   df <- data.frame(Height = val, Treatment = trt)
   d <- SAKDifference(df, "Height", "Treatment")
-  expect_error(SAKPlot(d, main = "Many groups"), NA)
+  expect_error(SAKPlot(d, main = "1/3) Many groups"), NA)
+  expect_error(SAKPlot(d, main = "2/3) Many groups, control-.", contrasts = paste(df$Treatment[1], "-.")), NA)
+  expect_error(SAKPlot(d, main = "3/3) Many groups, .-control", contrasts = paste(" . - ", df$Treatment[1])), NA)
 })
 
 test_that("plots work", {
@@ -645,4 +657,86 @@ test_that("Other data frame classes", {
                                group = rep(c("Group1", "Group2", "Group3"), each = n))
   d <- SAKDifference(df, data.col = 1, group.col = 2)
   expect_error(SAKPlot(d, main = "Data.table"), NA)
+})
+
+test_that("point colours", {
+  n <- 40
+  df <- data.frame(val = c(rnorm(n, mean = 10), rnorm(n, mean = 10 + 1)),
+                   group = rep(c("Group1", "Group2"), each = n),
+                   sex = sample(factor(c("Male", "Female")), n, replace = TRUE))
+  d <- SAKDifference(df, data.col = 1, group.col = 2)
+  expect_error(SAKPlot(d, points = 1:2, main = "Group colours"), NA)
+  expect_error(SAKPlot(d, points = 1:5, main = "Group colours (truncated palette)"), NA)
+  expect_error(SAKPlot(d, points = as.numeric(df$sex) + 1, main = "Sex colours"), NA)
+})
+
+test_that("detect missing paired data", {
+  n <- 40
+  # Test whether missing paired data is detected correctly
+  set.seed(1)
+  df <- data.frame(val = c(rnorm(n, mean = 10), rnorm(n, mean = 10 + 1)),
+                   group = rep(c("Group1", "Group2"), each = n),
+                   id = rep(1:n, 2))
+  # If we take a random sample of rows, some will be missing their paired data
+  df <- df[sample(seq_len(nrow(df)), round(n / 2)), ]
+  expect_error(SAKDifference(df, data.col = 1, group.col = 2, id = 3), "paired data")
+})
+
+test_that("plot contrasts", {
+  n <- 40
+  set.seed(1)
+  df <- data.frame(val = c(rnorm(n, mean = 10), rnorm(n, mean = 10 + 1)),
+                   group = rep(c("Group1", "Group2"), each = n),
+                   sex = sample(factor(c("Male", "Female")), n, replace = TRUE))
+  d <- SAKDifference(df, data.col = 1, group.col = 2)
+  expect_error(SAKPlot(d, points = 1:2, main = "1/3) Default contrast"), NA)
+  d <- SAKDifference(df, data.col = 1, group.col = 2, contrasts = ". - Group1")
+  expect_error(SAKPlot(d, points = 1:2, main = "2/3) SAKDifference contrast"), NA)
+  d <- SAKDifference(df, data.col = 1, group.col = 2)
+  expect_error(SAKPlot(d, points = 1:2, main = "3/3) SAKPlot contrast", contrasts = ". - Group1"), NA)
+})
+
+test_that("effect size position", {
+  n <- 20
+  set.seed(1)
+  df <- data.frame(val = c(rnorm(n, mean = 10), rnorm(n, mean = 10 + 0.8), rnorm(n, mean = 10 + 0.4)),
+                   group = rep(c("Group1", "Group2", "Group3"), each = n),
+                   sex = sample(factor(c("Male", "Female", "Juvenile")), n, replace = TRUE))
+  d <- SAKDifference(df, data.col = 1, group.col = 2)
+
+  expect_error(SAKPlot(d, contrasts = Filter(function(d) d$bca[4] > 0 || d$bca[5] < 0, d$group.differences),
+                       main = "1/3) ef.size position default, filtered contrasts"), NA)
+  expect_error(SAKPlot(d, ef.size.position = "below", contrasts = "Group3 - Group1", main = "2/3) ef.size below, 1 contrast"), NA)
+  expect_error(SAKPlot(d, main = "3/3) ef.size default position, shorthand contrasts", contrasts = ". - Group1"), NA)
+
+  # Check missing contrast
+  d <- SAKDifference(df, data.col = 1, group.col = 2, contrasts = "Group2 - Group1")
+  expect_error(SAKPlot(d, contrasts = "Group3 - Group1"))
+})
+
+test_that("expand contrasts", {
+  .makeX <- function(g) matrix(g, nrow = 2)
+
+  expect_equal(expandContrasts("g1 - g2, g3 - g4", c("g1", "g2", "g3", "g4")), .makeX(c("g1", "g2", "g3", "g4")))
+  expect_error(expandContrasts("g1 - g2, g3 - g5", c("g1", "g2", "g3", "g4")))
+  expect_error(expandContrasts("g1 - g1", c("g1", "g2", "g3", "g4")))
+  expect_equal(expandContrasts(" g1-g2 ", c("g1", "g2")), .makeX(c("g1", "g2")))
+  expect_equal(expandContrasts(" g1    -g2 ", c("g2", "g1")), .makeX(c("g1", "g2")))
+  expect_equal(expandContrasts(" g2  - g1 ", c("g2", "g1")), .makeX(c("g2", "g1")))
+  expect_equal(expandContrasts("g1 - g2", c("g4", "g1", "g2")), .makeX(c("g1", "g2")))
+  expect_equal(expandContrasts("g1 - g2", c("g4", "g2", "g1")), .makeX(c("g1", "g2")))
+  expect_equal(expandContrasts(". - g1", c("g1", "g2", "g3")), .makeX(c("g2", "g1", "g3", "g1")))
+  expect_equal(expandContrasts(". - g2", c("g1", "g2", "g3")), .makeX(c("g1", "g2", "g3", "g2")))
+  expect_equal(expandContrasts("g3-.", c("g1", "g2", "g3")), .makeX(c("g3", "g1", "g3", "g2")))
+  expect_equal(expandContrasts("*", c("g1", "g2")), .makeX(c("g2", "g1")))
+  expect_equal(expandContrasts("*", c("g2", "g1")), .makeX(c("g1", "g2")))
+  expect_equal(expandContrasts("*", c("g1")), NULL)
+  expect_equal(expandContrasts(" g1 - g11 ", c("g1", "g11")), .makeX(c("g1", "g11")))
+  expect_equal(expandContrasts(" g1 - g11 ", c("g11", "g1")), .makeX(c("g1", "g11")))
+  expect_equal(expandContrasts(" g11 - g1 ", c("g1", "g11")), .makeX(c("g11", "g1")))
+  expect_equal(expandContrasts(" . - g1", c("g1", "g11")), .makeX(c("g11", "g1")))
+  expect_equal(expandContrasts(" . - g1", c("g1", "g11", "g111")), .makeX(c("g11", "g1", "g111", "g1")))
+  expect_equal(expandContrasts(" g1 - .", c("g1", "g11")), .makeX(c("g1", "g11")))
+  expect_equal(expandContrasts(" g1 - . ", c("g1", "g11", "g111")), .makeX(c("g1", "g11", "g1", "g111")))
+  expect_error(expandContrasts(" . - . ", c("g1", "g11")))
 })

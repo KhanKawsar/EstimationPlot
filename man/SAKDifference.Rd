@@ -10,7 +10,7 @@ SAKDifference(
   group.col,
   id.col,
   groups = sort(unique(data[[group.col]])),
-  contrasts,
+  contrasts = "*",
   effect.type = c("unstandardised", "cohens", "hedges"),
   R = 1000,
   ci.conf = 0.95,
@@ -35,14 +35,16 @@ For non-paired data, do not specify an \code{id.col}.}
 \emph{natural} order. If \code{groups} is a named vector, the names are
 used to identify groups for printing or plotting.}
 
-\item{contrasts}{Specify the pairs of groups to be compared. By default, 2nd
-and subsequent groups are compared to the first group. May be a single
-string, a vector of strings, or a matrix. A single string has a format such
-as \code{"group1 - group2, group3 - group4"}. A single asterisk, \code{"*"}
-creates contrasts for all possible pairs of groups. A vector of strings
-looks like \code{c("group1 - group2", "group3 - group4")}. If a matrix is
-specified, it must have a column for each contrast, with the first group in
-row 1 and the second in row 2.}
+\item{contrasts}{Specify the pairs of groups to be compared. By default, all
+pairwise differences are generated. May be a single string, a vector of
+strings, or a matrix. A single string has a format such as \code{"group1 -
+group2, group3 - group4"}. A single asterisk, \code{"*"} creates contrasts
+for all possible pairs of groups. A single string such as \code{".-
+control"} compares all groups against the \code{"control"} group, i.e. the
+\code{"."} expands to all groups except the named group. A vector of
+strings looks like \code{c("group1 - group2", "group3 - group4")}. If a
+matrix is specified, it must have a column for each contrast, with the
+first group in row 1 and the second in row 2.}
 
 \item{effect.type}{Type of group difference to be calculated. Possible types
 are: \code{unstandardised}, difference in group means; \code{cohens},
