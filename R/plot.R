@@ -30,7 +30,7 @@ findDiff <- function(pair, diffs) {
   # For each existing comparison...
   for (diff in diffs) {
     # Is this the requested comparison?
-    if (diff$groupLabels[1] == pair[1] && diff$groupLabels[2] == pair[2]) {
+    if (diff$groups[1] == pair[1] && diff$groups[2] == pair[2]) {
       return(diff)
 
       # Is this the negation of the requested comparison?
@@ -39,7 +39,7 @@ findDiff <- function(pair, diffs) {
       return(negatePairwiseDiff(diff))
     }
   }
-  stop(sprintf("Contrast %s - %s does not exist, check the contrasts argument in your call to SAKDifference",
+  stop(sprintf("Contrast '%s - %s' has not been estimated, check the contrasts argument in your call to SAKDifference",
                pair[1], pair[2]))
 }
 
@@ -276,6 +276,9 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch, showVi
   }
 }
 
+# Convenience operator like Ruby's || operator. Returns a if it is not null, otherwise b
+`%||%` <- function(a, b) if (!is.null(a)) a else b
+
 #############################################################################
 
 #' Returns a transparent version of the specified colour(s).
@@ -304,49 +307,55 @@ SAKTransparent <-  function(colour, alpha) {
 #' Plot grouped data and effect size in base R, with control over a large range
 #' of possible display formats and options. To plot your data, first calculate
 #' group differences by calling \code{\link{SAKDifference}}, then pass the
-#' result to \code{\link{SAKPlot}}.
+#' result to \code{\link{SAKPlot}}. Parameters are grouped according to the
+#' component they affect, so all parameters that affect box plots are prefixed
+#' with \code{box}.
 #'
 #' Group data may be visualised in multiple ways: \code{points}, \code{violin},
 #' \code{box} and \code{bar}. Each visualisation type is controlled by a set of
 #' parameters with the same prefix. To display a type, for example box plots,
-#' specify \code{box = TRUE}. Rather than \code{TRUE}, you may specify a colour,
-#' which is used as the border/outline for the boxes. You may also specify a
-#' vector of colours, one for each group. For \code{points}, you may specify a
-#' colour for each individual point. When colours are not specified, they are
-#' selected from an \code{\link{RColorBrewer}} qualitative palette.
+#' specify \code{box = TRUE}. Rather than \code{box = TRUE}, you may specify a
+#' colour (e.g. \code{box \ "blue"}), which is used as the border/outline for
+#' the boxes. You may also specify a vector of colours, one for each group. For
+#' \code{points}, you may specify a colour for each individual point. When
+#' colours are not specified, they are selected from an
+#' \code{\link{RColorBrewer}} qualitative palette.
 #'
 #' @param es Data returned from a call to \code{\link{SAKDifference}}
 #'
 #' @param contrasts Set of contrasts (i.e. group comparisons) to be plotted. By
-#'   default, plots all contrasts in \code{es}. May be a single string, a vector
-#'   of strings, or a matrix. A single string has a format such as \code{"group1
-#'   - group2, group3 - group4"}. A single asterisk, \code{"*"} creates
-#'   contrasts for all possible pairs of groups. A single string such as
+#'   default, plots the contrasts specified in the call to
+#'   \code{\link{SAKDifference}}. If contrasts were not explicitly specified,
+#'   plots 2nd and subsequent groups minus the first group. May be a single
+#'   string, a vector of strings, or a matrix. A single string has a format such
+#'   as \code{"group1 - group2, group3 - group4"}. A single asterisk, \code{"*"}
+#'   creates contrasts for all possible pairs of groups. A single string such as
 #'   \code{".- control"} compares all groups against the \code{"control"} group,
 #'   i.e. the \code{"."} expands to all groups except the named group. A vector
 #'   of strings looks like \code{c("group1 - group2", "group3 - group4")}. If a
 #'   matrix is specified, it must have a column for each contrast, with the
 #'   first group in row 1 and the second in row 2. See also the \code{contrasts}
-#'   parameter to \code{\link{SAKDifference}}.
+#'   parameter to \code{\link{SAKDifference}}. It is an error to attempt to plot
+#'   a contrast that was not estimated by \code{\link{SAKDifference}}.
 #'
 #' @param group.dx Used to shift group centres horizontally. E.g.,
 #'   \code{group.dx = c(0.1, -0.1)} will group into pairs. Individual components
 #'   can be shifted independently using the appropriate \code{*.dx} parameters.
 #'
 #' @param points If not FALSE, points are plotted. If \code{TRUE}, points are
-#'   displayed with a default colour. May be a vector of colours. If length 1,
-#'   all points are drawn with the specified colour. If length is less than the
-#'   number of data points, points in each group are drawn with the appropriate
-#'   colour (extra colours are ignored). Otherwise, \code{points} should be a
-#'   vector of colours with a value for each data point.
+#'   displayed with a default colour. You may specify a vector of colours; if
+#'   length 1, all points are drawn with the specified colour. If length is less
+#'   than the number of data points, points in each group are drawn with the
+#'   appropriate colour (extra colours are ignored). Otherwise, \code{points}
+#'   should be a vector of colours with a value for each data point.
 #' @param points.method Method used to avoid overplotting points. Use
 #'   \code{"overplot"} to overplot points and \code{"jitter"} to add random
-#'   noise to each x-value. See [vipor]{offsetX} for remaining methods.
-#' @param points.pch Symbol to use for plotting points.
+#'   noise to each x-value. See \code{\link[vipor]{offsetX}} for remaining
+#'   methods.
 #' @param points.dx Horizontal shift to be applied to points in each group.
 #' @param points.params List of named parameters to pass on to
-#'   [graphics]{points}, e.g. \code{SAKPlot(es, points = "black", points.pch =
-#'   21, points.params = list(bg = as.numeric(factor(data$Sex)) + 1))}.
+#'   \code{\link[graphics]{points}}, e.g. \code{SAKPlot(es, points = "black",
+#'   points.params = list(pch = 21, bg = as.numeric(factor(data$Sex)) + 1))}.
 #'
 #' @param violin If not FALSE, violin plots are drawn. If \code{TRUE}, violins
 #'   are drawn in default colours. Otherwise specifies the colour of the violin
@@ -364,14 +373,15 @@ SAKTransparent <-  function(colour, alpha) {
 #'
 #' @param box If not FALSE, draw a box-and-whisker plot of the grouped values.
 #'   Value may be a colour, in which case the box borders are plotted with the
-#'   colour(s). See [graphics]{boxplot}.
+#'   colour(s). See \code{\link[graphics]{boxplot}}.
 #' @param box.fill Colour used to fill the bodies of the box-and-whisker plot.
-#'   If FALSE or NA, bodies are not filled
+#'   If FALSE or NA, bodies are not filled.
 #' @param box.outline If FALSE, don't draw outliers with the box plot.
 #' @param box.notch If TRUE, draws notches in the sides of the boxes. See
-#'   [graphics]{boxplot.stats} for the calculations used.
+#'   \code{\link[graphics]{boxplot.stats}} for the calculations used.
 #' @param box.pars List with additional graphical parameters to control the box
-#'   plot. See [graphics]{bxp} graphical parameters for a complete list.
+#'   plot. See \code{\link[graphics]{bxp}} graphical parameters for a complete
+#'   list.
 #' @param box.dx Horizontal shift to be applied to each box.
 #'
 #' @param bar If not FALSE, draw a bar plot of the group means or medians,
@@ -410,12 +420,18 @@ SAKTransparent <-  function(colour, alpha) {
 #'   error bars.
 #' @param central.tendency.type Should the indicated measure of central tendency
 #'   be \code{"mean"} or \code{"median"}?
+#' @param central.tendency.symbol Should central tendency be shown as a point or
+#'   a horizontal line segment?
+#' @param central.tendency.params Additional arguments to be passed to
+#'   \code{\link[graphics]{points}} (if \code{central.tendency.symbol ==
+#'   "point"}) or \code{\link[graphics]{segments}} (if
+#'   \code{central.tendency.symbol == "segment"}).
 #' @param central.tendency.dx Horizontal shift to apply to central tendency
 #'   indicator and error bars.
 #' @param error.bars Should error bars be displayed? May be the colour to be
 #'   used for error bars.
-#' @param error.bars.type Should error bars depict 95%% confidence intervals
-#'   (\code{"CI"}), standard deviation (\code{"SD"}) or standard error
+#' @param error.bars.type Should error bars depict 95%% confidence intervals of
+#'   the mean (\code{"CI"}), standard deviation (\code{"SD"}) or standard error
 #'   (\code{"SE"})?
 #'
 #' @param axis.dx Horizontal shifts to be applied to each x-axis tick and label.
@@ -424,8 +440,8 @@ SAKTransparent <-  function(colour, alpha) {
 #' @param left.las Orientation of axis labels on left-hand y-axis label (0 =
 #'   parallel to axis, 1 = horizontal).
 #'
-#' @param ... Additional arguments are passed on to the [graphics]{plot}
-#'   function.
+#' @param ... Additional arguments are passed on to the
+#'   \code{\link[graphics]{plot}} function.
 #'
 #' @return \code{es} invisibly.
 #'
@@ -452,7 +468,6 @@ SAKPlot <- function(es,
                     points = TRUE,
                     points.method = c("quasirandom", "pseudorandom", "smiley", "maxout", "frowney", "minout", "tukey",
                                       "tukeyDense", "jitter", "overplot"),
-                    points.pch = 19,
                     points.dx = group.dx,
                     points.params = list(),
 
@@ -488,8 +503,10 @@ SAKPlot <- function(es,
 
                     paired = es$paired.data, # if true draw lines between paired points
 
-                    central.tendency = TRUE,
+                    central.tendency = isFALSE(box),
                     central.tendency.type = c("mean", "median"),
+                    central.tendency.symbol = c("point", "segment"),
+                    central.tendency.params = list(),
                     central.tendency.dx = group.dx,
                     error.bars = central.tendency,
                     error.bars.type = c("CI", "SD", "SE"), # draw confidence interval line of the data; if box, density, violin is TRUE, CI is FALSE
@@ -526,23 +543,31 @@ SAKPlot <- function(es,
   else
     points.method <- match.arg(points.method)
   central.tendency.type <- match.arg(central.tendency.type)
+  central.tendency.symbol <- match.arg(central.tendency.symbol)
 
   data <- es$data
   groups <- es$groups
   nGroups <- length(groups)
 
-  # What contrasts are to be displayed?
-  if (missing(contrasts)) {
-    # Default to all calculated contrasts
-    plotDiffs <- es$group.differences
-  } else if (is.character(contrasts)) {
-    # Interpret string description
-    plotDiffs <- buildPlotDiffs(contrasts, es)
-  } else if (is.list(contrasts) && all(sapply(contrasts, function(x) methods::is(x, "SAKPWDiff")))) {
-    # Contrasts were passed directly
-    plotDiffs <- contrasts
-  } else if (!is.null(contrasts)) {
-    stop("Invalid plot contrasts argument, must be character string or list of SAKPWDiff objects")
+  # What contrasts are to be displayed (if any)?
+  plotDiffs <- list()
+  if (.show(ef.size)) {
+    # If contrasts were specified to SAKDifference, use them
+    if (missing(contrasts)) {
+      if (es$explicit.contrasts)
+        plotDiffs <- es$group.differences
+      else
+        # Contrasts were never specified, default to all minus the first group
+        plotDiffs <- buildPlotDiffs(paste(".-", groups[1]), es)
+    } else if (is.character(contrasts)) {
+      # Interpret string description
+      plotDiffs <- buildPlotDiffs(contrasts, es)
+    } else if (is.list(contrasts) && all(sapply(contrasts, function(x) methods::is(x, "SAKPWDiff")))) {
+      # Contrasts were passed directly
+      plotDiffs <- contrasts
+    } else if (!is.null(contrasts)) {
+      stop("Invalid plot contrasts argument, must be character string or list of SAKPWDiff objects")
+    }
   }
 
   # Recycle all the *.dx arguments
@@ -561,36 +586,60 @@ SAKPlot <- function(es,
   # Calculate densities for violin plots
   densities <- lapply(groups, getGroupDensity, es, violin.adj, violin.trunc, violin.width)
 
+  # Turn group column into a factor with levels potentially specified by the user so they customise groups order
+  data$.group.as.factor <- factor(data[[es$group.col]], levels = groups)
+  f <- stats::as.formula(paste(es$data.col.name, "~.group.as.factor"))
+
   # Calculate plot limits
-  xlim <- c(0.5, nGroups + 0.5)
+
+  #### Y limits ####
+
   rowsToBePlotted <- data[[es$group.col]] %in% groups
-  ylim <- range(data[[es$data.col]][rowsToBePlotted])
+  ylim <- NA
+
+  if (.show(points) || .show(paired)) {
+    r <- range(data[[es$data.col]][rowsToBePlotted])
+    ylim <- range(ylim, r, na.rm = TRUE)
+  }
 
   # If needed, extend y range to encompass violin plots
   if (.show(violin)) {
     for (d in densities) {
-      ylim <- range(ylim, d$x)
+      ylim <- range(ylim, d$x, na.rm = TRUE)
     }
+  }
+
+  # Encompass error bars
+  if (.show(error.bars)) {
+    yr <- range(sapply(seq_along(groups), function(gi) {
+      groupMean <- mean(data[[es$data.col]][data[[es$group.col]] == groups[gi]])
+      getErrorBars(es, gi, groupMean, error.bars.type)
+    }))
+    ylim <- range(ylim, yr, na.rm = TRUE)
   }
 
   # If needed, extend y range to encompass bar plots
   if (.show(bar)) {
-    if (.show(points)) {
-      ylim <- c(0, max(data[[es$data.col]][rowsToBePlotted]))
-    } else {
-      # Are we drawing error bars?
-      if (.show(error.bars)) {
-        ym <- max(sapply(seq_along(groups), function(gi) {
-          groupMean <- mean(data[[es$data.col]][data[[es$group.col]] == groups[gi]])
-          getErrorBars(es, gi, groupMean, error.bars.type)[2]
-        }))
-      } else {
-        # Get means of each group
-        ym <- max(sapply(groups, function(g) mean(data[[es$data.col]][data[[es$group.col]] == g])))
-      }
-      ylim <- c(0, ym)
-    }
+    # Ensure that y = 0 is visible
+    ylim <- range(ylim, 0, na.rm = TRUE)
+    # Get means of each group
+    ym <- max(sapply(groups, function(g) mean(data[[es$data.col]][data[[es$group.col]] == g])))
+    ylim <- range(ylim, ym, na.rm = TRUE)
   }
+
+  # If needed, extend y range to encompass box plots
+  if (.show(box)) {
+    # There is a lot of flexibility in box plots, so just use boxplot to determine the extents
+    bp <- graphics::boxplot(f, data = data, at = seq_len(nGroups) + box.dx,
+                                plot = FALSE, axes = FALSE, notch = box.notch,
+                                outline = box.outline,
+                                col = .colour(box.fill), border = .colour(box), pars = box.pars)
+    ylim <- range(ylim, bp$stats, na.rm = TRUE)
+  }
+
+  #### X limits ####
+
+  xlim <- c(0.5, nGroups + 0.5)
 
   # If needed extend x range to encompass effect size
   if (length(plotDiffs) < 1) {
@@ -627,14 +676,12 @@ SAKPlot <- function(es,
   graphics::axis(1, at = seq_len(nGroups) + axis.dx, labels = es$group.names)
 
   ### Add the various components to the plot ###
-  # Turn group column into a factor so it can be ordered by the user
-  data$.group.as.factor <- factor(data[[es$group.col]], levels = groups)
-  f <- stats::as.formula(paste(es$data.col.name, "~.group.as.factor"))
 
   # Box plot
   if (.show(box)) {
     box <- .boolToDef(box, defBorderPalette)
     box.fill <- .boolToDef(box.fill, defFillPalette)
+    # !!! NOTE if this is changed, it may also be necessary to change the call above that determines ylim
     graphics::boxplot(f, data = data, at = seq_len(nGroups) + box.dx,
                       add = TRUE, axes = FALSE, notch = box.notch,
                       outline = box.outline,
@@ -677,6 +724,8 @@ SAKPlot <- function(es,
     pointCol <- .boolToDef(points, defPalette[as.numeric(data$.group.as.factor)])
     # If there are less colours than points, assume the colours are intended to be per group
     if (length(pointCol) < nrow(data)) {
+      # Recycle to get colours per group
+      pointCol <- .extend(pointCol)
       # If colours specified for each group, expand out to the colours for each point
       pointCol <- pointCol[as.numeric(data$.group.as.factor)]
     }
@@ -695,7 +744,9 @@ SAKPlot <- function(es,
                               method = points.method, varwidth = TRUE, adjust = violin.width)
     }
     # Complicated way of calling is to allow user to pass in arbitrary parameters
-    do.call(graphics::points, c(list(x = x, y = data[[es$data.col]], pch = points.pch, col = .colour(pointCol)), points.params))
+    pch <- points.params[["pch"]] %||% 19
+    points.params[c("pch")] <- NULL
+    do.call(graphics::points, c(list(x = x, y = data[[es$data.col]], pch = pch, col = pointCol), points.params))
   }
 
   # Draw lines between paired points
@@ -717,26 +768,39 @@ SAKPlot <- function(es,
     }
   }
 
+  ## add CI/SD/SE error bars
+  if (.show(error.bars)) {
+    error.bars <- .boolToDef(error.bars, "grey20")
+    col <- rep(.colour(error.bars), length = nGroups)
+    for (i in seq_along(groups)) {
+      y <- es$group.statistics[i, central.tendency.type]
+      bars <- getErrorBars(es, i, y, error.bars.type)
+      graphics::segments(i + central.tendency.dx[i], bars[1], i + central.tendency.dx[i], bars[2], col = col[i], lty = 1, lwd = 2)
+    }
+  }
+
   ## Mean/median
   central.tendency <- .boolToDef(central.tendency, "grey20")
-  error.bars <- .boolToDef(error.bars, if (.isColour(central.tendency)) central.tendency else "grey20")
   if (.show(central.tendency)) {
+    col <- central.tendency.params[["col"]] %||% .colour(central.tendency)
+    col <- rep(col, length = nGroups)
+    pch <- central.tendency.params[["pch"]] %||% 19
+    cex <- central.tendency.params[["cex"]] %||% 1.5
+    lwd <- central.tendency.params[["lwd"]] %||% 2
+    central.tendency.params[c("col", "pch", "cex", "lwd")] <- NULL
     for (i in seq_along(groups)) {
       # Get estimate of central tendency
       y <- es$group.statistics[i, central.tendency.type]
       # Plot lines TODO allow symbols? More control of line?
-      graphics::segments(i - violin.width + central.tendency.dx[i], y,
-                         i + violin.width + central.tendency.dx[i], y,
-                         col = .colour(central.tendency), lwd = 2)
-    }
-  }
-
-  ## add CI/SD/SE error bars
-  if (.show(error.bars)) {
-    for (i in seq_along(groups)) {
-      y <- es$group.statistics[i, central.tendency.type]
-      bars <- getErrorBars(es, i, y, error.bars.type)
-      graphics::segments(i + central.tendency.dx[i], bars[1], i + central.tendency.dx[i], bars[2], col = .colour(error.bars), lty = 1, lwd = 2)
+      if (central.tendency.symbol == "point") {
+        do.call(graphics::points, c(list(x = i + central.tendency.dx[i], y = y, cex = cex, pch = pch, col = col[i]),
+                                    central.tendency.params))
+      } else {
+        do.call(graphics::segments, c(list(i - violin.width + central.tendency.dx[i], y,
+                                           i + violin.width + central.tendency.dx[i], y,
+                                           col = col[i], lwd = lwd),
+                                      central.tendency.params))
+      }
     }
   }
 

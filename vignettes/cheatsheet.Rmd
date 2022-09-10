@@ -54,8 +54,8 @@ SAKPlot(d,
         left.ylab = "Blood sugar level",
         violin.shape = c("left", "right"), violin.dx = c(-0.055, 0.055), violin.width = 0.3, 
         points = "black",
-        pch = ifelse(data$Sex == "Female", 21, 24),
-        points.params = list(bg = ifelse(data$Sex == "Female", "red", "blue")), 
+        points.params = list(bg = ifelse(data$Sex == "Female", "red", "blue"), 
+                             pch = ifelse(data$Sex == "Female", 21, 24)), 
         ef.size.pch = 19,
         ef.size.violin = "blue",
         ef.size.violin.shape = "full",
@@ -83,3 +83,5 @@ SAKPlot(d, violin.shape = c("left", "right"), violin.dx = c(-0.05, 0.05), violin
 par(mar = c(5, 9, 3, 1) + 0.1)
 SAKPlot(d, box = TRUE, ef.size.ticks = effectSizes, ef.size.position = "below", ef.size.las = 1, main = "Effect size interpretation, below", ef.size.label = "")
 ```
+
+

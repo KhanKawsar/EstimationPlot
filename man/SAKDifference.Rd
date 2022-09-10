@@ -66,21 +66,25 @@ for "paired" data (i.e. \code{id.col} is specified), all rows
 \item{...}{Any additional parameters are passed to \code{\link[boot]{boot}}.}
 }
 \value{
-List containing: \item{\code{groups}}{Vector of group names}
+List containing:
+
+  \item{\code{groups}}{Vector of group names}
   \item{\code{group.statistics}}{Matrix with a row for each group, columns
   are group mean, median, standard deviation, standard error of the mean,
   lower and upper 95\% confidence intervals of the mean}
   \item{\code{group.differences}}{List of \code{SAKPWDiff} objects, which are
   \code{boot} objects with added confidence interval information. See
   \code{\link[boot]{boot}} and \code{\link[boot]{boot.ci}}}
-  \item{\code{effect.type}}{Value of \code{effect.type} argument}
+  \item{\code{effect.type}}{Value of \code{effect.type} parameter}
   \item{\code{effect.name}}{Pretty version of \code{effect.type}}
-  \item{\code{data.col}}{Value of \code{data.col} argument}
+  \item{\code{data.col}}{Value of \code{data.col} parameter}
   \item{\code{data.col.name}}{Name of the \code{data.col} column}
-  \item{\code{group.col}}{Value of \code{group.col} argument}
+  \item{\code{group.col}}{Value of \code{group.col} parameter}
   \item{\code{group.col.name}}{Name of the \code{group.col} column}
-  \item{\code{data}}{The input data frame} \item{\code{call}}{how this
-  function was called}
+  \item{\code{data}}{The input data frame}
+  \item{\code{call}}{how this function was called}
+  \item{\code{groups}}{Value of \code{groups} parameter}
+  \item{\code{group.names}}{Labels used to identify groups}
 }
 \description{
 Calculates differences between groups ready for printing or plotting by

@@ -2,7 +2,7 @@
 title: "Estimation plotting with `SAKPlot`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Estimation plotting with SAKPlot}
+  %\VignetteIndexEntry{Estimation plotting with `SAKPlot`}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

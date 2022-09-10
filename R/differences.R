@@ -1,9 +1,8 @@
 # The difference function
 
 
-### confidence interval of a group
-CI <- function(x){
-  alpha <- 0.95
+### confidence interval of the mean a group
+CI <- function(x, alpha = 0.95){
   m <- mean(x)
   sd <- stats::sd(x)
   n <- length(x)
@@ -152,7 +151,7 @@ expandContrasts <- function(contrasts, groups) {
   # Returns TRUE if group is the second group in the contrast
   .group2 <- function(group, contrast) {
     # Does the string end with the group, ignoring whitespace?
-    contrast <- trimws(contrast)
+     contrast <- trimws(contrast)
     if (!endsWith(contrast, group)) {
       return(FALSE)
     }
@@ -185,6 +184,8 @@ expandContrasts <- function(contrasts, groups) {
   if (is.character(contrasts) && length(contrasts) == 1) {
     dotFirst <- .group1(".", contrasts)
     dotSecond <- .group2(".", contrasts)
+    # Groups might be a factor, so convert to character
+    groups <- unname(as.character(groups))
 
     if (dotFirst || dotSecond) {
       # Found a dot, is there a group as well?
@@ -284,21 +285,25 @@ expandContrasts <- function(contrasts, groups) {
 #'   (observations) for IDs with missing data are stripped.
 #' @param ... Any additional parameters are passed to \code{\link[boot]{boot}}.
 #'
-#' @return List containing: \item{\code{groups}}{Vector of group names}
+#' @return List containing:
+#'
+#'   \item{\code{groups}}{Vector of group names}
 #'   \item{\code{group.statistics}}{Matrix with a row for each group, columns
 #'   are group mean, median, standard deviation, standard error of the mean,
 #'   lower and upper 95\% confidence intervals of the mean}
 #'   \item{\code{group.differences}}{List of \code{SAKPWDiff} objects, which are
 #'   \code{boot} objects with added confidence interval information. See
 #'   \code{\link[boot]{boot}} and \code{\link[boot]{boot.ci}}}
-#'   \item{\code{effect.type}}{Value of \code{effect.type} argument}
+#'   \item{\code{effect.type}}{Value of \code{effect.type} parameter}
 #'   \item{\code{effect.name}}{Pretty version of \code{effect.type}}
-#'   \item{\code{data.col}}{Value of \code{data.col} argument}
+#'   \item{\code{data.col}}{Value of \code{data.col} parameter}
 #'   \item{\code{data.col.name}}{Name of the \code{data.col} column}
-#'   \item{\code{group.col}}{Value of \code{group.col} argument}
+#'   \item{\code{group.col}}{Value of \code{group.col} parameter}
 #'   \item{\code{group.col.name}}{Name of the \code{group.col} column}
-#'   \item{\code{data}}{The input data frame} \item{\code{call}}{how this
-#'   function was called}
+#'   \item{\code{data}}{The input data frame}
+#'   \item{\code{call}}{how this function was called}
+#'   \item{\code{groups}}{Value of \code{groups} parameter}
+#'   \item{\code{group.names}}{Labels used to identify groups}
 #'
 #' @seealso \code{\link[boot]{boot}}, \code{\link[boot]{boot.ci}},
 #'   \code{\link{SAKPlot}}, \code{\link{print.SAKDiff}}
@@ -337,9 +342,11 @@ SAKDifference <- function(data,
   if (!.isACol(data.col))
     stop(sprintf("data.col %s is not a valid column name or index (names are %s)",
                  data.col, paste(names(data), collapse = ", ")))
+  if (!is.numeric(data[[data.col]]))
+    stop(sprintf("data.col %s must be a numeric column, is %s", data.col, class(data[[data.col]])))
   if (!.isACol(group.col))
     stop(sprintf("group.col %s is not a valid column name or index (names are %s)",
-                 data.col, paste(names(data), collapse = ", ")))
+                 group.col, paste(names(data), collapse = ", ")))
 
   # Optionally handle NA values
   if (na.rm) {
@@ -372,7 +379,8 @@ SAKDifference <- function(data,
              groups = groups,
              group.names = groupLabels,
              effect.type = effect.type,
-             effect.name = effectNames[effect.type])
+             effect.name = effectNames[effect.type],
+             explicit.contrasts = !missing(contrasts))
   # Return value has type SAKDiff
   class(es) <- c("SAKDiff", class(es))
 
@@ -395,16 +403,20 @@ SAKDifference <- function(data,
   es$group.statistics <- df
 
   # Interpret the contrasts
-  contrasts <- expandContrasts(contrasts, groups)
+  if (is.null(contrasts)) {
+    es$group.differences <- NULL
+  } else {
+    contrasts <- expandContrasts(contrasts, groups)
 
-  # For each pair of groups...
-  es$group.differences <- apply(contrasts, 2, function(pair) {
-    pairData <- data[as.character(data[[group.col]]) %in% pair, ]
-    groupIndices <- c(which(groups == pair[1]), which(groups == pair[2]))
-    groupLabels <- c(groupLabels[groupIndices[1]],
-                    groupLabels[groupIndices[2]])
-    calcPairDiff(pairData, pair, pairedData, groupLabels, groupIndices, data.col, group.col, id.col, effect.type, R, ci.conf, ci.type)
-  })
+    # For each pair of groups...
+    es$group.differences <- apply(contrasts, 2, function(pair) {
+      pairData <- data[as.character(data[[group.col]]) %in% pair, ]
+      groupIndices <- c(which(groups == pair[1]), which(groups == pair[2]))
+      groupLabels <- c(groupLabels[groupIndices[1]],
+                       groupLabels[groupIndices[2]])
+      calcPairDiff(pairData, pair, pairedData, groupLabels, groupIndices, data.col, group.col, id.col, effect.type, R, ci.conf, ci.type)
+    })
+  }
 
   es
 }

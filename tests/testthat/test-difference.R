@@ -611,8 +611,11 @@ test_that("paired with NAs works", {
 test_that("bar charts work", {
   es <- makeES1()
   SAKPlot(es, bar = TRUE, violin = FALSE, box = FALSE, box.fill = "blue",
-         central.tendency = FALSE, error.bars.type = "CI", ef.size = FALSE,
-         points = FALSE, main = "Bar chart")
+          central.tendency = FALSE, error.bars.type = "CI", ef.size = FALSE,
+          points = FALSE, main = "Bar chart, no error bars")
+  SAKPlot(es, bar = TRUE, violin = FALSE, box = FALSE, box.fill = "blue",
+          central.tendency = TRUE, error.bars.type = "CI", ef.size = FALSE,
+          points = FALSE, main = "Bar chart, error bars")
   expect_equal(1, 1)
 })
 
@@ -739,4 +742,49 @@ test_that("expand contrasts", {
   expect_equal(expandContrasts(" g1 - .", c("g1", "g11")), .makeX(c("g1", "g11")))
   expect_equal(expandContrasts(" g1 - . ", c("g1", "g11", "g111")), .makeX(c("g1", "g11", "g1", "g111")))
   expect_error(expandContrasts(" . - . ", c("g1", "g11")))
+})
+
+test_that("Grouped plot", {
+  # Attempt to reproduce Figure 1 in
+  # Ostap-Chec, M., Opalek, M., Stec, D., & Miler, K. (2021). Discontinued alcohol consumption elicits withdrawal symptoms in honeybees. Biology Letters, 17(6), 20210182. doi:10.1098/rsbl.2021.0182
+
+  n <- 6
+  meansA <- c("water" = 5, "0.125%" = 5, "1.25%" = 5, "2%" = 12, "sugar" = 100)
+  groups <- c("no exposure", "short exposure", "exposure withheld", "constant exposure")
+  df <- data.frame(group = rep(groups, each = n),
+                   prob = sapply(names(meansA), function(nm) pmin(100, rnorm(n * length(groups), meansA[nm], meansA[nm] / 2))),
+                   check.names = FALSE)
+  # Convert wide to long format
+  rows <- lapply(names(meansA), function(nm) cbind.data.frame(group = df$group, treatment = rep(nm, nrow(df)), prob = df[[paste0("prob.", nm)]]))
+  long <- as.data.frame(do.call(rbind, rows))
+  long$combined <- paste(long$group, long$treatment)
+
+  cg <- sapply(names(meansA), function(t) paste(groups, t))
+  d <- SAKDifference(long, "prob", "combined", groups = cg, contrasts = NULL)
+  expect_error(SAKPlot(d, ef.size = FALSE, violin = FALSE, points = FALSE, group.dx = c(0.6, 0.2, -0.2, -0.6), central.tendency = c("green", "orange", "purple", "pink")), NA)
+})
+
+test_that("group labels etc", {
+  # Add in some fake sex data to the insulin data set
+  data <- cbind(insulin, Sex = sample(c("Male", "Female"), nrow(insulin), replace = TRUE))
+  # Thin it the data so individual symbols are visible
+  data <- data[data$id %in% 1:15, ]
+
+  d <- SAKDifference(data, "sugar", "treatment", "id", groups = c("Before insulin" = "before", "After insulin" = "after"), na.rm = TRUE)
+  expect_error(SAKPlot(d,
+          left.ylab = "Blood sugar level",
+          violin.shape = c("left", "right"), violin.dx = c(-0.055, 0.055), violin.width = 0.3,
+          points = "black",
+          points.params = list(bg = ifelse(data$Sex == "Female", "red", "blue"), pch = ifelse(data$Sex == "Female", 21, 24)),
+          ef.size.pch = 19,
+          ef.size.violin = "blue",
+          ef.size.violin.shape = "full",
+          central.tendency = FALSE,
+          main = "Customised plot"),
+          NA)
+
+  d <- SAKDifference(iris, data.col = "Sepal.Length", group.col = "Species")
+  expect_error(SAKPlot(d, bar = TRUE, error.bars.type = "SD", points = FALSE, main = "Bar chart with std. deviation"), NA)
+  expect_error(SAKPlot(d, box = TRUE, error.bars = TRUE, central.tendency.type = "median", error.bars.type = "CI", points = FALSE, main = "Box plot with 95% CI"), NA)
+  expect_error(SAKPlot(d, bar = TRUE, central.tendency.symbol = "segment", error.bars.type = "SE", points = FALSE, main = "Box plot with SE"), NA)
 })

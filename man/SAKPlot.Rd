@@ -11,7 +11,6 @@ SAKPlot(
   points = TRUE,
   points.method = c("quasirandom", "pseudorandom", "smiley", "maxout", "frowney",
     "minout", "tukey", "tukeyDense", "jitter", "overplot"),
-  points.pch = 19,
   points.dx = group.dx,
   points.params = list(),
   violin = isFALSE(box) && isFALSE(bar),
@@ -41,8 +40,10 @@ SAKPlot(
   ef.size.las = 0,
   ef.size.label = es$effect.name,
   paired = es$paired.data,
-  central.tendency = TRUE,
+  central.tendency = isFALSE(box),
   central.tendency.type = c("mean", "median"),
+  central.tendency.symbol = c("point", "segment"),
+  central.tendency.params = list(),
   central.tendency.dx = group.dx,
   error.bars = central.tendency,
   error.bars.type = c("CI", "SD", "SE"),
@@ -56,39 +57,41 @@ SAKPlot(
 \item{es}{Data returned from a call to \code{\link{SAKDifference}}}
 
 \item{contrasts}{Set of contrasts (i.e. group comparisons) to be plotted. By
-default, plots all contrasts in \code{es}. May be a single string, a vector
-of strings, or a matrix. A single string has a format such as \code{"group1
-- group2, group3 - group4"}. A single asterisk, \code{"*"} creates
-contrasts for all possible pairs of groups. A single string such as
+default, plots the contrasts specified in the call to
+\code{\link{SAKDifference}}. If contrasts were not explicitly specified,
+plots 2nd and subsequent groups minus the first group. May be a single
+string, a vector of strings, or a matrix. A single string has a format such
+as \code{"group1 - group2, group3 - group4"}. A single asterisk, \code{"*"}
+creates contrasts for all possible pairs of groups. A single string such as
 \code{".- control"} compares all groups against the \code{"control"} group,
 i.e. the \code{"."} expands to all groups except the named group. A vector
 of strings looks like \code{c("group1 - group2", "group3 - group4")}. If a
 matrix is specified, it must have a column for each contrast, with the
 first group in row 1 and the second in row 2. See also the \code{contrasts}
-parameter to \code{\link{SAKDifference}}.}
+parameter to \code{\link{SAKDifference}}. It is an error to attempt to plot
+a contrast that was not estimated by \code{\link{SAKDifference}}.}
 
 \item{group.dx}{Used to shift group centres horizontally. E.g.,
 \code{group.dx = c(0.1, -0.1)} will group into pairs. Individual components
 can be shifted independently using the appropriate \code{*.dx} parameters.}
 
 \item{points}{If not FALSE, points are plotted. If \code{TRUE}, points are
-displayed with a default colour. May be a vector of colours. If length 1,
-all points are drawn with the specified colour. If length is less than the
-number of data points, points in each group are drawn with the appropriate
-colour (extra colours are ignored). Otherwise, \code{points} should be a
-vector of colours with a value for each data point.}
+displayed with a default colour. You may specify a vector of colours; if
+length 1, all points are drawn with the specified colour. If length is less
+than the number of data points, points in each group are drawn with the
+appropriate colour (extra colours are ignored). Otherwise, \code{points}
+should be a vector of colours with a value for each data point.}
 
 \item{points.method}{Method used to avoid overplotting points. Use
 \code{"overplot"} to overplot points and \code{"jitter"} to add random
-noise to each x-value. See [vipor]{offsetX} for remaining methods.}
-
-\item{points.pch}{Symbol to use for plotting points.}
+noise to each x-value. See \code{\link[vipor]{offsetX}} for remaining
+methods.}
 
 \item{points.dx}{Horizontal shift to be applied to points in each group.}
 
 \item{points.params}{List of named parameters to pass on to
-[graphics]{points}, e.g. \code{SAKPlot(es, points = "black", points.pch =
-21, points.params = list(bg = as.numeric(factor(data$Sex)) + 1))}.}
+\code{\link[graphics]{points}}, e.g. \code{SAKPlot(es, points = "black",
+points.params = list(pch = 21, bg = as.numeric(factor(data$Sex)) + 1))}.}
 
 \item{violin}{If not FALSE, violin plots are drawn. If \code{TRUE}, violins
 are drawn in default colours. Otherwise specifies the colour of the violin
@@ -112,18 +115,19 @@ the violin is truncated.}
 
 \item{box}{If not FALSE, draw a box-and-whisker plot of the grouped values.
 Value may be a colour, in which case the box borders are plotted with the
-colour(s). See [graphics]{boxplot}.}
+colour(s). See \code{\link[graphics]{boxplot}}.}
 
 \item{box.fill}{Colour used to fill the bodies of the box-and-whisker plot.
-If FALSE or NA, bodies are not filled}
+If FALSE or NA, bodies are not filled.}
 
 \item{box.outline}{If FALSE, don't draw outliers with the box plot.}
 
 \item{box.notch}{If TRUE, draws notches in the sides of the boxes. See
-[graphics]{boxplot.stats} for the calculations used.}
+\code{\link[graphics]{boxplot.stats}} for the calculations used.}
 
 \item{box.pars}{List with additional graphical parameters to control the box
-plot. See [graphics]{bxp} graphical parameters for a complete list.}
+plot. See \code{\link[graphics]{bxp}} graphical parameters for a complete
+list.}
 
 \item{box.dx}{Horizontal shift to be applied to each box.}
 
@@ -177,14 +181,22 @@ error bars.}
 \item{central.tendency.type}{Should the indicated measure of central tendency
 be \code{"mean"} or \code{"median"}?}
 
+\item{central.tendency.symbol}{Should central tendency be shown as a point or
+a horizontal line segment?}
+
+\item{central.tendency.params}{Additional arguments to be passed to
+\code{\link[graphics]{points}} (if \code{central.tendency.symbol ==
+"point"}) or \code{\link[graphics]{segments}} (if
+\code{central.tendency.symbol == "segment"}).}
+
 \item{central.tendency.dx}{Horizontal shift to apply to central tendency
 indicator and error bars.}
 
 \item{error.bars}{Should error bars be displayed? May be the colour to be
 used for error bars.}
 
-\item{error.bars.type}{Should error bars depict 95%% confidence intervals
-(\code{"CI"}), standard deviation (\code{"SD"}) or standard error
+\item{error.bars.type}{Should error bars depict 95%% confidence intervals of
+the mean (\code{"CI"}), standard deviation (\code{"SD"}) or standard error
 (\code{"SE"})?}
 
 \item{axis.dx}{Horizontal shifts to be applied to each x-axis tick and label.}
@@ -194,8 +206,8 @@ used for error bars.}
 \item{left.las}{Orientation of axis labels on left-hand y-axis label (0 =
 parallel to axis, 1 = horizontal).}
 
-\item{...}{Additional arguments are passed on to the [graphics]{plot}
-function.}
+\item{...}{Additional arguments are passed on to the
+\code{\link[graphics]{plot}} function.}
 }
 \value{
 \code{es} invisibly.
@@ -204,17 +216,20 @@ function.}
 Plot grouped data and effect size in base R, with control over a large range
 of possible display formats and options. To plot your data, first calculate
 group differences by calling \code{\link{SAKDifference}}, then pass the
-result to \code{\link{SAKPlot}}.
+result to \code{\link{SAKPlot}}. Parameters are grouped according to the
+component they affect, so all parameters that affect box plots are prefixed
+with \code{box}.
 }
 \details{
 Group data may be visualised in multiple ways: \code{points}, \code{violin},
 \code{box} and \code{bar}. Each visualisation type is controlled by a set of
 parameters with the same prefix. To display a type, for example box plots,
-specify \code{box = TRUE}. Rather than \code{TRUE}, you may specify a colour,
-which is used as the border/outline for the boxes. You may also specify a
-vector of colours, one for each group. For \code{points}, you may specify a
-colour for each individual point. When colours are not specified, they are
-selected from an \code{\link{RColorBrewer}} qualitative palette.
+specify \code{box = TRUE}. Rather than \code{box = TRUE}, you may specify a
+colour (e.g. \code{box \ "blue"}), which is used as the border/outline for
+the boxes. You may also specify a vector of colours, one for each group. For
+\code{points}, you may specify a colour for each individual point. When
+colours are not specified, they are selected from an
+\code{\link{RColorBrewer}} qualitative palette.
 }
 \references{
 Gardner, M. J., & Altman, D. G. (1986). Confidence intervals rather than P
