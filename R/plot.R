@@ -321,6 +321,22 @@ SAKTransparent <-  function(colour, alpha) {
 #' colours are not specified, they are selected from an
 #' \code{\link{RColorBrewer}} qualitative palette.
 #'
+#' Group data annotations are controlled with parameters \code{central.tendency}
+#' and \code{error.bars}. \code{central.tendency} visually represents the mean
+#' or median (\code{central.tendency.type}) of each group, while
+#' \code{error.bars} are vertical bars showing the 95%% CI of the mean, standard
+#' deviation or standard error of the groups (\code{error.bars.type}).
+#'
+#' An effect size (for our purposes) is the difference in means between two
+#' groups. Effect size display is controlled by \code{ef.size}. The set of
+#' effect sizes (aka "contrasts") to be plotted is controlled by the
+#' \code{contrasts} parameter. If a single effect size is displayed, it may be
+#' positioned to the right of - or below - the main plot
+#' (\code{ef.size.position}). If more than one effect size is displayed, it must
+#' be below the main plot. If below, an effect size is drawn underneath its
+#' primary group. There is currently no way to display multiple effect sizes for
+#' a single primary group.
+#'
 #' @param es Data returned from a call to \code{\link{SAKDifference}}
 #'
 #' @param contrasts Set of contrasts (i.e. group comparisons) to be plotted. By
@@ -390,6 +406,27 @@ SAKTransparent <-  function(colour, alpha) {
 #' @param bar.width Width of bars.
 #' @param bar.dx Horizontal shift to be applied to each bar.
 #'
+#' @param paired If \code{TRUE}, lines are drawn joining the individual data
+#'   points.
+#' @param central.tendency If not FALSE, a visual indicator of central tendency
+#'   is drawn. May be a colour, in which case it is used for mean/median and
+#'   error bars.
+#' @param central.tendency.type Should the indicated measure of central tendency
+#'   be \code{"mean"} or \code{"median"}?
+#' @param central.tendency.symbol Should central tendency be shown as a point or
+#'   a horizontal line segment?
+#' @param central.tendency.params Additional arguments to be passed to
+#'   \code{\link[graphics]{points}} (if \code{central.tendency.symbol ==
+#'   "point"}) or \code{\link[graphics]{segments}} (if
+#'   \code{central.tendency.symbol == "segment"}).
+#' @param central.tendency.dx Horizontal shift to apply to central tendency
+#'   indicator and error bars.
+#' @param error.bars Should error bars be displayed? May be the colour to be
+#'   used for error bars.
+#' @param error.bars.type Should error bars depict 95%% confidence intervals of
+#'   the mean (\code{"CI"}), standard deviation (\code{"SD"}) or standard error
+#'   (\code{"SE"})?
+#'
 #' @param ef.size If not FALSE, effect sizes are plotted. May be \code{TRUE} or
 #'   a colour.
 #' @param ef.size.position Effect sizes are plotted to the right of the main
@@ -412,27 +449,6 @@ SAKTransparent <-  function(colour, alpha) {
 #' @param ef.size.las Orientation of tick labels on the effect size axis (0 =
 #'   parallel to axis, 1 = horizontal).
 #' @param ef.size.label Label to display on y-axis for effect size.
-#'
-#' @param paired If \code{TRUE}, lines are drawn joining the individual data
-#'   points.
-#' @param central.tendency If not FALSE, a visual indicator of central tendency
-#'   is drawn. May be a colour, in which case it is used for mean/median and
-#'   error bars.
-#' @param central.tendency.type Should the indicated measure of central tendency
-#'   be \code{"mean"} or \code{"median"}?
-#' @param central.tendency.symbol Should central tendency be shown as a point or
-#'   a horizontal line segment?
-#' @param central.tendency.params Additional arguments to be passed to
-#'   \code{\link[graphics]{points}} (if \code{central.tendency.symbol ==
-#'   "point"}) or \code{\link[graphics]{segments}} (if
-#'   \code{central.tendency.symbol == "segment"}).
-#' @param central.tendency.dx Horizontal shift to apply to central tendency
-#'   indicator and error bars.
-#' @param error.bars Should error bars be displayed? May be the colour to be
-#'   used for error bars.
-#' @param error.bars.type Should error bars depict 95%% confidence intervals of
-#'   the mean (\code{"CI"}), standard deviation (\code{"SD"}) or standard error
-#'   (\code{"SE"})?
 #'
 #' @param axis.dx Horizontal shifts to be applied to each x-axis tick and label.
 #'

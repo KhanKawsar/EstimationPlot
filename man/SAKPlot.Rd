@@ -230,6 +230,22 @@ the boxes. You may also specify a vector of colours, one for each group. For
 \code{points}, you may specify a colour for each individual point. When
 colours are not specified, they are selected from an
 \code{\link{RColorBrewer}} qualitative palette.
+
+Group data annotations are controlled with parameters \code{central.tendency}
+and \code{error.bars}. \code{central.tendency} visually represents the mean
+or median (\code{central.tendency.type}) of each group, while
+\code{error.bars} are vertical bars showing the 95%% CI of the mean, standard
+deviation or standard error of the groups (\code{error.bars.type}).
+
+An effect size (for our purposes) is the difference in means between two
+groups. Effect size display is controlled by \code{ef.size}. The set of
+effect sizes (aka "contrasts") to be plotted is controlled by the
+\code{contrasts} parameter. If a single effect size is displayed, it may be
+positioned to the right of - or below - the main plot
+(\code{ef.size.position}). If more than one effect size is displayed, it must
+be below the main plot. If below, an effect size is drawn underneath its
+primary group. There is currently no way to display multiple effect sizes for
+a single primary group.
 }
 \references{
 Gardner, M. J., & Altman, D. G. (1986). Confidence intervals rather than P
