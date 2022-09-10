@@ -71,6 +71,7 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
     # Pair on ID (don't assume they are sorted)
     g1Idx <- match(g2[[id.col]], g1[[id.col]])
     if (any(is.na(g1Idx))) {
+      # Report missing data
       idColName <- id.col
       if (is.numeric(idColName))
         idColName <- names(data)[id.col]

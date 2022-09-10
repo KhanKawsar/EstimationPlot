@@ -67,11 +67,18 @@ makePairedData <- function(addSomeNAs = FALSE, reverseGroups = FALSE) {
   }
 }
 
-compareDiffs <- function(d1, d2) {
-  expect_equal(names(d1), names(d2))
-  expect_equal(d1$t0, d2$t0)
-  expect_equal(d1$R, d2$R)
-  expect_equal(d1$bca, d2$bca)
+compareDiffs <- function(d1, d2, tolerance = 0.1) {
+  expect_equal(length(d1$group.differences), length(d2$group.differences))
+  for (i in seq_len(length(d1$group.differences))) {
+    pd1 <- d1$group.differences[[i]]
+    pd2 <- d2$group.differences[[i]]
+    expect_equal(pd1$groups, pd2$groups)
+    expect_equal(pd1$t0, pd2$t0)
+    expect_equal(pd1$R, pd2$R)
+    expect_equal(pd1$bca[, 1], pd2$bca[, 1])
+    # Columns 3 and 4 can vary randomly
+    expect_equal(pd1$bca[, c(4, 5)], pd2$bca[, c(4, 5)], tolerance = tolerance)
+  }
 }
 
 ##########################################################################
@@ -157,7 +164,7 @@ test_that("contrasts", {
   expect_equal(length(d2$group.differences), 4)
   expect_equal(d2$group.differences[[1]]$groups[1], "Group1")
   expect_equal(d2$group.differences[[1]]$groups[2], "ZControl1")
-  compareDiffs(d2, d)
+  compareDiffs(d2, d, tolerance = 1)
 
   expect_error(SAKDifference(data, "Measurement", "Group", contrasts = "Group2:ZControl"))
   expect_error(SAKDifference(data, "Measurement", "Group", contrasts = "ZControl"))
@@ -580,14 +587,35 @@ test_that("central tendency FALSE works", {
 test_that("paired works", {
   es <- makePairedData()
   expect_true(es$paired.data)
-  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "red", box.fill = "blue",
+  SAKPlot(es,
+          paired = SAKTransparent("green", 0.5), paired.lty = 2,
+          bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "red", box.fill = "blue",
           central.tendency = FALSE, error.bars.type = "CI", ef.size = FALSE,
           points = SAKTransparent(c("red", "blue"), .5), main = "Paired")
-  SAKPlot(es, violin = FALSE, ef.size = FALSE, main = "Paired, no violin, no effect size")
+  SAKPlot(es, violin = FALSE, ef.size = FALSE, paired.lwd = 3, main = "Paired, no violin, no effect size")
   op <- par(mar = c(5, 4, 4, 4) + 0.1)
   on.exit(par(op))
   SAKPlot(es, violin = FALSE, ef.size = TRUE, points = FALSE, main = "Paired, no violin, effect size, no points")
   SAKPlot(es, violin.shape = c("left", "right"), violin.width = 0.2, main = "Custom")
+
+  # Craft simple paired data to ensure that pair lines are correct
+  n <- 10
+  control <- sort(rnorm(n, 0))
+  before <- sort(rnorm(n, 3))
+  after <- sort(rnorm(n, 2.5))
+  treatments <- c("Control", "Before", "After")
+  df <- data.frame(Id = rep(seq_len(n), 3),
+                   Treatment = rep(treatments, each = n),
+                   Value = c(control, before, after))
+  # Shuffle
+  set.seed(1)
+  sortedD <- SAKDifference(df, "Value", "Treatment", "Id", groups = treatments)
+  df <- df[sample(nrow(df)), ]
+  set.seed(1)
+  d <- SAKDifference(df, "Value", "Treatment", "Id", groups = treatments)
+  # Shuffling the rows should not affect the results
+  compareDiffs(sortedD, d, tolerance = 0.1)
+  SAKPlot(d, contrasts = "Before-Control, After - Before", ef.size = FALSE, violin = FALSE, points.dx = c(0.2, 0, -0.2), main = "No intersecting lines?")
 
   expect_equal(1, 1)
 })

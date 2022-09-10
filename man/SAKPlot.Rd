@@ -35,11 +35,13 @@ SAKPlot(
   ef.size.violin = TRUE,
   ef.size.violin.shape = c("right-half", "left-half", "full"),
   ef.size.pch = 17,
-  ef.size.dx = group.dx,
   ef.size.ticks = NULL,
   ef.size.las = 0,
   ef.size.label = es$effect.name,
+  ef.size.dx = group.dx,
   paired = es$paired.data,
+  paired.lty = 1,
+  paired.lwd = 1,
   central.tendency = isFALSE(box),
   central.tendency.type = c("mean", "median"),
   central.tendency.symbol = c("point", "segment"),
@@ -157,8 +159,6 @@ transparent version is used for the violin fill.}
 
 \item{ef.size.pch}{Symbol to represent mean effect size.}
 
-\item{ef.size.dx}{Horizontal shift to be applied to each effect size.}
-
 \item{ef.size.ticks}{Optional locations and labels for ticks on the effect
 size y-axis. E.g. to interpret effect size using Cohen's default values,
 specif \code{ef.size.ticks = c("Large negative effect" = -0.8, "Medium
@@ -171,8 +171,14 @@ parallel to axis, 1 = horizontal).}
 
 \item{ef.size.label}{Label to display on y-axis for effect size.}
 
+\item{ef.size.dx}{Horizontal shift to be applied to each effect size.}
+
 \item{paired}{If \code{TRUE}, lines are drawn joining the individual data
 points.}
+
+\item{paired.lty}{Line style for pair lines.}
+
+\item{paired.lwd}{Line width for pair lines.}
 
 \item{central.tendency}{If not FALSE, a visual indicator of central tendency
 is drawn. May be a colour, in which case it is used for mean/median and

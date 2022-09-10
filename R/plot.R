@@ -1,14 +1,13 @@
 ### Private functions
 
 #### TODO
-## Control over visual representation of central tendency
-## CI optional/separate with mean: to include with mean SD
-## Add contrasts to plot
-
 # Perhaps don't do these, just require people to create more than 1 plot:
 #### How should we handle paired data with more than 2 groups? eg petunia
 #### How should we handle more than 1 comparison per group? E.g. all pairwise combinations
 
+#### Discuss: handling of paired data in SAKDifference, ie if id.col is specified, it is paired
+#### Default handling of contrasts
+#### Handling of paired with multiple groups
 
 
 # Returns the negation of the specified group difference (type SAKPWDiff,
@@ -406,8 +405,6 @@ SAKTransparent <-  function(colour, alpha) {
 #' @param bar.width Width of bars.
 #' @param bar.dx Horizontal shift to be applied to each bar.
 #'
-#' @param paired If \code{TRUE}, lines are drawn joining the individual data
-#'   points.
 #' @param central.tendency If not FALSE, a visual indicator of central tendency
 #'   is drawn. May be a colour, in which case it is used for mean/median and
 #'   error bars.
@@ -426,6 +423,11 @@ SAKTransparent <-  function(colour, alpha) {
 #' @param error.bars.type Should error bars depict 95%% confidence intervals of
 #'   the mean (\code{"CI"}), standard deviation (\code{"SD"}) or standard error
 #'   (\code{"SE"})?
+#'
+#' @param paired If \code{TRUE}, lines are drawn joining the individual data
+#'   points.
+#' @param paired.lty Line style for pair lines.
+#' @param paired.lwd Line width for pair lines.
 #'
 #' @param ef.size If not FALSE, effect sizes are plotted. May be \code{TRUE} or
 #'   a colour.
@@ -509,28 +511,31 @@ SAKPlot <- function(es,
 
                     ef.size = TRUE,
                     ef.size.position = c("right", "below"),
-                    ef.size.violin = TRUE, # if TRUE, draw effect size confidence interval
+                    ef.size.violin = TRUE,
                     ef.size.violin.shape = c("right-half", "left-half", "full"),
                     ef.size.pch = 17,
-                    ef.size.dx = group.dx,
                     ef.size.ticks = NULL,
                     ef.size.las = 0,
                     ef.size.label = es$effect.name,
+                    ef.size.dx = group.dx,
 
                     paired = es$paired.data, # if true draw lines between paired points
+                    paired.lty = 1,
+                    paired.lwd = 1,
 
                     central.tendency = isFALSE(box),
                     central.tendency.type = c("mean", "median"),
                     central.tendency.symbol = c("point", "segment"),
                     central.tendency.params = list(),
                     central.tendency.dx = group.dx,
+
                     error.bars = central.tendency,
-                    error.bars.type = c("CI", "SD", "SE"), # draw confidence interval line of the data; if box, density, violin is TRUE, CI is FALSE
+                    error.bars.type = c("CI", "SD", "SE"),
 
                     axis.dx = group.dx,
+
                     left.ylab = es$data.col.name,
                     left.las = 0,
-                    #col = c("col1", "col2", "col3"), opacity = 0.6, #colour of box, violin, box border, density, col 1 = group 1, col2 = group 2, col3 = ef plot, {col = n+1, n = group no) #
                     ...
 ) {
 
@@ -554,7 +559,7 @@ SAKPlot <- function(es,
   ef.size.position <- match.arg(ef.size.position)
   ef.size.violin.shape <- match.arg(ef.size.violin.shape)
   # Default for points.method depends on whether plot is paired
-  if (missing(points.method) && paired)
+  if (missing(points.method) && .show(paired))
     points.method <- "overplot"
   else
     points.method <- match.arg(points.method)
@@ -567,7 +572,7 @@ SAKPlot <- function(es,
 
   # What contrasts are to be displayed (if any)?
   plotDiffs <- list()
-  if (.show(ef.size)) {
+  if (.show(ef.size) || .show(paired)) {
     # If contrasts were specified to SAKDifference, use them
     if (missing(contrasts)) {
       if (es$explicit.contrasts)
@@ -769,18 +774,24 @@ SAKPlot <- function(es,
   if (.show(paired)) {
     if (!es$paired.data)
       stop("To plot paired lines, data must be, i.e. id.col specified to SAKDifferences")
-    paired <- .boolToDef(paired, "grey20")
+    col <- .boolToDef(paired, SAKTransparent("grey20", 0.7))
     # TODO what pairs should we join?
     # For now, display all contrasts, which can get very ugly if there's more than one
-    for (i in seq_len(length(es$group.differences))) {
-      idx1 <- es$group.differences[[i]]$groupIndices[1]
-      idx2 <- es$group.differences[[i]]$groupIndices[2]
-      p1 <- data[[es$data.col]][data[[es$group.col]] == groups[idx1]]
-      p2 <- data[[es$data.col]][data[[es$group.col]] == groups[idx2]]
+    for (i in seq_len(length(plotDiffs))) {
+      # Get the groups in the comparison
+      idx1 <- plotDiffs[[i]]$groupIndices[1]
+      idx2 <- plotDiffs[[i]]$groupIndices[2]
+      # Get the rows from each group
+      g1 <- data[data[[es$group.col]] == groups[idx1], ]
+      g2 <- data[data[[es$group.col]] == groups[idx2], ]
+      # Match rows on ids - don't assume they are ordered
+      g1Idx <- match(g2[[es$id.col]], g1[[es$id.col]])
+      p1 <- g1[[es$data.col]][g1Idx]
+      p2 <- g2[[es$data.col]]
+
       graphics::segments(idx1 + points.dx[idx1], p1,
                          idx2 + points.dx[idx2], p2,
-                         col = SAKTransparent(paired, .7),
-                         lty = 1, lwd = 1)
+                         col = col, lty = paired.lty, lwd = paired.lwd)
     }
   }
 
