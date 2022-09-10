@@ -378,7 +378,7 @@ SAKTransparent <-  function(colour, alpha) {
 #'   If FALSE or NA, bodies are not filled.
 #' @param box.outline If FALSE, don't draw outliers with the box plot.
 #' @param box.notch If TRUE, draws notches in the sides of the boxes. See
-#'   \code{\link[graphics]{boxplot.stats}} for the calculations used.
+#'   \code{\link[grDevices]{boxplot.stats}} for the calculations used.
 #' @param box.pars List with additional graphical parameters to control the box
 #'   plot. See \code{\link[graphics]{bxp}} graphical parameters for a complete
 #'   list.
