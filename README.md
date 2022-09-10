@@ -4,9 +4,9 @@
 <!-- badges: end -->
 
 
-# SAKPlot: Swiss-army-knife of Estimation Plotting
+# SAKPlot: Swiss-army-knife of Estimation Plotting in R
 
-Effect size estimation and plotting is a component of [estimation statistics](https://en.wikipedia.org/wiki/Estimation_statistics).
+Effect size estimation and plotting is a component of [estimation statistics](https://en.wikipedia.org/wiki/Estimation_statistics). `SAKPlot` is an R package that aims to simplify sophisticated effect size plotting.
 
 ## Citation
 
