@@ -49,6 +49,7 @@ SAKPlot(
   central.tendency.dx = group.dx,
   error.bars = central.tendency,
   error.bars.type = c("CI", "SD", "SE"),
+  error.bars.cross.width = 0,
   axis.dx = group.dx,
   left.ylab = es$data.col.name,
   left.las = 0,
@@ -204,6 +205,9 @@ used for error bars.}
 \item{error.bars.type}{Should error bars depict 95%% confidence intervals of
 the mean (\code{"CI"}), standard deviation (\code{"SD"}) or standard error
 (\code{"SE"})?}
+
+\item{error.bars.cross.width}{Length (in inches) of the horizontal crossbars
+at the ends of the error bars. If 0, no crossbar is drawn.}
 
 \item{axis.dx}{Horizontal shifts to be applied to each x-axis tick and label.}
 

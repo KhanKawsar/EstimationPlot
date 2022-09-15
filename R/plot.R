@@ -423,6 +423,8 @@ SAKTransparent <-  function(colour, alpha) {
 #' @param error.bars.type Should error bars depict 95%% confidence intervals of
 #'   the mean (\code{"CI"}), standard deviation (\code{"SD"}) or standard error
 #'   (\code{"SE"})?
+#' @param error.bars.cross.width Length (in inches) of the horizontal crossbars
+#'   at the ends of the error bars. If 0, no crossbar is drawn.
 #'
 #' @param paired If \code{TRUE}, lines are drawn joining the individual data
 #'   points.
@@ -531,6 +533,7 @@ SAKPlot <- function(es,
 
                     error.bars = central.tendency,
                     error.bars.type = c("CI", "SD", "SE"),
+                    error.bars.cross.width = 0,
 
                     axis.dx = group.dx,
 
@@ -802,7 +805,9 @@ SAKPlot <- function(es,
     for (i in seq_along(groups)) {
       y <- es$group.statistics[i, central.tendency.type]
       bars <- getErrorBars(es, i, y, error.bars.type)
-      graphics::segments(i + central.tendency.dx[i], bars[1], i + central.tendency.dx[i], bars[2], col = col[i], lty = 1, lwd = 2)
+      graphics::arrows(i + central.tendency.dx[i], bars[1], i + central.tendency.dx[i], bars[2],
+                       code = 3, length = error.bars.cross.width, angle = 90,
+                       col = col[i], lty = 1, lwd = 2)
     }
   }
 

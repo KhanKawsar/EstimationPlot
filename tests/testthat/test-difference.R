@@ -568,8 +568,9 @@ test_that("plots work", {
 test_that("box FALSE works", {
   es <- makeES1()
   SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = FALSE, box.fill = FALSE,
-          central.tendency.type = "median", error.bars.type = "CI", ef.size = FALSE,
-          points = SAKTransparent(c("red", "blue"), .5), main = "Violin FALSE, median, no effect size")
+          central.tendency.type = "median", error.bars.type = "CI", error.bars.cross.width = 0.05,
+          ef.size = FALSE, points = SAKTransparent(c("red", "blue"), .5),
+          main = "Violin FALSE, median, no effect size")
   SAKPlot(es, violin = FALSE, central.tendency = FALSE, error.bars = FALSE, ef.size = FALSE,
           main = "No central tendency, error bar, effect size")
   expect_equal(1, 1)
