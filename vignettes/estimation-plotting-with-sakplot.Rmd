@@ -32,7 +32,23 @@ library(SAKPlot)
 
 The `contrasts` parameters to `SAKDifference` and `SAKPlot` ...
 
-### Visualising mean differrences
+### Visualising mean differences
+
+#### Comparison of different types of error bars
+
+```{r fig.height=4, fig.width=7}
+par(mar = c(2.5, 4, 2, 0.5) + 0.1)
+set.seed(3)
+df <- data.frame(var = c(rnorm(5, 50, 17), rnorm(20, 50, 17), rnorm(80, 50, 17)),
+                 group = c(rep("N = 5", 5), rep("N = 20", 20), rep("N = 80", 80)))
+d <- SAKDifference(df, 1, 2, groups = c("N = 5", "N = 20", "N = 80"))
+SAKPlot(d, error.bars.type = "CI", error.bars.cross.width = 0.03, violin = FALSE, points.method = "jitter", central.tendency.dx = .2, ef.size = FALSE, central.tendency.params = list(cex = 1), main = "Error bar types: CI, SE, SD", left.ylab = "Dependent variable")
+abline(h = 50, col = "#00000020")
+SAKPlot(d, add = TRUE, error.bars.type = "SE", error.bars.cross.width = 0.03, violin = FALSE, points = FALSE, central.tendency.dx = .3, ef.size = FALSE, central.tendency.params = list(cex = 1))
+SAKPlot(d, add = TRUE, error.bars.type = "SD", error.bars.cross.width = 0.03, violin = FALSE, points = FALSE, central.tendency.dx = .4, ef.size = FALSE, central.tendency.params = list(cex = 1))
+
+```
+
 
 ## References
 

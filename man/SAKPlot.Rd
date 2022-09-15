@@ -53,6 +53,7 @@ SAKPlot(
   axis.dx = group.dx,
   left.ylab = es$data.col.name,
   left.las = 0,
+  add = FALSE,
   ...
 )
 }
@@ -215,6 +216,9 @@ at the ends of the error bars. If 0, no crossbar is drawn.}
 
 \item{left.las}{Orientation of axis labels on left-hand y-axis label (0 =
 parallel to axis, 1 = horizontal).}
+
+\item{add}{If TRUE, the effect size plot is added to the current plot. If
+FALSE, a new plot is created.}
 
 \item{...}{Additional arguments are passed on to the
 \code{\link[graphics]{plot}} function.}

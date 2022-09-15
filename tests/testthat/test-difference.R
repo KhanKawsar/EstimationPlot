@@ -118,6 +118,47 @@ test_that("contrast plots", {
   SAKPlot(d, main = "Explicit contrast shorthand")
 })
 
+test_that("group stats", {
+
+  checkGroup <- function(gs, vals, popMean) {
+    gs <- unname(gs)
+    expect_equal(gs[1], mean(vals))
+    expect_equal(gs[2], median(vals))
+    expect_equal(gs[3], sd(vals))
+    expect_equal(gs[4], sd(vals) / sqrt(length(vals)))
+    expect_lt(gs[5], popMean)
+    expect_gt(gs[6], popMean)
+  }
+
+  # Test single group at a time
+  set.seed(3)
+  mean <- 50
+  sd <- 17
+  ns <- c(10, 20, 80, 200)
+  for (n in ns) {
+    v <- rnorm(n, mean, sd)
+    df <- data.frame(v, rep("g", length(v)))
+    d <- SAKDifference(df, 1, 2)
+    checkGroup(d$group.statistics, v, mean)
+  }
+  # Now combine all groups into one data set
+  set.seed(1)
+  df <- do.call(rbind, lapply(ns, function(n) data.frame(val = rnorm(n, mean, sd), group = rep(sprintf("g%03d", n), n))))
+  d <- SAKDifference(df, 1, 2)
+  for (i in seq_along(ns)) {
+    gn <- sprintf(sprintf("g%03d", ns[i]))
+    checkGroup(d$group.statistics[i, ], df$val[df$group == gn], mean)
+  }
+
+  # For debugging
+  if (FALSE) {
+    SAKPlot(d, violin = F, points.method = "jitter", ef.size = F, central.tendency.dx = 0.15, error.bars.type = "CI")
+    abline(h = mean, col = "lightgrey")
+    SAKPlot(d, add = T, violin = F, points = F, ef.size = F, central.tendency.dx = 0.25, error.bars.type = "SD")
+    SAKPlot(d, add = T, violin = F, points = F, ef.size = F, central.tendency.dx = 0.35, error.bars.type = "SE")
+  }
+})
+
 test_that("plots", {
   d <- makeES1()
   expected <- paste0("Bootstrapped effect size\\n",

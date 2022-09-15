@@ -459,6 +459,8 @@ SAKTransparent <-  function(colour, alpha) {
 #' @param left.ylab Left-hand y-axis label.
 #' @param left.las Orientation of axis labels on left-hand y-axis label (0 =
 #'   parallel to axis, 1 = horizontal).
+#' @param add If TRUE, the effect size plot is added to the current plot. If
+#'   FALSE, a new plot is created.
 #'
 #' @param ... Additional arguments are passed on to the
 #'   \code{\link[graphics]{plot}} function.
@@ -539,6 +541,7 @@ SAKPlot <- function(es,
 
                     left.ylab = es$data.col.name,
                     left.las = 0,
+                    add = FALSE,
                     ...
 ) {
 
@@ -694,10 +697,12 @@ SAKPlot <- function(es,
 
 
   #### Prepare plot ####
-  plot(NULL, xlim = xlim, ylim = ylim, type = "n",
-       xaxt = "n", xlab = "", ylab = left.ylab, las = left.las, ...)
-  # Label the groups along the x-axis
-  graphics::axis(1, at = seq_len(nGroups) + axis.dx, labels = es$group.names)
+  if (!add) {
+    plot(NULL, xlim = xlim, ylim = ylim, type = "n",
+         xaxt = "n", xlab = "", ylab = left.ylab, las = left.las, ...)
+    # Label the groups along the x-axis
+    graphics::axis(1, at = seq_len(nGroups) + axis.dx, labels = es$group.names)
+  }
 
   ### Add the various components to the plot ###
 
@@ -817,7 +822,7 @@ SAKPlot <- function(es,
     col <- central.tendency.params[["col"]] %||% .colour(central.tendency)
     col <- rep(col, length = nGroups)
     pch <- central.tendency.params[["pch"]] %||% 19
-    cex <- central.tendency.params[["cex"]] %||% 1.5
+    cex <- central.tendency.params[["cex"]] %||% 1.1
     lwd <- central.tendency.params[["lwd"]] %||% 2
     central.tendency.params[c("col", "pch", "cex", "lwd")] <- NULL
     for (i in seq_along(groups)) {
