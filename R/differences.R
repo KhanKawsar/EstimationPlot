@@ -134,6 +134,9 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
 # Takes contrasts as a string, vector of strings, or matrix and returns a matrix
 expandContrasts <- function(contrasts, groups) {
 
+  if (is.null(contrasts))
+    return(NULL)
+
   # This implementation is complicated because we allow any characters in group
   # names, although we will assume they do not start or end in whitespace
 
@@ -404,11 +407,10 @@ SAKDifference <- function(data,
   es$group.statistics <- df
 
   # Interpret the contrasts
+  contrasts <- expandContrasts(contrasts, groups)
   if (is.null(contrasts)) {
     es$group.differences <- NULL
   } else {
-    contrasts <- expandContrasts(contrasts, groups)
-
     # For each pair of groups...
     es$group.differences <- apply(contrasts, 2, function(pair) {
       pairData <- data[as.character(data[[group.col]]) %in% pair, ]
