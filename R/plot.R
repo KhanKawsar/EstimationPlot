@@ -5,6 +5,11 @@
 #### How should we handle paired data with more than 2 groups? eg petunia
 #### How should we handle more than 1 comparison per group? E.g. all pairwise combinations
 
+#### Bug: bar chart should show error bar but not central tendency
+#### Need to be able to not draw x axis (including effect size x labels)
+#### Box false
+#### How to make right margin visible for absolute beginners???
+
 #### Discuss: handling of paired data in SAKDifference, ie if id.col is specified, it is paired
 #### Default handling of contrasts
 #### Handling of paired with multiple groups
@@ -180,7 +185,9 @@ plotEffectSize <- function(pwes, xo, centreY, showViolin, violinCol, violin.widt
 }
 
 # Plot effect size to the right of the main plot. Only useful when showing a single effect size
-plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch, showViolin, violinCol, violin.width, violin.shape, axisLabel, ticksAt, ef.size.las) {
+plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch,
+                                 showViolin, violinCol, violin.width, violin.shape,
+                                 axisLabel, ticksAt, ef.size.las, axes) {
 
   # Get the means of the 2 groups
   y <- es$group.statistics[pwes$groupIndices[pwes$groupIndices[1]], 1]
@@ -198,7 +205,8 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch, showViolin,
       ticksAt <- pretty(esRange)
       labels <- ticksAt
     }
-    graphics::axis(4, at = y + ticksAt, labels = labels, las = ef.size.las)
+    if (axes)
+      graphics::axis(4, at = y + ticksAt, labels = labels, las = ef.size.las)
   } else {
     esRange <- range(c(0, pwes$t0))
     ylim <- range(y, y2)
@@ -215,7 +223,8 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch, showViolin,
       ticksAt <- pretty(esRange)
       labels <- ticksAt
     }
-    graphics::axis(4, at = mapY(ticksAt), labels = labels, las = ef.size.las)
+    if (axes)
+      graphics::axis(4, at = mapY(ticksAt), labels = labels, las = ef.size.las)
   }
 
   # Horizontal lines from group means
@@ -223,16 +232,21 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch, showViolin,
   graphics::segments(2, y2, x + 2, y2, col = "grey50", lty = 1, lwd = 1.5)
 
   # Add x-axis label for effect size
-  graphics::mtext(sprintf("%s\nminus\n%s", pwes$groupLabels[1], pwes$groupLabels[2]), at = x, side = 1, line = 3)
-  graphics::axis(1, at = x, labels = FALSE) # X-axis tick mark
+  if (axes) {
+    label <- sprintf("%s\nminus\n%s", pwes$groupLabels[1], pwes$groupLabels[2])
+    graphics::mtext(label, at = x, side = 1, line = 3, cex = graphics::par("cex"))
+    graphics::axis(1, at = x, labels = FALSE) # X-axis tick mark
 
-  # Label the right y-axis
-  graphics::mtext(axisLabel, side = 4, line = 2.5)
+    # Label the right y-axis
+    graphics::mtext(axisLabel, side = 4, line = 2.5, cex = graphics::par("cex"))
+  }
 }
 
 # Plot effect size below the main plot. Assumes that bottom margin is large
 # enough to accommodate the effect size plot
-plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch, showViolin, violinCol, violin.width, violin.shape, xlim, central.tendency.dx, ef.size.label, ticksAt, ef.size.las) {
+plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
+                                 showViolin, violinCol, violin.width, violin.shape,
+                                 xlim, central.tendency.dx, ef.size.label, ticksAt, ef.size.las, axes) {
   groups <- es$groups
   nGroups <- length(groups)
 
@@ -254,15 +268,17 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch, showVi
   }
 
   # Y axis ticks and label
-  labels <- names(ticksAt)
-  if (is.null(ticksAt)) {
-    ticksAt <- pretty(ylim)
-    labels <- ticksAt
+  if (axes) {
+    labels <- names(ticksAt)
+    if (is.null(ticksAt)) {
+      ticksAt <- pretty(ylim)
+      labels <- ticksAt
+    }
+    graphics::axis(2, at = mapY(ticksAt), labels = labels, xpd = TRUE, las = ef.size.las)
+    graphics::mtext(ef.size.label, side = 2, at = mapY(mean(ylim)), line = 3, cex = graphics::par("cex"))
   }
-  graphics::axis(2, at = mapY(ticksAt), labels = labels, xpd = TRUE, las = ef.size.las)
-  graphics::mtext(ef.size.label, side = 2, at = mapY(mean(ylim)), line = 3)
 
-  # Difference = 0 line, i.e. no effect
+  # Plot the "Difference = 0" line, i.e. no effect
   graphics::lines(usr[1:2], c(mapY(0), mapY(0)), col = "grey50", lty = 3, xpd = TRUE)
   for (i in seq_along(plotDiffs)) {
     pwes <- plotDiffs[[i]]
@@ -270,7 +286,9 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch, showVi
       gid1 <- which(groups == pwes$groups[1])
       gid2 <- which(groups == pwes$groups[2])
       plotEffectSize(pwes, gid1 + central.tendency.dx[gid1], pwes$t0, showViolin, violinCol, violin.width, violin.shape, ef.size.col, ef.size.pch, mapY, xpd = TRUE)
-      graphics::text(gid1 + central.tendency.dx[gid1], mapY(ylim[1]), sprintf("%s\nminus\n%s", pwes$groupLabels[1], pwes$groupLabels[2]), xpd = TRUE, pos = 1)
+      if (axes) {
+        graphics::text(gid1 + central.tendency.dx[gid1], mapY(ylim[1]), sprintf("%s\nminus\n%s", pwes$groupLabels[1], pwes$groupLabels[2]), xpd = TRUE, pos = 1)
+      }
     }
   }
 }
@@ -461,6 +479,8 @@ SAKTransparent <-  function(colour, alpha) {
 #'   parallel to axis, 1 = horizontal).
 #' @param add If TRUE, the effect size plot is added to the current plot. If
 #'   FALSE, a new plot is created.
+#' @param xlim,ylim If specified, overrides the default plot extents.
+#' @param axes If TRUE, axes are drawn on the plot.
 #'
 #' @param ... Additional arguments are passed on to the
 #'   \code{\link[graphics]{plot}} function.
@@ -527,13 +547,13 @@ SAKPlot <- function(es,
                     paired.lty = 1,
                     paired.lwd = 1,
 
-                    central.tendency = isFALSE(box),
+                    central.tendency = isFALSE(box) && isFALSE(bar),
                     central.tendency.type = c("mean", "median"),
                     central.tendency.symbol = c("point", "segment"),
                     central.tendency.params = list(),
                     central.tendency.dx = group.dx,
 
-                    error.bars = central.tendency,
+                    error.bars = !isFALSE(central.tendency) || !isFALSE(bar),
                     error.bars.type = c("CI", "SD", "SE"),
                     error.bars.cross.width = 0,
 
@@ -542,6 +562,8 @@ SAKPlot <- function(es,
                     left.ylab = es$data.col.name,
                     left.las = 0,
                     add = FALSE,
+                    xlim, ylim,
+                    axes = TRUE,
                     ...
 ) {
 
@@ -622,86 +644,92 @@ SAKPlot <- function(es,
   #### Y limits ####
 
   rowsToBePlotted <- data[[es$group.col]] %in% groups
-  ylim <- NA
 
-  if (.show(points) || .show(paired)) {
-    r <- range(data[[es$data.col]][rowsToBePlotted])
-    ylim <- range(ylim, r, na.rm = TRUE)
-  }
+  if (missing(ylim)) {
+    ylim <- NA
 
-  # If needed, extend y range to encompass violin plots
-  if (.show(violin)) {
-    for (d in densities) {
-      ylim <- range(ylim, d$x, na.rm = TRUE)
+    if (.show(points) || .show(paired)) {
+      r <- range(data[[es$data.col]][rowsToBePlotted])
+      ylim <- range(ylim, r, na.rm = TRUE)
     }
-  }
 
-  # Encompass error bars
-  if (.show(error.bars)) {
-    yr <- range(sapply(seq_along(groups), function(gi) {
-      groupMean <- mean(data[[es$data.col]][data[[es$group.col]] == groups[gi]])
-      getErrorBars(es, gi, groupMean, error.bars.type)
-    }))
-    ylim <- range(ylim, yr, na.rm = TRUE)
-  }
+    # If needed, extend y range to encompass violin plots
+    if (.show(violin)) {
+      for (d in densities) {
+        ylim <- range(ylim, d$x, na.rm = TRUE)
+      }
+    }
 
-  # If needed, extend y range to encompass bar plots
-  if (.show(bar)) {
-    # Ensure that y = 0 is visible
-    ylim <- range(ylim, 0, na.rm = TRUE)
-    # Get means of each group
-    ym <- max(sapply(groups, function(g) mean(data[[es$data.col]][data[[es$group.col]] == g])))
-    ylim <- range(ylim, ym, na.rm = TRUE)
-  }
+    # Encompass error bars
+    if (.show(error.bars)) {
+      yr <- range(sapply(seq_along(groups), function(gi) {
+        groupMean <- mean(data[[es$data.col]][data[[es$group.col]] == groups[gi]])
+        getErrorBars(es, gi, groupMean, error.bars.type)
+      }))
+      ylim <- range(ylim, yr, na.rm = TRUE)
+    }
 
-  # If needed, extend y range to encompass box plots
-  if (.show(box)) {
-    # There is a lot of flexibility in box plots, so just use boxplot to determine the extents
-    bp <- graphics::boxplot(f, data = data, at = seq_len(nGroups) + box.dx,
-                                plot = FALSE, axes = FALSE, notch = box.notch,
-                                outline = box.outline,
-                                col = .colour(box.fill), border = .colour(box), pars = box.pars)
-    ylim <- range(ylim, bp$stats, na.rm = TRUE)
+    # If needed, extend y range to encompass bar plots
+    if (.show(bar)) {
+      # Ensure that y = 0 is visible
+      ylim <- range(ylim, 0, na.rm = TRUE)
+      # Get means of each group
+      ym <- max(sapply(groups, function(g) mean(data[[es$data.col]][data[[es$group.col]] == g])))
+      ylim <- range(ylim, ym, na.rm = TRUE)
+    }
+
+    # If needed, extend y range to encompass box plots
+    if (.show(box)) {
+      # There is a lot of flexibility in box plots, so just use boxplot to determine the extents
+      bp <- graphics::boxplot(f, data = data, at = seq_len(nGroups) + box.dx,
+                              plot = FALSE, axes = FALSE, notch = box.notch,
+                              outline = box.outline,
+                              col = .colour(box.fill), border = .colour(box), pars = box.pars)
+      ylim <- range(ylim, bp$stats, na.rm = TRUE)
+    }
   }
 
   #### X limits ####
 
-  xlim <- c(0.5, nGroups + 0.5)
+  if (missing(xlim)) {
+    xlim <- c(0.5, nGroups + 0.5)
 
-  # If needed extend x range to encompass effect size
-  if (length(plotDiffs) < 1) {
-    ef.size <- FALSE # There's nothing to see here
-  } else if (length(plotDiffs) > 1) {
-    # Can't show more than one effect size to the right
-    ef.size.position <- "below"
-  }
-  if (.show(ef.size)) {
-    if (ef.size.position == "right") {
-      # Extend x-axis to accommodate effect size
-      xlim[2] <- xlim[2] + 0.7
-    } else {
-      # Draw the effect size in an enlarged bottom margin.
-      # Get plot height in inches
-      plotHeight <- graphics::par("pin")[2]
-      # Get current margin sizes in inches
-      mai <- graphics::par("mai")
-      # Increase the size of the bottom margin to fit the effect size plot
-      newMai <- mai
-      newMai[1] <- mai[1] + plotHeight * 1/3
+    # If needed extend x range to encompass effect size
+    if (length(plotDiffs) < 1) {
+      ef.size <- FALSE # There's nothing to see here
+    } else if (length(plotDiffs) > 1) {
+      # Can't show more than one effect size to the right
+      ef.size.position <- "below"
+    }
+    if (.show(ef.size)) {
+      if (ef.size.position == "right") {
+        # Extend x-axis to accommodate effect size
+        xlim[2] <- xlim[2] + 0.7
+      } else {
+        # Draw the effect size in an enlarged bottom margin.
+        # Get plot height in inches
+        plotHeight <- graphics::par("pin")[2]
+        # Get current margin sizes in inches
+        mai <- graphics::par("mai")
+        # Increase the size of the bottom margin to fit the effect size plot
+        newMai <- mai
+        newMai[1] <- mai[1] + plotHeight * 1/3
 
-      # Save current margin and restore on exit
-      def.par <- graphics::par(mai = newMai)
-      on.exit(graphics::par(def.par))
+        # Save current margin and restore on exit
+        def.par <- graphics::par(mai = newMai)
+        on.exit(graphics::par(def.par))
+      }
     }
   }
 
-
   #### Prepare plot ####
+
   if (!add) {
-    plot(NULL, xlim = xlim, ylim = ylim, type = "n",
+    plot(NULL, xlim = xlim, ylim = ylim, axes = axes, type = "n",
          xaxt = "n", xlab = "", ylab = left.ylab, las = left.las, ...)
     # Label the groups along the x-axis
-    graphics::axis(1, at = seq_len(nGroups) + axis.dx, labels = es$group.names)
+    if (axes)
+      graphics::axis(1, at = seq_len(nGroups) + axis.dx, labels = es$group.names)
   }
 
   ### Add the various components to the plot ###
@@ -845,9 +873,9 @@ SAKPlot <- function(es,
   ef.size.col <- .boolToDef(ef.size, "black")
   violinCol <- .boolToDef(ef.size.violin, "grey40")
   if (.show(ef.size) && ef.size.position == "right") {
-    plotEffectSizesRight(es, plotDiffs[[1]], ef.size.col, ef.size.pch, .show(ef.size.violin), violinCol, violin.width, ef.size.violin.shape, ef.size.label, ef.size.ticks, ef.size.las)
+    plotEffectSizesRight(es, plotDiffs[[1]], ef.size.col, ef.size.pch, .show(ef.size.violin), violinCol, violin.width, ef.size.violin.shape, ef.size.label, ef.size.ticks, ef.size.las, axes)
   } else if (.show(ef.size) && ef.size.position == "below") {
-    plotEffectSizesBelow(es, plotDiffs, ef.size.col, ef.size.pch, .show(ef.size.violin), violinCol, violin.width, ef.size.violin.shape, xlim, ef.size.dx, ef.size.label, ef.size.ticks, ef.size.las)
+    plotEffectSizesBelow(es, plotDiffs, ef.size.col, ef.size.pch, .show(ef.size.violin), violinCol, violin.width, ef.size.violin.shape, xlim, ef.size.dx, ef.size.label, ef.size.ticks, ef.size.las, axes)
   }
 
   invisible(es)

@@ -42,18 +42,21 @@ SAKPlot(
   paired = es$paired.data,
   paired.lty = 1,
   paired.lwd = 1,
-  central.tendency = isFALSE(box),
+  central.tendency = isFALSE(box) && isFALSE(bar),
   central.tendency.type = c("mean", "median"),
   central.tendency.symbol = c("point", "segment"),
   central.tendency.params = list(),
   central.tendency.dx = group.dx,
-  error.bars = central.tendency,
+  error.bars = !isFALSE(central.tendency) || !isFALSE(bar),
   error.bars.type = c("CI", "SD", "SE"),
   error.bars.cross.width = 0,
   axis.dx = group.dx,
   left.ylab = es$data.col.name,
   left.las = 0,
   add = FALSE,
+  xlim,
+  ylim,
+  axes = TRUE,
   ...
 )
 }
@@ -219,6 +222,10 @@ parallel to axis, 1 = horizontal).}
 
 \item{add}{If TRUE, the effect size plot is added to the current plot. If
 FALSE, a new plot is created.}
+
+\item{xlim, ylim}{If specified, overrides the default plot extents.}
+
+\item{axes}{If TRUE, axes are drawn on the plot.}
 
 \item{...}{Additional arguments are passed on to the
 \code{\link[graphics]{plot}} function.}

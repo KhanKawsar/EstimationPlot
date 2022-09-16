@@ -681,10 +681,10 @@ test_that("paired with NAs works", {
 test_that("bar charts work", {
   es <- makeES1()
   SAKPlot(es, bar = TRUE, violin = FALSE, box = FALSE, box.fill = "blue",
-          central.tendency = FALSE, error.bars.type = "CI", ef.size = FALSE,
+          error.bars = FALSE, error.bars.type = "CI", ef.size = FALSE,
           points = FALSE, main = "Bar chart, no error bars")
   SAKPlot(es, bar = TRUE, violin = FALSE, box = FALSE, box.fill = "blue",
-          central.tendency = TRUE, error.bars.type = "CI", ef.size = FALSE,
+          error.bars = TRUE, error.bars.type = "CI", ef.size = FALSE,
           points = FALSE, main = "Bar chart, error bars")
   expect_equal(1, 1)
 })
@@ -857,4 +857,18 @@ test_that("group labels etc", {
   expect_error(SAKPlot(d, bar = TRUE, error.bars.type = "SD", points = FALSE, main = "Bar chart with std. deviation"), NA)
   expect_error(SAKPlot(d, box = TRUE, error.bars = TRUE, central.tendency.type = "median", error.bars.type = "CI", points = FALSE, main = "Box plot with 95% CI"), NA)
   expect_error(SAKPlot(d, bar = TRUE, central.tendency.symbol = "segment", error.bars.type = "SE", points = FALSE, main = "Box plot with SE"), NA)
+})
+
+test_that("plot miscellanea", {
+  d <- SAKDifference(damselfly, "length", "group",
+                     groups = c("Immature" = "juvenile", "Mature" = "adult"))
+
+  # Axis text is smaller when there are multiple columns
+  par(mfrow = c(1, 3))
+  SAKPlot(d, ef.size.position = "below", main = "Text size consistent")
+  par(mar = c(5, 4, 4, 6) + 0.1)
+  SAKPlot(d, bar = T)
+  SAKPlot(d, box = T, xlim = c(0, 5), ylim = c(28, 40))
+  expect_equal(1, 1)
+
 })
