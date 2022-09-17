@@ -5,11 +5,8 @@
 #### How should we handle paired data with more than 2 groups? eg petunia
 #### How should we handle more than 1 comparison per group? E.g. all pairwise combinations
 
-#### Need to be able to not draw x axis (including effect size x labels)
-#### How to make right margin visible for absolute beginners???
+#### Change difference labels
 
-#### Default handling of contrasts
-#### Handling of paired with multiple groups
 
 
 # Returns the negation of the specified group difference (type DurgaPWDiff,
