@@ -13,10 +13,10 @@ SAKDifference(
   contrasts = "*",
   effect.type = c("unstandardised", "cohens", "hedges"),
   R = 1000,
+  boot.params = list(),
   ci.conf = 0.95,
   ci.type = "bca",
-  na.rm = FALSE,
-  ...
+  na.rm = FALSE
 )
 }
 \arguments{
@@ -28,8 +28,9 @@ measurement data.}
 \item{group.col}{Name or index of the column within \code{data} containing
 the values to group by.}
 
-\item{id.col}{Name or index of ID column for repeated measures/paired data.
-For non-paired data, do not specify an \code{id.col}.}
+\item{id.col}{Specify for paired data/repeat measures only. Name or index of
+ID column for repeated measures/paired data. For non-paired data, do not
+specify an \code{id.col}.}
 
 \item{groups}{Vector of group names. Defaults to all groups in \code{data} in
 \emph{natural} order. If \code{groups} is a named vector, the names are
@@ -51,6 +52,9 @@ are: \code{unstandardised}, difference in group means; \code{cohens},
 Cohen's d; \code{hedges}, Hedges' g.}
 
 \item{R}{The number of bootstrap replicates.}
+
+\item{boot.params}{Optional list of additional names parameters to pass to
+the [boot]{boot} function.}
 
 \item{ci.conf}{Numeric confidence level of the required confidence interval.}
 
@@ -81,9 +85,8 @@ List containing:
   \item{\code{data.col.name}}{Name of the \code{data.col} column}
   \item{\code{group.col}}{Value of \code{group.col} parameter}
   \item{\code{group.col.name}}{Name of the \code{group.col} column}
-  \item{\code{data}}{The input data frame}
-  \item{\code{call}}{how this function was called}
-  \item{\code{groups}}{Value of \code{groups} parameter}
+  \item{\code{data}}{The input data frame} \item{\code{call}}{how this
+  function was called} \item{\code{groups}}{Value of \code{groups} parameter}
   \item{\code{group.names}}{Labels used to identify groups}
 }
 \description{

@@ -44,7 +44,7 @@ stCohensDz <- function(x) mean(x) / stats::sd(x)
 # TODO IS THIS CORRECT??? Hedges' g for paired data
 stHedgesGz <- function(x) stCohensDz(x) * (1 - 3 / (4 * length(x) - 9))
 
-calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, group.col, id.col, effect.type, R, ci.conf, ci.type, ...) {
+calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, group.col, id.col, effect.type, R, ci.conf, ci.type, boot.params) {
 
   # Function to simplify writing bootstrap statistic functions
   .wrap2GroupStatistic <- function(statisticFn) {
@@ -102,7 +102,10 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
   }
 
   # Bootstrap the statistic
-  es <- boot::boot(bootstrapData, statistic, R = R, ...)
+  es <- do.call(boot::boot, c(list(data = bootstrapData, statistic = statistic, R = R), boot.params))
+
+  if (is.na(es$t0))
+    stop(sprintf("Estimate is NA; do you need to specify na.rm = TRUE?"))
 
   # Calculate confidence interval
   ci <- boot::boot.ci(es, type = ci.type, conf = ci.conf)
@@ -259,8 +262,9 @@ expandContrasts <- function(contrasts, groups) {
 #'   measurement data.
 #' @param group.col Name or index of the column within \code{data} containing
 #'   the values to group by.
-#' @param id.col Name or index of ID column for repeated measures/paired data.
-#'   For non-paired data, do not specify an \code{id.col}.
+#' @param id.col Specify for paired data/repeat measures only. Name or index of
+#'   ID column for repeated measures/paired data. For non-paired data, do not
+#'   specify an \code{id.col}.
 #' @param effect.type Type of difference
 #' @param groups Vector of group names. Defaults to all groups in \code{data} in
 #'   \emph{natural} order. If \code{groups} is a named vector, the names are
@@ -279,6 +283,8 @@ expandContrasts <- function(contrasts, groups) {
 #'   are: \code{unstandardised}, difference in group means; \code{cohens},
 #'   Cohen's d; \code{hedges}, Hedges' g.
 #' @param R The number of bootstrap replicates.
+#' @param boot.params Optional list of additional names parameters to pass to
+#'   the [boot]{boot} function.
 #' @param ci.conf Numeric confidence level of the required confidence interval.
 #' @param ci.type A single character  string representing the type of bootstrap
 #'   interval required. See the \code{type} parameter to the [boot]{boot.ci}
@@ -304,9 +310,8 @@ expandContrasts <- function(contrasts, groups) {
 #'   \item{\code{data.col.name}}{Name of the \code{data.col} column}
 #'   \item{\code{group.col}}{Value of \code{group.col} parameter}
 #'   \item{\code{group.col.name}}{Name of the \code{group.col} column}
-#'   \item{\code{data}}{The input data frame}
-#'   \item{\code{call}}{how this function was called}
-#'   \item{\code{groups}}{Value of \code{groups} parameter}
+#'   \item{\code{data}}{The input data frame} \item{\code{call}}{how this
+#'   function was called} \item{\code{groups}}{Value of \code{groups} parameter}
 #'   \item{\code{group.names}}{Labels used to identify groups}
 #'
 #' @seealso \code{\link[boot]{boot}}, \code{\link[boot]{boot.ci}},
@@ -326,10 +331,10 @@ SAKDifference <- function(data,
                        contrasts = "*",
                        effect.type = c("unstandardised", "cohens", "hedges"),
                        R = 1000,
+                       boot.params = list(),
                        ci.conf = 0.95,
                        ci.type = "bca",
-                       na.rm = FALSE,
-                       ...
+                       na.rm = FALSE
 ) {
   # If data is a data.table, it breaks things, so convert to a data.frame
   data <- as.data.frame(data)
@@ -417,7 +422,7 @@ SAKDifference <- function(data,
       groupIndices <- c(which(groups == pair[1]), which(groups == pair[2]))
       groupLabels <- c(groupLabels[groupIndices[1]],
                        groupLabels[groupIndices[2]])
-      calcPairDiff(pairData, pair, pairedData, groupLabels, groupIndices, data.col, group.col, id.col, effect.type, R, ci.conf, ci.type)
+      calcPairDiff(pairData, pair, pairedData, groupLabels, groupIndices, data.col, group.col, id.col, effect.type, R, ci.conf, ci.type, boot.params)
     })
   }
 
