@@ -19,6 +19,6 @@ Darwin, C. (1877). The effects of cross and self fertilisation in the vegetable 
 petunia
 }
 \description{
-Charles Darwins's experimental results on petunia plants to determine the difference of plant length between self fertilised and cross-fertilised, either with the same stock (inter-cross) or with a fresh stock (westerham-cross)
+Charles Darwin's experimental results on petunia plants to determine the difference of plant length between self fertilised and cross-fertilised, either with the same stock (inter-cross) or with a fresh stock (westerham-cross)
 }
 \keyword{datasets}

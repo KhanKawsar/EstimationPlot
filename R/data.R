@@ -21,7 +21,7 @@
 
 #' Petunia data
 #'
-#' Charles Darwins's experimental results on petunia plants to determine the difference of plant length between self fertilised and cross-fertilised, either with the same stock (inter-cross) or with a fresh stock (westerham-cross)
+#' Charles Darwin's experimental results on petunia plants to determine the difference of plant length between self fertilised and cross-fertilised, either with the same stock (inter-cross) or with a fresh stock (westerham-cross)
 #'
 #' @format A data frame with 64 observations and 3 variables. Plants (self fertilised, inter-cross and westerham-cross) were measured to the tops of their stems when coming into flower. Data collated from of Darwin (1877)
 #' \describe{
@@ -35,9 +35,9 @@
 
 #' damselfly data
 #'
-#' #' Data of the body size and weight difference between adult and juvenile male of Xanthagrion erythroneurum damselflies.
+#' Data of the body size and weight difference between adult and juvenile males of \emph{Xanthagrion erythroneurum} damselflies.
 #'
-#' @format A data frame with 77 observations and 3 variables. body length
+#' @format A data frame with 77 observations and 3 variables.
 #' \describe{
 #'   \item{length}{Measured body length of damselflies}
 #'   \item{weight}{Measured weight of damselflies}

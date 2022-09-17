@@ -5,7 +5,7 @@
 \alias{damselfly}
 \title{damselfly data}
 \format{
-A data frame with 77 observations and 3 variables. body length
+A data frame with 77 observations and 3 variables.
 \describe{
   \item{length}{Measured body length of damselflies}
   \item{weight}{Measured weight of damselflies}
@@ -19,6 +19,6 @@ Khan, M. K., & Herberstein, M. E. (2021). Male–male interactions select for co
 damselfly
 }
 \description{
-#' Data of the body size and weight difference between adult and juvenile male of Xanthagrion erythroneurum damselflies.
+Data of the body size and weight difference between adult and juvenile males of \emph{Xanthagrion erythroneurum} damselflies.
 }
 \keyword{datasets}
