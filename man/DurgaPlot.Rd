@@ -171,7 +171,8 @@ parallel to axis, 1 = horizontal).}
 
 \item{ef.size.adj.margin}{If TRUE (the default), the right margin (if ES is
 right) or bottom margin (if ES is below) is automatically adjusted to make
-room to display the effect size or axis annotations.}
+room to display the effect size or axis annotations. The margins are
+restored before control returns from \code{DurgaPlot}.}
 
 \item{paired}{If \code{TRUE}, lines are drawn joining the individual data
 points.}

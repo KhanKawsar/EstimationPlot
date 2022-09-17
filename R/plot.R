@@ -10,7 +10,8 @@
 
 
 # Returns the negation of the specified group difference (type DurgaPWDiff,
-# usually a member of es$group.differences)
+# usually a member of es$group.differences). I.e. changes "group1 - group2" to
+# "group2 - group1"
 negatePairwiseDiff <- function(pwd) {
   pwd$groups <- rev(pwd$groups)
   pwd$groupLabels <- rev(pwd$groupLabels)
@@ -81,44 +82,38 @@ getGroupDensity <- function(group, es, violin.adj, violin.trunc, violin.width) {
   d
 }
 
-# Save and restore the random number state. This is done so that we don't
-# interfere with the random number generation of package users
-preserveRNG <- function(expr) {
-  # Save current RNG seed
-  # http://www.cookbook-r.com/Numbers/Saving_the_state_of_the_random_number_generator/
-  if (exists(".Random.seed", .GlobalEnv))
-    oldseed <- .GlobalEnv$.Random.seed
-  else
-    oldseed <- NULL
-  # On exit...
-  on.exit({
-    # Restore old seed
-    if (!is.null(oldseed))
-      .GlobalEnv$.Random.seed <- oldseed
-    else
-      rm(".Random.seed", envir = .GlobalEnv)
-  })
-
-  # Evaluate the expression
-  expr
-}
-
 # Function to return a palette of \code{n} colours, with transparency \code{alpha}.
 pickPalette <- function(n, pal = "Set2") {
   # Try to use an RColorBrewer palette
   if (n > RColorBrewer::brewer.pal.info[pal, "maxcolors"]) {
     # This is complicated because we want to "randomly" sample available
     # colours, but in a repeatable way, and without interfering with user's
-    # random number generation, hence we wrap the code in a call to preserveRNG
-    preserveRNG({
-      # Too many colours, concatenate some palettes (thanks to https://stackoverflow.com/a/33144808/1287461)
-      qual_col_pals <- RColorBrewer::brewer.pal.info[RColorBrewer::brewer.pal.info$category == 'qual', ]
-      col_vector <- unlist(mapply(RColorBrewer::brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
-      # Randomly sample n colours from the whole list
-      set.seed(3)
-      # Try to sample without replacement, but allow replacement if there are too many colours needed
-      sample(col_vector, n, replace = n > length(col_vector))
-    })
+    # random number generation, hence we hardwire a set of "random" numbers
+    i <- c( 86L, 87L, 103L, 120L, 52L, 184L, 154L, 80L, 56L, 69L, 179L,
+           79L, 19L, 150L, 170L, 147L, 47L, 27L, 97L, 92L, 182L, 72L, 141L,
+           146L, 48L, 162L, 42L, 188L, 104L, 20L, 13L, 128L, 61L, 30L, 121L,
+           22L, 110L, 187L, 82L, 1L, 85L, 197L, 39L, 163L, 8L, 35L, 78L,
+           164L, 71L, 113L, 153L, 24L, 49L, 173L, 62L, 70L, 45L, 40L, 31L,
+           192L, 5L, 95L, 144L, 65L, 14L, 57L, 166L, 149L, 183L, 161L, 108L,
+           133L, 125L, 198L, 63L, 131L, 109L, 199L, 175L, 10L, 159L, 200L,
+           64L, 102L, 43L, 193L, 77L, 46L, 3L, 6L, 130L, 194L, 171L, 195L,
+           145L, 168L, 158L, 111L, 99L, 16L, 185L, 93L, 118L, 59L, 7L, 126L,
+           160L, 148L, 23L, 157L, 138L, 37L, 156L, 107L, 105L, 75L, 129L,
+           60L, 139L, 33L, 178L, 73L, 41L, 180L, 190L, 54L, 2L, 9L, 143L,
+           12L, 55L, 21L, 127L, 136L, 81L, 76L, 67L, 189L, 15L, 88L, 167L,
+           135L, 91L, 74L, 174L, 181L, 28L, 165L, 169L, 100L, 155L, 11L, 4L,
+           177L, 119L, 17L, 83L, 152L, 191L, 123L, 34L, 53L, 151L, 137L,
+           134L, 89L, 96L, 176L, 29L, 44L, 140L, 172L, 186L, 196L, 132L,
+           122L, 25L, 68L, 106L, 114L, 116L, 50L, 94L, 51L, 26L, 38L, 115L,
+           112L, 101L, 142L, 66L, 84L, 18L, 90L, 32L, 36L, 58L, 117L, 124L,
+           98L)
+    if (n < length(i))
+      i <- Filter(function(x) x <= n, i)
+    i <- rep(i, length.out = n)
+    # Too many colours, concatenate some palettes (thanks to https://stackoverflow.com/a/33144808/1287461)
+    qual_col_pals <- RColorBrewer::brewer.pal.info[RColorBrewer::brewer.pal.info$category == 'qual', ]
+    col_vector <- unlist(mapply(RColorBrewer::brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
+    col_vector[i]
   } else {
     RColorBrewer::brewer.pal(max(3, n), pal)
   }
@@ -276,31 +271,6 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
       plotEffectSize(pwes, gid1 + central.tendency.dx[gid1], pwes$t0, showViolin, violinCol, violin.width, violin.shape, ef.size.col, ef.size.pch, mapY, xpd = TRUE)
       graphics::text(gid1 + central.tendency.dx[gid1], mapY(ylim[1]), sprintf("%s\nminus\n%s", pwes$groupLabels[1], pwes$groupLabels[2]), xpd = TRUE, pos = 1)
     }
-  }
-}
-
-# TODO add something like this?
-DrawGroupDiff <- function(es, plotStats, idx, y, text = "", ...) {
-  # idsToDraw <- sapply(seq_along(es$group.differences), function(gi) es$group.differences[[gi]]$bca[4] > 0 || es$group.differences[[gi]]$bca[5] < 0)
-
-  diff <- es$group.differences[[idx]]
-  fromGI <- diff$groupIndices[1]
-  toGI <- diff$groupIndices[2]
-
-  x1 <- plotStats[fromGI, 1]
-  x2 <- plotStats[toGI, 1]
-  graphics::segments(x1, y, x2, y)
-  inchesToUsr <- diff(graphics::par("usr")[1:2]) / graphics::par("fin")[1]
-  dy <- 0.15 * inchesToUsr
-  graphics::segments(c(x1, x2), y, c(x1, x2), y - dy)
-
-  if (length(text) > 0) {
-    tx <- mean(c(x1, x2))
-    text(tx, y, text, adj = c(0.5, 0), ...)
-
-    # w <- strwidth(text, ...)
-    # h <- strheight(text, ...)
-    # rect(tx - w / 2, y, tx + w / 2, y + h)
   }
 }
 

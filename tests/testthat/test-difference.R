@@ -3,6 +3,34 @@
 # To report test coverage, run
 # devtools::test_coverage()
 
+
+
+# # TODO add something like this?
+# DrawGroupDiff <- function(es, plotStats, idx, y, text = "", ...) {
+#   # idsToDraw <- sapply(seq_along(es$group.differences), function(gi) es$group.differences[[gi]]$bca[4] > 0 || es$group.differences[[gi]]$bca[5] < 0)
+#
+#   diff <- es$group.differences[[idx]]
+#   fromGI <- diff$groupIndices[1]
+#   toGI <- diff$groupIndices[2]
+#
+#   x1 <- plotStats[fromGI, 1]
+#   x2 <- plotStats[toGI, 1]
+#   graphics::segments(x1, y, x2, y)
+#   inchesToUsr <- diff(graphics::par("usr")[1:2]) / graphics::par("fin")[1]
+#   dy <- 0.15 * inchesToUsr
+#   graphics::segments(c(x1, x2), y, c(x1, x2), y - dy)
+#
+#   if (length(text) > 0) {
+#     tx <- mean(c(x1, x2))
+#     text(tx, y, text, adj = c(0.5, 0), ...)
+#
+#     # w <- strwidth(text, ...)
+#     # h <- strheight(text, ...)
+#     # rect(tx - w / 2, y, tx + w / 2, y + h)
+#   }
+# }
+
+
 makeData <- function(N = 40) {
   set.seed(1)
   data <- data.frame(Measurement = c(rnorm(N, mean = 100, sd = 25),
@@ -115,7 +143,11 @@ test_that("contrast plots", {
   expect_equal(d$group.differences[[2]]$groups[2], "ZControl1")
   expect_equal(d$group.differences[[3]]$groups[1], "Group3")
   expect_equal(d$group.differences[[3]]$groups[2], "ZControl1")
-  DurgaPlot(d, main = "Explicit contrast shorthand")
+  DurgaPlot(d, points.method = "jitter", main = "Explicit contrast shorthand")
+
+  # Invalid contrasts
+  expect_error(DurgaDiff(data, "Measurement", "Group", groups = groups, contrasts = 1))
+  expect_error(DurgaPlot(d, contrasts = 1))
 })
 
 test_that("group stats", {
@@ -413,9 +445,11 @@ test_that("many groups", {
   n <- 12
   groupMean <- round(rnorm(n, mean = 20, sd = 8))
   val <- c(sapply(groupMean, function(m) rnorm(n, m, 4)))
-  trt <- c(sapply(seq_along(groupMean), function(i) rep(paste0("G", i, "-", groupMean[i]), n)))
+  groups <- sapply(seq_len(n), function(i) paste0("G", i, "-", groupMean[i]))
+  trt <- c(sapply(seq_along(groupMean), function(i) rep(groups[i], n)))
   df <- data.frame(Height = val, Treatment = trt)
-  d <- DurgaDiff(df, "Height", "Treatment")
+  d <- DurgaDiff(df, "Height", "Treatment", groups = groups)
+  par(cex = 0.8)
   expect_error(DurgaPlot(d, main = "1/3) Many groups"), NA)
   expect_error(DurgaPlot(d, main = "2/3) Many groups, control-.", contrasts = paste(df$Treatment[1], "-.")), NA)
   expect_error(DurgaPlot(d, main = "3/3) Many groups, .-control", contrasts = paste(" . - ", df$Treatment[1])), NA)
