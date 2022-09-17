@@ -132,7 +132,7 @@ test_that("contrast plots", {
   expect_equal(d$group.differences[[2]]$groups[2], "ZControl1")
   expect_equal(d$group.differences[[3]]$groups[1], "Group3")
   expect_equal(d$group.differences[[3]]$groups[2], "ZControl1")
-  DurgaPlot(d, main = "Explicit contrasts")
+  DurgaPlot(d, violin = F, violin.width = 0.1, central.tendency.symbol = "segment", central.tendency.params = , main = "Explicit contrasts")
 
   # Shorthand for same as above
   d <- DurgaDiff(data, "Measurement", "Group", groups = groups, contrasts = ". - ZControl1")
