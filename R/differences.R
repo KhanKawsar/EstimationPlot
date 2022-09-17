@@ -286,6 +286,7 @@ expandContrasts <- function(contrasts, groups) {
 #' @param boot.params Optional list of additional names parameters to pass to
 #'   the [boot]{boot} function.
 #' @param ci.conf Numeric confidence level of the required confidence interval.
+#'   Applies to both CI of differences between group means and CI of group means.
 #' @param ci.type A single character  string representing the type of bootstrap
 #'   interval required. See the \code{type} parameter to the [boot]{boot.ci}
 #'   function for details.
@@ -396,7 +397,7 @@ SAKDifference <- function(data,
   # Fill in statistical summary about each of the groups
   gil <- lapply(groups, function(g) {
     grpVals <- data[[data.col]][data[[group.col]] == g]
-    ci <- CI(grpVals)
+    ci <- CI(grpVals, ci.conf)
     c(mean = mean(grpVals),
       median = stats::median(grpVals),
       sd = stats::sd(grpVals),
