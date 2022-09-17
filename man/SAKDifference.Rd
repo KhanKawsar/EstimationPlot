@@ -56,7 +56,8 @@ Cohen's d; \code{hedges}, Hedges' g.}
 \item{boot.params}{Optional list of additional names parameters to pass to
 the [boot]{boot} function.}
 
-\item{ci.conf}{Numeric confidence level of the required confidence interval.}
+\item{ci.conf}{Numeric confidence level of the required confidence interval.
+Applies to both CI of differences between group means and CI of group means.}
 
 \item{ci.type}{A single character  string representing the type of bootstrap
 interval required. See the \code{type} parameter to the [boot]{boot.ci}

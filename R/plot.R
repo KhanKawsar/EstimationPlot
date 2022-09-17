@@ -354,22 +354,25 @@ SAKTransparent <-  function(colour, alpha) {
 #' primary group. There is currently no way to display multiple effect sizes for
 #' a single primary group.
 #'
+#' The \code{contrasts} parameter may be a single string, a vector of strings,
+#' or a matrix. A single string has a format such as \code{"group1 - group2,
+#' group3 - group4"}. A single asterisk, \code{"*"} creates contrasts for all
+#' possible pairs of groups. A single string such as \code{".- control"}
+#' compares all groups against the \code{"control"} group, i.e. the \code{"."}
+#' expands to all groups except the named group. A vector of strings looks like
+#' \code{c("group1 - group2", "group3 - group4")}. If a matrix is specified, it
+#' must have a column for each contrast, with the first group in row 1 and the
+#' second in row 2. See also the \code{contrasts} parameter to
+#' \code{\link{SAKDifference}}. It is an error to attempt to plot a contrast
+#' that was not estimated by \code{\link{SAKDifference}}.
+#'
+#'
 #' @param es Data returned from a call to \code{\link{SAKDifference}}
 #'
-#' @param contrasts Set of contrasts (i.e. group comparisons) to be plotted. By
-#'   default, plots the contrasts specified in the call to
-#'   \code{\link{SAKDifference}}. If contrasts were not explicitly specified,
-#'   plots 2nd and subsequent groups minus the first group. May be a single
-#'   string, a vector of strings, or a matrix. A single string has a format such
-#'   as \code{"group1 - group2, group3 - group4"}. A single asterisk, \code{"*"}
-#'   creates contrasts for all possible pairs of groups. A single string such as
-#'   \code{".- control"} compares all groups against the \code{"control"} group,
-#'   i.e. the \code{"."} expands to all groups except the named group. A vector
-#'   of strings looks like \code{c("group1 - group2", "group3 - group4")}. If a
-#'   matrix is specified, it must have a column for each contrast, with the
-#'   first group in row 1 and the second in row 2. See also the \code{contrasts}
-#'   parameter to \code{\link{SAKDifference}}. It is an error to attempt to plot
-#'   a contrast that was not estimated by \code{\link{SAKDifference}}.
+#' @param contrasts Set of contrasts (i.e. group comparisons) to be plotted.
+#'   Defaults to contrasts passed to \code{\link{SAKDifference}}, otherwise
+#'   \code{". - group1"} (where \code{group1} is the first group). See Details
+#'   for more information.
 #'
 #' @param group.dx Used to shift group centres horizontally. E.g.,
 #'   \code{group.dx = c(0.1, -0.1)} will group into pairs. Individual components
@@ -485,7 +488,7 @@ SAKTransparent <-  function(colour, alpha) {
 #' @param ... Additional arguments are passed on to the
 #'   \code{\link[graphics]{plot}} function.
 #'
-#' @return \code{es} invisibly.
+#' @return A matrix with the x-axis locations and y-axis extents of each displayed group (returned invisibly).
 #'
 #' @seealso \code{\link{SAKDifference}}, \code{\link[vipor]{offsetX}},
 #'   \code{\link[graphics]{boxplot}}, \code{\link[graphics]{bxp}}
@@ -645,48 +648,65 @@ SAKPlot <- function(es,
 
   rowsToBePlotted <- data[[es$group.col]] %in% groups
 
-  if (missing(ylim)) {
-    ylim <- NA
+  # There is a lot of flexibility in box plots, so just use boxplot to
+  # determine the extents. Run it once (without plotting) and keep the results
+  if (.show(box)) {
+    bp <- graphics::boxplot(f, data = data, at = seq_len(nGroups) + box.dx,
+                            plot = FALSE, axes = FALSE, notch = box.notch,
+                            outline = box.outline,
+                            col = .colour(box.fill), border = .colour(box), pars = box.pars)
+  }
 
-    if (.show(points) || .show(paired)) {
-      r <- range(data[[es$data.col]][rowsToBePlotted])
-      ylim <- range(ylim, r, na.rm = TRUE)
-    }
+  # Get vertical range of each group
+  groupRange <- lapply(seq_along(groups), function(gi) {
 
-    # If needed, extend y range to encompass violin plots
-    if (.show(violin)) {
-      for (d in densities) {
-        ylim <- range(ylim, d$x, na.rm = TRUE)
-      }
-    }
-
-    # Encompass error bars
-    if (.show(error.bars)) {
-      yr <- range(sapply(seq_along(groups), function(gi) {
-        groupMean <- mean(data[[es$data.col]][data[[es$group.col]] == groups[gi]])
-        getErrorBars(es, gi, groupMean, error.bars.type)
-      }))
-      ylim <- range(ylim, yr, na.rm = TRUE)
-    }
-
-    # If needed, extend y range to encompass bar plots
-    if (.show(bar)) {
-      # Ensure that y = 0 is visible
-      ylim <- range(ylim, 0, na.rm = TRUE)
-      # Get means of each group
-      ym <- max(sapply(groups, function(g) mean(data[[es$data.col]][data[[es$group.col]] == g])))
-      ylim <- range(ylim, ym, na.rm = TRUE)
-    }
+    # Determine group range based on displayed components
+    gr <- NA
+    groupVals <- data[[es$data.col]][rowsToBePlotted & data[[es$group.col]] == groups[gi]]
+    groupMean <- mean(groupVals)
+    centralTendency <- es$group.statistics[gi, central.tendency.type]
 
     # If needed, extend y range to encompass box plots
     if (.show(box)) {
       # There is a lot of flexibility in box plots, so just use boxplot to determine the extents
-      bp <- graphics::boxplot(f, data = data, at = seq_len(nGroups) + box.dx,
-                              plot = FALSE, axes = FALSE, notch = box.notch,
-                              outline = box.outline,
-                              col = .colour(box.fill), border = .colour(box), pars = box.pars)
-      ylim <- range(ylim, bp$stats, na.rm = TRUE)
+      gr <- range(gr, bp$stats[, gi], na.rm = TRUE)
     }
+
+    # Bar plots
+    if (.show(bar)) {
+      # Ensure that y = 0 is visible
+      gr <- range(gr, 0, na.rm = TRUE)
+      # Cover group mean
+      gr <- range(gr, centralTendency, na.rm = TRUE)
+    }
+
+    # Violin plots
+    if (.show(violin)) {
+      gr <- range(gr, densities[[gi]]$x, na.rm = TRUE)
+    }
+
+    # Individual data points
+    if (.show(points) || .show(paired)) {
+      gr <- range(gr, range(groupVals), na.rm = TRUE)
+    }
+
+    # Error bars
+    if (.show(error.bars)) {
+      ebr <- getErrorBars(es, gi, groupMean, error.bars.type)
+      gr <- range(gr, ebr, na.rm = TRUE)
+    }
+
+    # Central tendency
+    if (.show(central.tendency)) {
+      gr <- range(gr, centralTendency, na.rm = TRUE)
+    }
+
+    gr
+  })
+
+  if (missing(ylim)) {
+    # Get vertical range of all groups combined
+    ylim <- range(groupRange)
   }
 
   #### X limits ####
@@ -724,12 +744,15 @@ SAKPlot <- function(es,
 
   #### Prepare plot ####
 
+  # Positions of group ticks along the x-axis
+  groupAt <- seq_len(nGroups) + axis.dx
+
   if (!add) {
     plot(NULL, xlim = xlim, ylim = ylim, axes = axes, type = "n",
          xaxt = "n", xlab = "", ylab = left.ylab, las = left.las, ...)
     # Label the groups along the x-axis
     if (axes)
-      graphics::axis(1, at = seq_len(nGroups) + axis.dx, labels = es$group.names)
+      graphics::axis(1, at = groupAt, labels = es$group.names)
   }
 
   ### Add the various components to the plot ###
@@ -840,7 +863,7 @@ SAKPlot <- function(es,
       bars <- getErrorBars(es, i, y, error.bars.type)
       graphics::arrows(i + central.tendency.dx[i], bars[1], i + central.tendency.dx[i], bars[2],
                        code = 3, length = error.bars.cross.width, angle = 90,
-                       col = col[i], lty = 1, lwd = 2)
+                       col = col[i], lty = 1, lwd = 3)
     }
   }
 
@@ -878,5 +901,9 @@ SAKPlot <- function(es,
     plotEffectSizesBelow(es, plotDiffs, ef.size.col, ef.size.pch, .show(ef.size.violin), violinCol, violin.width, ef.size.violin.shape, xlim, ef.size.dx, ef.size.label, ef.size.ticks, ef.size.las, axes)
   }
 
-  invisible(es)
+  # Return the coordinates of the group tick marks along the x-axis
+  result <- cbind(groupAt, do.call(rbind, groupRange))
+  colnames(result) <- c("x", "y.min", "y.max")
+  rownames(result) <- es$group.names
+  invisible(result)
 }

@@ -63,20 +63,10 @@ SAKPlot(
 \arguments{
 \item{es}{Data returned from a call to \code{\link{SAKDifference}}}
 
-\item{contrasts}{Set of contrasts (i.e. group comparisons) to be plotted. By
-default, plots the contrasts specified in the call to
-\code{\link{SAKDifference}}. If contrasts were not explicitly specified,
-plots 2nd and subsequent groups minus the first group. May be a single
-string, a vector of strings, or a matrix. A single string has a format such
-as \code{"group1 - group2, group3 - group4"}. A single asterisk, \code{"*"}
-creates contrasts for all possible pairs of groups. A single string such as
-\code{".- control"} compares all groups against the \code{"control"} group,
-i.e. the \code{"."} expands to all groups except the named group. A vector
-of strings looks like \code{c("group1 - group2", "group3 - group4")}. If a
-matrix is specified, it must have a column for each contrast, with the
-first group in row 1 and the second in row 2. See also the \code{contrasts}
-parameter to \code{\link{SAKDifference}}. It is an error to attempt to plot
-a contrast that was not estimated by \code{\link{SAKDifference}}.}
+\item{contrasts}{Set of contrasts (i.e. group comparisons) to be plotted.
+Defaults to contrasts passed to \code{\link{SAKDifference}}, otherwise
+\code{". - group1"} (where \code{group1} is the first group). See Details
+for more information.}
 
 \item{group.dx}{Used to shift group centres horizontally. E.g.,
 \code{group.dx = c(0.1, -0.1)} will group into pairs. Individual components
@@ -231,7 +221,7 @@ FALSE, a new plot is created.}
 \code{\link[graphics]{plot}} function.}
 }
 \value{
-\code{es} invisibly.
+A matrix with the x-axis locations and y-axis extents of each displayed group (returned invisibly).
 }
 \description{
 Plot grouped data and effect size in base R, with control over a large range
@@ -267,6 +257,18 @@ positioned to the right of - or below - the main plot
 be below the main plot. If below, an effect size is drawn underneath its
 primary group. There is currently no way to display multiple effect sizes for
 a single primary group.
+
+The \code{contrasts} parameter may be a single string, a vector of strings,
+or a matrix. A single string has a format such as \code{"group1 - group2,
+group3 - group4"}. A single asterisk, \code{"*"} creates contrasts for all
+possible pairs of groups. A single string such as \code{".- control"}
+compares all groups against the \code{"control"} group, i.e. the \code{"."}
+expands to all groups except the named group. A vector of strings looks like
+\code{c("group1 - group2", "group3 - group4")}. If a matrix is specified, it
+must have a column for each contrast, with the first group in row 1 and the
+second in row 2. See also the \code{contrasts} parameter to
+\code{\link{SAKDifference}}. It is an error to attempt to plot a contrast
+that was not estimated by \code{\link{SAKDifference}}.
 }
 \references{
 Gardner, M. J., & Altman, D. G. (1986). Confidence intervals rather than P

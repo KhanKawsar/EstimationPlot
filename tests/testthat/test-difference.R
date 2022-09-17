@@ -872,3 +872,40 @@ test_that("plot miscellanea", {
   expect_equal(1, 1)
 
 })
+
+test_that("CI", {
+
+  x <- rnorm(200)
+  CI90 <- CI(x, .9)
+  CI95 <- CI(x, .95)
+  expect_lt(CI95[1], mean(x))
+  expect_lt(CI95[1], CI90[1])
+  expect_gt(CI95[2], mean(x))
+  expect_gt(CI95[2], CI90[2])
+
+  set.seed(1)
+  d90 <- SAKDifference(petunia, "height", "group", ci.conf = .9)
+  d95 <- SAKDifference(petunia, "height", "group", ci.conf = .95)
+  d99 <- SAKDifference(petunia, "height", "group", ci.conf = .99)
+  # CI should be smaller for lower levels
+  for (g in seq_along(d90$groups)) {
+    # Ensure we are comparing the same things
+    expect_equal(d90$group.differences[[g]]$groupLabels, d95$group.differences[[g]]$groupLabels)
+    expect_equal(d90$group.differences[[g]]$groupLabels, d99$group.differences[[g]]$groupLabels)
+
+    # Check CI of mean differences
+    # Lower limits
+    expect_gt(d90$group.differences[[g]]$bca[4], d95$group.differences[[g]]$bca[4])
+    expect_gt(d95$group.differences[[g]]$bca[4], d99$group.differences[[g]]$bca[4])
+    # Upper limits
+    expect_lt(d90$group.differences[[g]]$bca[5], d95$group.differences[[g]]$bca[5])
+    expect_lt(d95$group.differences[[g]]$bca[5], d99$group.differences[[g]]$bca[5])
+
+    # Check CI of group means
+    expect_gt(d90$group.statistics[g, "CI.lower"], d95$group.statistics[g, "CI.lower"])
+    expect_gt(d90$group.statistics[g, "CI.lower"], d95$group.statistics[g, "CI.lower"])
+    expect_lt(d95$group.statistics[g, "CI.upper"], d99$group.statistics[g, "CI.upper"])
+    expect_lt(d95$group.statistics[g, "CI.upper"], d99$group.statistics[g, "CI.upper"])
+  }
+
+})
