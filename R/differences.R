@@ -128,7 +128,7 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
   es$ci.type <- ci.type
 
   # Give it a class
-  class(es) <- c("SAKPWDiff", class(es))
+  class(es) <- c("DurgaPWDiff", class(es))
 
   es
 }
@@ -244,7 +244,7 @@ expandContrasts <- function(contrasts, groups) {
 #' Calculate group mean differences
 #'
 #' Calculates differences between groups ready for printing or plotting by
-#' \code{\link{SAKPlot}}.
+#' \code{\link{DurgaPlot}}.
 #'
 #' Data format - long format, one column with measurement (\code{data.col}),
 #' another column with group identity (\code{group.col}). For repeated measures,
@@ -294,7 +294,6 @@ expandContrasts <- function(contrasts, groups) {
 #'   values should be stripped before the computation proceeds. If \code{TRUE}
 #'   for "paired" data (i.e. \code{id.col} is specified), all rows
 #'   (observations) for IDs with missing data are stripped.
-#' @param ... Any additional parameters are passed to \code{\link[boot]{boot}}.
 #'
 #' @return List containing:
 #'
@@ -302,7 +301,7 @@ expandContrasts <- function(contrasts, groups) {
 #'   \item{\code{group.statistics}}{Matrix with a row for each group, columns
 #'   are group mean, median, standard deviation, standard error of the mean,
 #'   lower and upper 95\% confidence intervals of the mean}
-#'   \item{\code{group.differences}}{List of \code{SAKPWDiff} objects, which are
+#'   \item{\code{group.differences}}{List of \code{DurgaPWDiff} objects, which are
 #'   \code{boot} objects with added confidence interval information. See
 #'   \code{\link[boot]{boot}} and \code{\link[boot]{boot.ci}}}
 #'   \item{\code{effect.type}}{Value of \code{effect.type} parameter}
@@ -316,7 +315,7 @@ expandContrasts <- function(contrasts, groups) {
 #'   \item{\code{group.names}}{Labels used to identify groups}
 #'
 #' @seealso \code{\link[boot]{boot}}, \code{\link[boot]{boot.ci}},
-#'   \code{\link{SAKPlot}}, \code{\link{print.SAKDiff}}
+#'   \code{\link{DurgaPlot}}, \code{\link{print.DurgaDiff}}
 #'
 #' @references
 #'
@@ -325,7 +324,7 @@ expandContrasts <- function(contrasts, groups) {
 #' Psychology, 4. doi:10.3389/fpsyg.2013.00863
 #'
 #' @export
-SAKDifference <- function(data,
+DurgaDiff <- function(data,
                        data.col, group.col,
                        id.col,
                        groups = sort(unique(data[[group.col]])),
@@ -391,8 +390,8 @@ SAKDifference <- function(data,
              effect.type = effect.type,
              effect.name = effectNames[effect.type],
              explicit.contrasts = !missing(contrasts))
-  # Return value has type SAKDiff
-  class(es) <- c("SAKDiff", class(es))
+  # Return value has type DurgaDiff
+  class(es) <- c("DurgaDiff", class(es))
 
   # Fill in statistical summary about each of the groups
   gil <- lapply(groups, function(g) {
@@ -433,18 +432,18 @@ SAKDifference <- function(data,
 #######################################################################################
 # Print methods
 
-#' Print a summary of a SAK Difference object
+#' Print a summary of a Durga Difference object
 #'
 #' This is a method for the function \code{print()} for objects of class
-#' \code{SAKDiff} created by a call to {SAKDifference}.
+#' \code{DurgaDiff} created by a call to {DurgaDiff}.
 #'
-#' @param x An object of class \code{SAKDiff}.
+#' @param x An object of class \code{DurgaDiff}.
 #' @param ... Ignored
 #'
-#' @seealso \code{\link{print.SAKPWDiff}}
+#' @seealso \code{\link{print.DurgaPWDiff}}
 #'
 #' @export
-print.SAKDiff <- function(x, ...) {
+print.DurgaDiff <- function(x, ...) {
   cat("Bootstrapped effect size\n")
   cat(sprintf("  %s ~ %s\n", x$data.col.name, x$group.col.name))
   cat("Groups:\n")
@@ -455,18 +454,18 @@ print.SAKDiff <- function(x, ...) {
   }
 }
 
-#' Print a summary of a SAK group difference object
+#' Print a summary of a Durga group difference object
 #'
 #' This is a method for the function \code{print()} for objects of class
-#' \code{SAKPWDiff}, which is a row in the \code{group.differences} matrix
-#' belonging to an object returned by a call to \code{\link{SAKDifference}}.
+#' \code{DurgaPWDiff}, which is a row in the \code{group.differences} matrix
+#' belonging to an object returned by a call to \code{\link{DurgaDiff}}.
 #'
-#' @param x An object of class \code{SAKPWDiff}.
+#' @param x An object of class \code{DurgaPWDiff}.
 #' @param ... Ignored
 #'
-#' @seealso \code{\link{SAKDifference}}, \code{\link{print.SAKDiff}}
+#' @seealso \code{\link{DurgaDiff}}, \code{\link{print.DurgaDiff}}
 #' @export
-print.SAKPWDiff <- function(x, ...) {
+print.DurgaPWDiff <- function(x, ...) {
   cat(sprintf("  %s - %s: %g, %g%% CI (%s) [%g, %g]\n",
               x$groupLabels[1], x$groupLabels[2],
               x$t0, x$bca[1] * 100, x$ci.type, x$bca[4], x$bca[5]))

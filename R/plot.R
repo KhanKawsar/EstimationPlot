@@ -5,17 +5,14 @@
 #### How should we handle paired data with more than 2 groups? eg petunia
 #### How should we handle more than 1 comparison per group? E.g. all pairwise combinations
 
-#### Bug: bar chart should show error bar but not central tendency
 #### Need to be able to not draw x axis (including effect size x labels)
-#### Box false
 #### How to make right margin visible for absolute beginners???
 
-#### Discuss: handling of paired data in SAKDifference, ie if id.col is specified, it is paired
 #### Default handling of contrasts
 #### Handling of paired with multiple groups
 
 
-# Returns the negation of the specified group difference (type SAKPWDiff,
+# Returns the negation of the specified group difference (type DurgaPWDiff,
 # usually a member of es$group.differences)
 negatePairwiseDiff <- function(pwd) {
   pwd$groups <- rev(pwd$groups)
@@ -43,14 +40,14 @@ findDiff <- function(pair, diffs) {
       return(negatePairwiseDiff(diff))
     }
   }
-  stop(sprintf("Contrast '%s - %s' has not been estimated, check the contrasts argument in your call to SAKDifference",
+  stop(sprintf("Contrast '%s - %s' has not been estimated, check the contrasts argument in your call to DurgaDiff",
                pair[1], pair[2]))
 }
 
 # Given a string representation of the required contrasts, returns a list of
-# SAKPWDiff objects, one for each contrast. The SAKPWDiff objects are extracted
+# DurgaPWDiff objects, one for each contrast. The DurgaPWDiff objects are extracted
 # from es$group.differences, so must already have been calculated by
-# SAKDifference
+# DurgaDiff
 buildPlotDiffs <- function(contrasts, es) {
   pairs <- expandContrasts(contrasts, es$groups)
   # For each specified contrast, find the corresponding group difference
@@ -173,7 +170,7 @@ plotEffectSize <- function(pwes, xo, centreY, showViolin, violinCol, violin.widt
     d$x <- d$x + deltaY
     # Map y values as required - note that we show density$x on the y-axis
     d$x <- mapYFn(d$x)
-    fill <- SAKTransparent(violinCol, .8)
+    fill <- DurgaTransparent(violinCol, .8)
     plotViolin(violin.shape, xo, d, col = fill, border = violinCol, xpd = xpd)
   }
 
@@ -187,7 +184,7 @@ plotEffectSize <- function(pwes, xo, centreY, showViolin, violinCol, violin.widt
 # Plot effect size to the right of the main plot. Only useful when showing a single effect size
 plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch,
                                  showViolin, violinCol, violin.width, violin.shape,
-                                 axisLabel, ticksAt, ef.size.las, axes) {
+                                 axisLabel, ticksAt, ef.size.las) {
 
   # Get the means of the 2 groups
   y <- es$group.statistics[pwes$groupIndices[pwes$groupIndices[1]], 1]
@@ -205,8 +202,7 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch,
       ticksAt <- pretty(esRange)
       labels <- ticksAt
     }
-    if (axes)
-      graphics::axis(4, at = y + ticksAt, labels = labels, las = ef.size.las)
+    graphics::axis(4, at = y + ticksAt, labels = labels, las = ef.size.las)
   } else {
     esRange <- range(c(0, pwes$t0))
     ylim <- range(y, y2)
@@ -223,8 +219,7 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch,
       ticksAt <- pretty(esRange)
       labels <- ticksAt
     }
-    if (axes)
-      graphics::axis(4, at = mapY(ticksAt), labels = labels, las = ef.size.las)
+    graphics::axis(4, at = mapY(ticksAt), labels = labels, las = ef.size.las)
   }
 
   # Horizontal lines from group means
@@ -232,21 +227,19 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch,
   graphics::segments(2, y2, x + 2, y2, col = "grey50", lty = 1, lwd = 1.5)
 
   # Add x-axis label for effect size
-  if (axes) {
-    label <- sprintf("%s\nminus\n%s", pwes$groupLabels[1], pwes$groupLabels[2])
-    graphics::mtext(label, at = x, side = 1, line = 3, cex = graphics::par("cex"))
-    graphics::axis(1, at = x, labels = FALSE) # X-axis tick mark
+  label <- sprintf("%s\nminus\n%s", pwes$groupLabels[1], pwes$groupLabels[2])
+  graphics::mtext(label, at = x, side = 1, line = 3, cex = graphics::par("cex"))
+  graphics::axis(1, at = x, labels = FALSE) # X-axis tick mark
 
-    # Label the right y-axis
-    graphics::mtext(axisLabel, side = 4, line = 2.5, cex = graphics::par("cex"))
-  }
+  # Label the right y-axis
+  graphics::mtext(axisLabel, side = 4, line = 2.5, cex = graphics::par("cex"))
 }
 
 # Plot effect size below the main plot. Assumes that bottom margin is large
 # enough to accommodate the effect size plot
 plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
                                  showViolin, violinCol, violin.width, violin.shape,
-                                 xlim, central.tendency.dx, ef.size.label, ticksAt, ef.size.las, axes) {
+                                 xlim, central.tendency.dx, ef.size.label, ticksAt, ef.size.las) {
   groups <- es$groups
   nGroups <- length(groups)
 
@@ -268,15 +261,13 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
   }
 
   # Y axis ticks and label
-  if (axes) {
-    labels <- names(ticksAt)
-    if (is.null(ticksAt)) {
-      ticksAt <- pretty(ylim)
-      labels <- ticksAt
-    }
-    graphics::axis(2, at = mapY(ticksAt), labels = labels, xpd = TRUE, las = ef.size.las)
-    graphics::mtext(ef.size.label, side = 2, at = mapY(mean(ylim)), line = 3, cex = graphics::par("cex"))
+  labels <- names(ticksAt)
+  if (is.null(ticksAt)) {
+    ticksAt <- pretty(ylim)
+    labels <- ticksAt
   }
+  graphics::axis(2, at = mapY(ticksAt), labels = labels, xpd = TRUE, las = ef.size.las)
+  graphics::mtext(ef.size.label, side = 2, at = mapY(mean(ylim)), line = 3, cex = graphics::par("cex"))
 
   # Plot the "Difference = 0" line, i.e. no effect
   graphics::lines(usr[1:2], c(mapY(0), mapY(0)), col = "grey50", lty = 3, xpd = TRUE)
@@ -286,10 +277,33 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
       gid1 <- which(groups == pwes$groups[1])
       gid2 <- which(groups == pwes$groups[2])
       plotEffectSize(pwes, gid1 + central.tendency.dx[gid1], pwes$t0, showViolin, violinCol, violin.width, violin.shape, ef.size.col, ef.size.pch, mapY, xpd = TRUE)
-      if (axes) {
-        graphics::text(gid1 + central.tendency.dx[gid1], mapY(ylim[1]), sprintf("%s\nminus\n%s", pwes$groupLabels[1], pwes$groupLabels[2]), xpd = TRUE, pos = 1)
-      }
+      graphics::text(gid1 + central.tendency.dx[gid1], mapY(ylim[1]), sprintf("%s\nminus\n%s", pwes$groupLabels[1], pwes$groupLabels[2]), xpd = TRUE, pos = 1)
     }
+  }
+}
+
+# TODO add something like this?
+DrawGroupDiff <- function(es, plotStats, idx, y, text = "", ...) {
+  # idsToDraw <- sapply(seq_along(es$group.differences), function(gi) es$group.differences[[gi]]$bca[4] > 0 || es$group.differences[[gi]]$bca[5] < 0)
+
+  diff <- es$group.differences[[idx]]
+  fromGI <- diff$groupIndices[1]
+  toGI <- diff$groupIndices[2]
+
+  x1 <- plotStats[fromGI, 1]
+  x2 <- plotStats[toGI, 1]
+  graphics::segments(x1, y, x2, y)
+  inchesToUsr <- diff(graphics::par("usr")[1:2]) / graphics::par("fin")[1]
+  dy <- 0.15 * inchesToUsr
+  graphics::segments(c(x1, x2), y, c(x1, x2), y - dy)
+
+  if (length(text) > 0) {
+    tx <- mean(c(x1, x2))
+    text(tx, y, text, adj = c(0.5, 0), ...)
+
+    # w <- strwidth(text, ...)
+    # h <- strheight(text, ...)
+    # rect(tx - w / 2, y, tx + w / 2, y + h)
   }
 }
 
@@ -312,7 +326,7 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
 #' @seealso [grDevices]{col2rgb}, [grDevices]{rgb}
 #'
 #' @export
-SAKTransparent <-  function(colour, alpha) {
+DurgaTransparent <-  function(colour, alpha) {
   rgba.val <- grDevices::col2rgb(colour, TRUE)
   grDevices::rgb(rgba.val[1, ], rgba.val[2, ], rgba.val[3, ],
                  maxColorValue = 255,
@@ -323,10 +337,10 @@ SAKTransparent <-  function(colour, alpha) {
 #'
 #' Plot grouped data and effect size in base R, with control over a large range
 #' of possible display formats and options. To plot your data, first calculate
-#' group differences by calling \code{\link{SAKDifference}}, then pass the
-#' result to \code{\link{SAKPlot}}. Parameters are grouped according to the
-#' component they affect, so all parameters that affect box plots are prefixed
-#' with \code{box}.
+#' group differences by calling \code{\link{DurgaDiff}}, then pass the result to
+#' \code{\link{DurgaPlot}}. Parameters are grouped according to the component
+#' they affect, so all parameters that affect box plots are prefixed with
+#' \code{box}.
 #'
 #' Group data may be visualised in multiple ways: \code{points}, \code{violin},
 #' \code{box} and \code{bar}. Each visualisation type is controlled by a set of
@@ -363,16 +377,16 @@ SAKTransparent <-  function(colour, alpha) {
 #' \code{c("group1 - group2", "group3 - group4")}. If a matrix is specified, it
 #' must have a column for each contrast, with the first group in row 1 and the
 #' second in row 2. See also the \code{contrasts} parameter to
-#' \code{\link{SAKDifference}}. It is an error to attempt to plot a contrast
-#' that was not estimated by \code{\link{SAKDifference}}.
+#' \code{\link{DurgaDiff}}. It is an error to attempt to plot a contrast that
+#' was not estimated by \code{\link{DurgaDiff}}.
 #'
 #'
-#' @param es Data returned from a call to \code{\link{SAKDifference}}
+#' @param es Data returned from a call to \code{\link{DurgaDiff}}
 #'
 #' @param contrasts Set of contrasts (i.e. group comparisons) to be plotted.
-#'   Defaults to contrasts passed to \code{\link{SAKDifference}}, otherwise
-#'   \code{". - group1"} (where \code{group1} is the first group). See Details
-#'   for more information.
+#'   Defaults to contrasts passed to \code{\link{DurgaDiff}}, otherwise \code{".
+#'   - group1"} (where \code{group1} is the first group). See Details for more
+#'   information.
 #'
 #' @param group.dx Used to shift group centres horizontally. E.g.,
 #'   \code{group.dx = c(0.1, -0.1)} will group into pairs. Individual components
@@ -390,7 +404,7 @@ SAKTransparent <-  function(colour, alpha) {
 #'   methods.
 #' @param points.dx Horizontal shift to be applied to points in each group.
 #' @param points.params List of named parameters to pass on to
-#'   \code{\link[graphics]{points}}, e.g. \code{SAKPlot(es, points = "black",
+#'   \code{\link[graphics]{points}}, e.g. \code{DurgaPlot(es, points = "black",
 #'   points.params = list(pch = 21, bg = as.numeric(factor(data$Sex)) + 1))}.
 #'
 #' @param violin If not FALSE, violin plots are drawn. If \code{TRUE}, violins
@@ -474,8 +488,14 @@ SAKTransparent <-  function(colour, alpha) {
 #' @param ef.size.las Orientation of tick labels on the effect size axis (0 =
 #'   parallel to axis, 1 = horizontal).
 #' @param ef.size.label Label to display on y-axis for effect size.
+#' @param ef.size.adj.margin If TRUE (the default), the right margin (if ES is
+#'   right) or bottom margin (if ES is below) is automatically adjusted to make
+#'   room to display the effect size or axis annotations. The margins are
+#'   restored before control returns from \code{DurgaPlot}.
 #'
-#' @param axis.dx Horizontal shifts to be applied to each x-axis tick and label.
+#' @param x.axis if TRUE, display the x-axis.
+#' @param x.axis.dx Horizontal shifts to be applied to each x-axis tick and
+#'   label.
 #'
 #' @param left.ylab Left-hand y-axis label.
 #' @param left.las Orientation of axis labels on left-hand y-axis label (0 =
@@ -483,14 +503,14 @@ SAKTransparent <-  function(colour, alpha) {
 #' @param add If TRUE, the effect size plot is added to the current plot. If
 #'   FALSE, a new plot is created.
 #' @param xlim,ylim If specified, overrides the default plot extents.
-#' @param axes If TRUE, axes are drawn on the plot.
 #'
 #' @param ... Additional arguments are passed on to the
 #'   \code{\link[graphics]{plot}} function.
 #'
-#' @return A matrix with the x-axis locations and y-axis extents of each displayed group (returned invisibly).
+#' @return A matrix with the x-axis locations and y-axis extents of each
+#'   displayed group (returned invisibly).
 #'
-#' @seealso \code{\link{SAKDifference}}, \code{\link[vipor]{offsetX}},
+#' @seealso \code{\link{DurgaDiff}}, \code{\link[vipor]{offsetX}},
 #'   \code{\link[graphics]{boxplot}}, \code{\link[graphics]{bxp}}
 #'
 #' @references
@@ -504,7 +524,7 @@ SAKTransparent <-  function(colour, alpha) {
 #' Routledge.
 #'
 #' @export
-SAKPlot <- function(es,
+DurgaPlot <- function(es,
 
                     contrasts,
 
@@ -545,6 +565,7 @@ SAKPlot <- function(es,
                     ef.size.las = 0,
                     ef.size.label = es$effect.name,
                     ef.size.dx = group.dx,
+                    ef.size.adj.margin = TRUE,
 
                     paired = es$paired.data, # if true draw lines between paired points
                     paired.lty = 1,
@@ -560,13 +581,13 @@ SAKPlot <- function(es,
                     error.bars.type = c("CI", "SD", "SE"),
                     error.bars.cross.width = 0,
 
-                    axis.dx = group.dx,
+                    x.axis = TRUE,
+                    x.axis.dx = group.dx,
 
                     left.ylab = es$data.col.name,
                     left.las = 0,
                     add = FALSE,
                     xlim, ylim,
-                    axes = TRUE,
                     ...
 ) {
 
@@ -579,8 +600,8 @@ SAKPlot <- function(es,
   .extend <- function(x) rep_len(x, nGroups)
 
   # Check and process input parameters
-  if (!methods::is(es, "SAKDiff"))
-    stop("data must be a SAKDiff object")
+  if (!methods::is(es, "DurgaDiff"))
+    stop("data must be a DurgaDiff object")
   if (!isFALSE(violin)) {
     # This is tricky - we want to allow multiple shapes, but default to just the
     # first. That's what several.ok = !missing(violin.shape) does
@@ -604,7 +625,7 @@ SAKPlot <- function(es,
   # What contrasts are to be displayed (if any)?
   plotDiffs <- list()
   if (.show(ef.size) || .show(paired)) {
-    # If contrasts were specified to SAKDifference, use them
+    # If contrasts were specified to DurgaDiff, use them
     if (missing(contrasts)) {
       if (es$explicit.contrasts)
         plotDiffs <- es$group.differences
@@ -614,11 +635,11 @@ SAKPlot <- function(es,
     } else if (is.character(contrasts)) {
       # Interpret string description
       plotDiffs <- buildPlotDiffs(contrasts, es)
-    } else if (is.list(contrasts) && all(sapply(contrasts, function(x) methods::is(x, "SAKPWDiff")))) {
+    } else if (is.list(contrasts) && all(sapply(contrasts, function(x) methods::is(x, "DurgaPWDiff")))) {
       # Contrasts were passed directly
       plotDiffs <- contrasts
     } else if (!is.null(contrasts)) {
-      stop("Invalid plot contrasts argument, must be character string or list of SAKPWDiff objects")
+      stop("Invalid plot contrasts argument, must be character string or list of DurgaPWDiff objects")
     }
   }
 
@@ -626,14 +647,14 @@ SAKPlot <- function(es,
   box.dx <- .extend(box.dx)
   bar.dx <- .extend(bar.dx)
   central.tendency.dx <- .extend(central.tendency.dx)
-  axis.dx <- .extend(axis.dx)
+  x.axis.dx <- .extend(x.axis.dx)
   violin.dx <- .extend(violin.dx)
   points.dx <- .extend(points.dx)
   ef.size.dx <- .extend(ef.size.dx)
 
   # Prepare some palettes, the border palette has no transparency, the fill palette is 80% transparent
   defBorderPalette <- pickPalette(nGroups)
-  defFillPalette <- SAKTransparent(defBorderPalette, 0.8)
+  defFillPalette <- DurgaTransparent(defBorderPalette, 0.8)
 
   # Calculate densities for violin plots
   densities <- lapply(groups, getGroupDensity, es, violin.adj, violin.trunc, violin.width)
@@ -643,6 +664,49 @@ SAKPlot <- function(es,
   f <- stats::as.formula(paste(es$data.col.name, "~.group.as.factor"))
 
   # Calculate plot limits
+
+  # "Natural" xlim
+  nxlim <- c(0.5, nGroups + 0.5)
+
+  if (length(plotDiffs) < 1) {
+    ef.size <- FALSE # There's nothing to see here
+  } else if (length(plotDiffs) > 1) {
+    # Can't show more than one effect size to the right
+    ef.size.position <- "below"
+  }
+
+  # If needed extend x range to encompass effect size on right,
+  # alternatively, extend bottom margin to display ES below
+  if (.show(ef.size)) {
+    if (ef.size.position == "right") {
+      # Extend x-axis to accommodate effect size
+      nxlim[2] <- nxlim[2] + 0.7
+      # Extend margin as well so that right axis annotations are visible. This
+      # is something of a hack so that the simplest call to DurgaPlot produces
+      # useful output
+      mar <- graphics::par("mar")
+      MAR.RIGHT <- 4.1
+      if (ef.size.adj.margin && mar[4] < MAR.RIGHT) {
+        mar[4] <- MAR.RIGHT
+        # Save current margin and restore on exit
+        def.par <- graphics::par(mar = mar)
+        on.exit(graphics::par(def.par))
+      }
+    } else if (ef.size.adj.margin) {
+      # Draw the effect size in an enlarged bottom margin.
+      # Get plot height in inches
+      plotHeight <- graphics::par("pin")[2]
+      # Get current margin sizes in inches
+      mai <- graphics::par("mai")
+      # Increase the size of the bottom margin to fit the effect size plot
+      newMai <- mai
+      newMai[1] <- mai[1] + plotHeight * 1/3
+
+      # Save current margin and restore on exit
+      def.par <- graphics::par(mai = newMai)
+      on.exit(graphics::par(def.par))
+    }
+  }
 
   #### Y limits ####
 
@@ -712,46 +776,19 @@ SAKPlot <- function(es,
   #### X limits ####
 
   if (missing(xlim)) {
-    xlim <- c(0.5, nGroups + 0.5)
-
-    # If needed extend x range to encompass effect size
-    if (length(plotDiffs) < 1) {
-      ef.size <- FALSE # There's nothing to see here
-    } else if (length(plotDiffs) > 1) {
-      # Can't show more than one effect size to the right
-      ef.size.position <- "below"
-    }
-    if (.show(ef.size)) {
-      if (ef.size.position == "right") {
-        # Extend x-axis to accommodate effect size
-        xlim[2] <- xlim[2] + 0.7
-      } else {
-        # Draw the effect size in an enlarged bottom margin.
-        # Get plot height in inches
-        plotHeight <- graphics::par("pin")[2]
-        # Get current margin sizes in inches
-        mai <- graphics::par("mai")
-        # Increase the size of the bottom margin to fit the effect size plot
-        newMai <- mai
-        newMai[1] <- mai[1] + plotHeight * 1/3
-
-        # Save current margin and restore on exit
-        def.par <- graphics::par(mai = newMai)
-        on.exit(graphics::par(def.par))
-      }
-    }
+    xlim <- nxlim
   }
 
   #### Prepare plot ####
 
   # Positions of group ticks along the x-axis
-  groupAt <- seq_len(nGroups) + axis.dx
+  groupAt <- seq_len(nGroups) + x.axis.dx
 
   if (!add) {
-    plot(NULL, xlim = xlim, ylim = ylim, axes = axes, type = "n",
+    plot(NULL, xlim = xlim, ylim = ylim, type = "n",
          xaxt = "n", xlab = "", ylab = left.ylab, las = left.las, ...)
     # Label the groups along the x-axis
-    if (axes)
+    if (x.axis)
       graphics::axis(1, at = groupAt, labels = es$group.names)
   }
 
@@ -800,7 +837,7 @@ SAKPlot <- function(es,
 
   # Scatter plot of data points
   if (.show(points)) {
-    defPalette <- SAKTransparent(defBorderPalette, .4)
+    defPalette <- DurgaTransparent(defBorderPalette, .4)
     pointCol <- .boolToDef(points, defPalette[as.numeric(data$.group.as.factor)])
     # If there are less colours than points, assume the colours are intended to be per group
     if (length(pointCol) < nrow(data)) {
@@ -832,8 +869,8 @@ SAKPlot <- function(es,
   # Draw lines between paired points
   if (.show(paired)) {
     if (!es$paired.data)
-      stop("To plot paired lines, data must be, i.e. id.col specified to SAKDifferences")
-    col <- .boolToDef(paired, SAKTransparent("grey20", 0.7))
+      stop("To plot paired lines, data must be, i.e. id.col specified to DurgaDiffs")
+    col <- .boolToDef(paired, DurgaTransparent("grey20", 0.7))
     # TODO what pairs should we join?
     # For now, display all contrasts, which can get very ugly if there's more than one
     for (i in seq_len(length(plotDiffs))) {
@@ -896,9 +933,9 @@ SAKPlot <- function(es,
   ef.size.col <- .boolToDef(ef.size, "black")
   violinCol <- .boolToDef(ef.size.violin, "grey40")
   if (.show(ef.size) && ef.size.position == "right") {
-    plotEffectSizesRight(es, plotDiffs[[1]], ef.size.col, ef.size.pch, .show(ef.size.violin), violinCol, violin.width, ef.size.violin.shape, ef.size.label, ef.size.ticks, ef.size.las, axes)
+    plotEffectSizesRight(es, plotDiffs[[1]], ef.size.col, ef.size.pch, .show(ef.size.violin), violinCol, violin.width, ef.size.violin.shape, ef.size.label, ef.size.ticks, ef.size.las)
   } else if (.show(ef.size) && ef.size.position == "below") {
-    plotEffectSizesBelow(es, plotDiffs, ef.size.col, ef.size.pch, .show(ef.size.violin), violinCol, violin.width, ef.size.violin.shape, xlim, ef.size.dx, ef.size.label, ef.size.ticks, ef.size.las, axes)
+    plotEffectSizesBelow(es, plotDiffs, ef.size.col, ef.size.pch, .show(ef.size.violin), violinCol, violin.width, ef.size.violin.shape, xlim, ef.size.dx, ef.size.label, ef.size.ticks, ef.size.las)
   }
 
   # Return the coordinates of the group tick marks along the x-axis

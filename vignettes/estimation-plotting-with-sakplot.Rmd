@@ -1,8 +1,8 @@
 ---
-title: "Estimation plotting with `SAKPlot`"
+title: "Estimation plotting with `DurgaPlot`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Estimation plotting with `SAKPlot`}
+  %\VignetteIndexEntry{Estimation plotting with `DurgaPlot`}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -17,12 +17,12 @@ knitr::opts_chunk$set(
 > “The primary product of a research inquiry is one or more measures of effect size, not _p_ values” (Cohen, 1990, p. 1310)
 
 ```{r setup}
-library(SAKPlot)
+library(DurgaPlot)
 ```
 
-## What is `SAKPlot`?
+## What is `DurgaPlot`?
 
-`SAKPlot` is an R package that aims to simplify the estimation and communication of one type of effect size: differences in means. It provides a function, `SAKDifference`, to estimate raw or standardised mean differences. It provides `print` methods to display the calculated differences. Perhaps most importantly, it provides a single function, `SAKPlot`, that will create a plot for visualising both the original data and the effect size, providing a diverse range of display options.
+`DurgaPlot` is an R package that aims to simplify the estimation and communication of one type of effect size: differences in means. It provides a function, `DurgaDiff`, to estimate raw or standardised mean differences. It provides `print` methods to display the calculated differences. Perhaps most importantly, it provides a single function, `DurgaPlot`, that will create a plot for visualising both the original data and the effect size, providing a diverse range of display options.
 
 
 
@@ -30,7 +30,7 @@ library(SAKPlot)
 
 #### Multiple groups, multiple comparisons
 
-The `contrasts` parameters to `SAKDifference` and `SAKPlot` ...
+The `contrasts` parameters to `DurgaDiff` and `DurgaPlot` ...
 
 ### Visualising mean differences
 
@@ -41,11 +41,11 @@ par(mar = c(2.5, 4, 2, 0.5) + 0.1)
 set.seed(3)
 df <- data.frame(var = c(rnorm(5, 50, 17), rnorm(20, 50, 17), rnorm(80, 50, 17)),
                  group = c(rep("N = 5", 5), rep("N = 20", 20), rep("N = 80", 80)))
-d <- SAKDifference(df, 1, 2, groups = c("N = 5", "N = 20", "N = 80"))
-SAKPlot(d, error.bars.type = "CI", error.bars.cross.width = 0.03, violin = FALSE, points.method = "jitter", central.tendency.dx = .2, ef.size = FALSE, central.tendency.params = list(cex = 1), main = "Error bar types: CI, SE, SD", left.ylab = "Dependent variable")
+d <- DurgaDiff(df, 1, 2, groups = c("N = 5", "N = 20", "N = 80"))
+DurgaPlot(d, error.bars.type = "CI", error.bars.cross.width = 0.03, violin = FALSE, points.method = "jitter", central.tendency.dx = .2, ef.size = FALSE, central.tendency.params = list(cex = 1), main = "Error bar types: CI, SE, SD", left.ylab = "Dependent variable")
 abline(h = 50, col = "#00000020")
-SAKPlot(d, add = TRUE, error.bars.type = "SE", error.bars.cross.width = 0.03, violin = FALSE, points = FALSE, central.tendency.dx = .3, ef.size = FALSE, central.tendency.params = list(cex = 1))
-SAKPlot(d, add = TRUE, error.bars.type = "SD", error.bars.cross.width = 0.03, violin = FALSE, points = FALSE, central.tendency.dx = .4, ef.size = FALSE, central.tendency.params = list(cex = 1))
+DurgaPlot(d, add = TRUE, error.bars.type = "SE", error.bars.cross.width = 0.03, violin = FALSE, points = FALSE, central.tendency.dx = .3, ef.size = FALSE, central.tendency.params = list(cex = 1))
+DurgaPlot(d, add = TRUE, error.bars.type = "SD", error.bars.cross.width = 0.03, violin = FALSE, points = FALSE, central.tendency.dx = .4, ef.size = FALSE, central.tendency.params = list(cex = 1))
 
 ```
 

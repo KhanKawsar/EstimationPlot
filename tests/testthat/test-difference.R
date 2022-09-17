@@ -27,7 +27,7 @@ makeData <- function(N = 40) {
 makeES1 <- function() {
   set.seed(1)
   data <- makeData()
-  SAKDifference(data[data$Group %in% c("ZControl1", "Group1"),], data.col = "Measurement", group.col = "Group", R = 1000)
+  DurgaDiff(data[data$Group %in% c("ZControl1", "Group1"),], data.col = "Measurement", group.col = "Group", R = 1000)
 }
 
 makePairedData <- function(addSomeNAs = FALSE, reverseGroups = FALSE) {
@@ -54,13 +54,13 @@ makePairedData <- function(addSomeNAs = FALSE, reverseGroups = FALSE) {
   # Shuffle
   data <- data[sample(nrow(data)), ]
   if (reverseGroups) {
-    SAKDifference(data[data$Group %in% c("ZControl1", "Group1"),],
+    DurgaDiff(data[data$Group %in% c("ZControl1", "Group1"),],
                groups = c("ZControl1", "Group1"),
                na.rm = addSomeNAs,
                data.col = "Measurement", group.col = "Group", R = 1000,
                id.col = "ID")
   } else {
-    SAKDifference(data[data$Group %in% c("ZControl1", "Group1"),],
+    DurgaDiff(data[data$Group %in% c("ZControl1", "Group1"),],
                na.rm = addSomeNAs,
                data.col = "Measurement", group.col = "Group", R = 1000,
                id.col = "ID")
@@ -89,14 +89,14 @@ test_that("contrast plots", {
   groups <- c("ZControl1", "Group1", "Group2", "Group3")
 
   # Default contrasts
-  d <- SAKDifference(data, "Measurement", "Group", groups = groups)
+  d <- DurgaDiff(data, "Measurement", "Group", groups = groups)
   ng <- length(d$groups)
   expect_equal(length(d$group.differences), ng * (ng - 1) / 2)
-  SAKPlot(d, main = "Default contrasts")
+  DurgaPlot(d, main = "Default contrasts")
 
   # 2 contrasts
   contrasts <- "Group1 - ZControl1, Group2 - ZControl1, Group3 - ZControl1"
-  d <- SAKDifference(data, "Measurement", "Group", groups = groups, contrasts = contrasts)
+  d <- DurgaDiff(data, "Measurement", "Group", groups = groups, contrasts = contrasts)
   expect_equal(length(d$group.differences), 3)
   expect_equal(d$group.differences[[1]]$groups[1], "Group1")
   expect_equal(d$group.differences[[1]]$groups[2], "ZControl1")
@@ -104,10 +104,10 @@ test_that("contrast plots", {
   expect_equal(d$group.differences[[2]]$groups[2], "ZControl1")
   expect_equal(d$group.differences[[3]]$groups[1], "Group3")
   expect_equal(d$group.differences[[3]]$groups[2], "ZControl1")
-  SAKPlot(d, main = "Explicit contrasts")
+  DurgaPlot(d, main = "Explicit contrasts")
 
   # Shorthand for same as above
-  d <- SAKDifference(data, "Measurement", "Group", groups = groups, contrasts = ". - ZControl1")
+  d <- DurgaDiff(data, "Measurement", "Group", groups = groups, contrasts = ". - ZControl1")
   expect_equal(length(d$group.differences), 3)
   expect_equal(d$group.differences[[1]]$groups[1], "Group1")
   expect_equal(d$group.differences[[1]]$groups[2], "ZControl1")
@@ -115,7 +115,7 @@ test_that("contrast plots", {
   expect_equal(d$group.differences[[2]]$groups[2], "ZControl1")
   expect_equal(d$group.differences[[3]]$groups[1], "Group3")
   expect_equal(d$group.differences[[3]]$groups[2], "ZControl1")
-  SAKPlot(d, main = "Explicit contrast shorthand")
+  DurgaPlot(d, main = "Explicit contrast shorthand")
 })
 
 test_that("group stats", {
@@ -138,13 +138,13 @@ test_that("group stats", {
   for (n in ns) {
     v <- rnorm(n, mean, sd)
     df <- data.frame(v, rep("g", length(v)))
-    d <- SAKDifference(df, 1, 2)
+    d <- DurgaDiff(df, 1, 2)
     checkGroup(d$group.statistics, v, mean)
   }
   # Now combine all groups into one data set
   set.seed(1)
   df <- do.call(rbind, lapply(ns, function(n) data.frame(val = rnorm(n, mean, sd), group = rep(sprintf("g%03d", n), n))))
-  d <- SAKDifference(df, 1, 2)
+  d <- DurgaDiff(df, 1, 2)
   for (i in seq_along(ns)) {
     gn <- sprintf(sprintf("g%03d", ns[i]))
     checkGroup(d$group.statistics[i, ], df$val[df$group == gn], mean)
@@ -152,10 +152,10 @@ test_that("group stats", {
 
   # For debugging
   if (FALSE) {
-    SAKPlot(d, violin = F, points.method = "jitter", ef.size = F, central.tendency.dx = 0.15, error.bars.type = "CI")
+    DurgaPlot(d, violin = F, points.method = "jitter", ef.size = F, central.tendency.dx = 0.15, error.bars.type = "CI")
     abline(h = mean, col = "lightgrey")
-    SAKPlot(d, add = T, violin = F, points = F, ef.size = F, central.tendency.dx = 0.25, error.bars.type = "SD")
-    SAKPlot(d, add = T, violin = F, points = F, ef.size = F, central.tendency.dx = 0.35, error.bars.type = "SE")
+    DurgaPlot(d, add = T, violin = F, points = F, ef.size = F, central.tendency.dx = 0.25, error.bars.type = "SD")
+    DurgaPlot(d, add = T, violin = F, points = F, ef.size = F, central.tendency.dx = 0.35, error.bars.type = "SE")
   }
 })
 
@@ -176,13 +176,13 @@ test_that("contrasts", {
   data <- makeData()
 
   # Default contrasts
-  d <- SAKDifference(data, "Measurement", "Group")
+  d <- DurgaDiff(data, "Measurement", "Group")
   ng <- length(d$groups)
   expect_equal(length(d$group.differences), ng * (ng - 1) / 2)
 
   # All in 1 string
   contrasts = "Group1 - ZControl1, Group2 - ZControl1, Group3 - ZControl1, Group4 - ZControl1"
-  d <- SAKDifference(data, "Measurement", "Group", contrasts = contrasts)
+  d <- DurgaDiff(data, "Measurement", "Group", contrasts = contrasts)
   expect_equal(length(d$group.differences), 4)
   expect_equal(d$group.differences[[1]]$groups[1], "Group1")
   expect_equal(d$group.differences[[1]]$groups[2], "ZControl1")
@@ -194,26 +194,26 @@ test_that("contrasts", {
   expect_equal(d$group.differences[[4]]$groups[2], "ZControl1")
 
   contrasts = c("Group1 - ZControl1", "Group2 - ZControl1", "Group3 - ZControl1", "Group4 - ZControl1")
-  d2 <- SAKDifference(data, "Measurement", "Group", contrasts = contrasts)
+  d2 <- DurgaDiff(data, "Measurement", "Group", contrasts = contrasts)
   expect_equal(length(d2$group.differences), 4)
   expect_equal(d2$group.differences[[1]]$groups[1], "Group1")
   expect_equal(d2$group.differences[[1]]$groups[2], "ZControl1")
   compareDiffs(d2, d)
 
   contrasts <- matrix(c("Group1", "ZControl1", "Group2", "ZControl1", "Group3", "ZControl1", "Group4", "ZControl1"), nrow = 2)
-  d2 <- SAKDifference(data, "Measurement", "Group", contrasts = contrasts)
+  d2 <- DurgaDiff(data, "Measurement", "Group", contrasts = contrasts)
   expect_equal(length(d2$group.differences), 4)
   expect_equal(d2$group.differences[[1]]$groups[1], "Group1")
   expect_equal(d2$group.differences[[1]]$groups[2], "ZControl1")
   compareDiffs(d2, d, tolerance = 1)
 
-  expect_error(SAKDifference(data, "Measurement", "Group", contrasts = "Group2:ZControl"))
-  expect_error(SAKDifference(data, "Measurement", "Group", contrasts = "ZControl"))
-  expect_error(SAKDifference(data, "Measurement", "Group", contrasts = ""))
-  expect_error(SAKDifference(data, "Measurement", "Group", contrasts = "Group 2 - Group 1"))
+  expect_error(DurgaDiff(data, "Measurement", "Group", contrasts = "Group2:ZControl"))
+  expect_error(DurgaDiff(data, "Measurement", "Group", contrasts = "ZControl"))
+  expect_error(DurgaDiff(data, "Measurement", "Group", contrasts = ""))
+  expect_error(DurgaDiff(data, "Measurement", "Group", contrasts = "Group 2 - Group 1"))
 
   # Wildcard contrasts
-  d <- SAKDifference(data, "Measurement", "Group", effect.type = "cohen", contrasts = "*")
+  d <- DurgaDiff(data, "Measurement", "Group", effect.type = "cohen", contrasts = "*")
   ng <- length(unique(data$Group))
   expect_equal(length(d$group.differences), ng * (ng - 1) / 2)
 })
@@ -227,16 +227,16 @@ test_that("difference effect types", {
                    id = c(1:n, 1:n))
 
   # Check all effect types
-  expect_error(SAKDifference(df, effect.type = "wrong", data.col = 1, group.col = 2)) # Should throw an error
-  expect_error(SAKDifference(df, effect.type = "unstandardised", data.col = 1, group.col = 2), NA)
-  expect_error(SAKDifference(df, effect.type = "cohens", data.col = 1, group.col = 2), NA)
-  expect_error(SAKDifference(df, effect.type = "hedges", data.col = 1, group.col = 2), NA)
-  expect_error(SAKDifference(df, effect.type = "unstandardised", id.col = "id", data.col = 1, group.col = 2), NA)
-  expect_error(SAKDifference(df, effect.type = "cohens", id.col = "id", data.col = 1, group.col = 2), NA)
-  expect_error(SAKDifference(df, effect.type = "hedges", id.col = "id", data.col = 1, group.col = 2), NA)
+  expect_error(DurgaDiff(df, effect.type = "wrong", data.col = 1, group.col = 2)) # Should throw an error
+  expect_error(DurgaDiff(df, effect.type = "unstandardised", data.col = 1, group.col = 2), NA)
+  expect_error(DurgaDiff(df, effect.type = "cohens", data.col = 1, group.col = 2), NA)
+  expect_error(DurgaDiff(df, effect.type = "hedges", data.col = 1, group.col = 2), NA)
+  expect_error(DurgaDiff(df, effect.type = "unstandardised", id.col = "id", data.col = 1, group.col = 2), NA)
+  expect_error(DurgaDiff(df, effect.type = "cohens", id.col = "id", data.col = 1, group.col = 2), NA)
+  expect_error(DurgaDiff(df, effect.type = "hedges", id.col = "id", data.col = 1, group.col = 2), NA)
 
   # Check unstandardised diff
-  d <- SAKDifference(df, data.col = 1, group.col = 2, effect.type = "unstandardised")
+  d <- DurgaDiff(df, data.col = 1, group.col = 2, effect.type = "unstandardised")
   pwd <- d$group.difference[[1]]
   expect_equal(pwd$groups[1], "Group")
   expect_equal(pwd$groups[2], "Control")
@@ -245,7 +245,7 @@ test_that("difference effect types", {
   expect_gt(pwd$bca[5], realDiff)
 
   # Check Cohen's D
-  d <- SAKDifference(df, data.col = 1, group.col = 2, effect.type = "cohens")
+  d <- DurgaDiff(df, data.col = 1, group.col = 2, effect.type = "cohens")
   pwd <- d$group.difference[[1]]
   expect_equal(pwd$groups[1], "Group")
   expect_equal(pwd$groups[2], "Control")
@@ -255,7 +255,7 @@ test_that("difference effect types", {
   # Save Cohen's d for later
   cohensD <- pwd$t0
   # Swap groups
-  d <- SAKDifference(df, groups = c("Group", "Control"), data.col = 1, group.col = 2, effect.type = "cohens")
+  d <- DurgaDiff(df, groups = c("Group", "Control"), data.col = 1, group.col = 2, effect.type = "cohens")
   pwd <- d$group.difference[[1]]
   expect_equal(pwd$groups[1], "Control")
   expect_equal(pwd$groups[2], "Group")
@@ -264,7 +264,7 @@ test_that("difference effect types", {
   expect_gt(pwd$bca[5], -0.918991)
 
   # Check Hedges' g
-  d <- SAKDifference(df, data.col = 1, group.col = 2, effect.type = "hedges")
+  d <- DurgaDiff(df, data.col = 1, group.col = 2, effect.type = "hedges")
   pwd <- d$group.difference[[1]]
   expect_equal(pwd$groups[1], "Group")
   expect_equal(pwd$groups[2], "Control")
@@ -276,7 +276,7 @@ test_that("difference effect types", {
   expect_lt(pwd$bca[4], 0.918991) # Should be positive but small
   expect_gt(pwd$bca[5], 0.918991)
   # Swap groups
-  d <- SAKDifference(df, groups = c("Group", "Control"), data.col = 1, group.col = 2, effect.type = "hedges")
+  d <- DurgaDiff(df, groups = c("Group", "Control"), data.col = 1, group.col = 2, effect.type = "hedges")
   pwd <- d$group.difference[[1]]
   expect_equal(pwd$groups[1], "Control")
   expect_equal(pwd$groups[2], "Group")
@@ -286,7 +286,7 @@ test_that("difference effect types", {
 
   ### Paired effect sizes ###
   # Check unstandardised diff
-  d <- SAKDifference(df, data.col = 1, group.col = 2, id.col = 3, effect.type = "unstandardised")
+  d <- DurgaDiff(df, data.col = 1, group.col = 2, id.col = 3, effect.type = "unstandardised")
   pwd <- d$group.difference[[1]]
   expect_equal(pwd$groups[1], "Group")
   expect_equal(pwd$groups[2], "Control")
@@ -295,7 +295,7 @@ test_that("difference effect types", {
   expect_gt(pwd$bca[5], realDiff)
 
   # Check Cohen's D
-  d <- SAKDifference(df, data.col = 1, group.col = 2, id.col = 3, effect.type = "cohens")
+  d <- DurgaDiff(df, data.col = 1, group.col = 2, id.col = 3, effect.type = "cohens")
   pwd <- d$group.difference[[1]]
   expect_equal(pwd$groups[1], "Group")
   expect_equal(pwd$groups[2], "Control")
@@ -305,7 +305,7 @@ test_that("difference effect types", {
   expect_lt(pwd$bca[4], cohensD) # Should be positive but small
   expect_gt(pwd$bca[5], cohensD)
 
-  d <- SAKDifference(df, data.col = 1, group.col = 2, id.col = 3, effect.type = "hedges")
+  d <- DurgaDiff(df, data.col = 1, group.col = 2, id.col = 3, effect.type = "hedges")
   pwd <- d$group.difference[[1]]
   expect_equal(pwd$groups[1], "Group")
   expect_equal(pwd$groups[2], "Control")
@@ -322,17 +322,17 @@ test_that("group factors", {
                    group = factor(c(rep("Control", n), rep("Treatment", n))),
                    id = c(1:n, 1:n))
 
-  d <- SAKDifference(df, effect.type = "unstandardised", data.col = 1, group.col = 2)
+  d <- DurgaDiff(df, effect.type = "unstandardised", data.col = 1, group.col = 2)
   pwd <- d$group.difference[[1]]
   expect_equal(d$group.names, c("Control", "Treatment"))
   expect_equal(pwd$groups[1], "Treatment")
   expect_equal(pwd$groups[2], "Control")
 
   # Check all effect types
-  expect_error(SAKDifference(df, effect.type = "unstandardised", data.col = 1, group.col = 2), NA)
-  expect_error(SAKDifference(df, effect.type = "cohens", data.col = 1, group.col = 2), NA)
-  expect_error(SAKDifference(df, effect.type = "hedges", data.col = 1, group.col = 2), NA)
-  expect_error(SAKDifference(df, id.col = "id", data.col = 1, group.col = 2), NA)
+  expect_error(DurgaDiff(df, effect.type = "unstandardised", data.col = 1, group.col = 2), NA)
+  expect_error(DurgaDiff(df, effect.type = "cohens", data.col = 1, group.col = 2), NA)
+  expect_error(DurgaDiff(df, effect.type = "hedges", data.col = 1, group.col = 2), NA)
+  expect_error(DurgaDiff(df, id.col = "id", data.col = 1, group.col = 2), NA)
 
 })
 
@@ -343,11 +343,11 @@ test_that("difference handles NA", {
   df[c(1, 4, 10, 65), 1] <- NA
 
   # This should throw an error
-  expect_error(SAKDifference(df, na.rm = FALSE, data.col = 1, group.col = 2))
+  expect_error(DurgaDiff(df, na.rm = FALSE, data.col = 1, group.col = 2))
   # This should NOT throw an error
-  expect_error(SAKDifference(df, na.rm = TRUE, data.col = 1, group.col = 2), NA)
+  expect_error(DurgaDiff(df, na.rm = TRUE, data.col = 1, group.col = 2), NA)
   # This should throw an error if one of a pair is missing
-  expect_error(SAKDifference(df, effect.type = "paired", id.col = "id", na.rm = TRUE, group.col = 2))
+  expect_error(DurgaDiff(df, effect.type = "paired", id.col = "id", na.rm = TRUE, group.col = 2))
 })
 
 test_that("two groups", {
@@ -360,14 +360,14 @@ test_that("two groups", {
                    ID = rep(1:N, 2)
   )
 
-  d2 <- SAKDifference(df, data.col = 1, group.col = 2)
+  d2 <- DurgaDiff(df, data.col = 1, group.col = 2)
   # This should NOT throw an error
   op <- par(mar = c(5, 4, 4, 4) + 0.1)
-  expect_error(SAKPlot(d2, ef.size = TRUE, main = "Two groups, effect size default"), NA)
-  expect_error(SAKPlot(d2, ef.size.pos = "right", main = "Two groups, effect size right"), NA)
+  expect_error(DurgaPlot(d2, ef.size = TRUE, main = "Two groups, effect size default"), NA)
+  expect_error(DurgaPlot(d2, ef.size.pos = "right", main = "Two groups, effect size right"), NA)
   par(op)
-  expect_error(SAKPlot(d2, ef.size = FALSE, main = "Two groups, no effect size"), NA)
-  expect_error(SAKPlot(d2, ef.size.position = "below", main = "Two groups, effect size below"), NA)
+  expect_error(DurgaPlot(d2, ef.size = FALSE, main = "Two groups, no effect size"), NA)
+  expect_error(DurgaPlot(d2, ef.size.position = "below", main = "Two groups, effect size below"), NA)
 })
 
 test_that("three groups", {
@@ -382,12 +382,12 @@ test_that("three groups", {
                    ID = rep(1:N, 3)
   )
 
-  d3 <- SAKDifference(df, data.col = 1, group.col = 2)
+  d3 <- DurgaDiff(df, data.col = 1, group.col = 2)
   # This should NOT throw an error
-  expect_error(SAKPlot(d3, bar = FALSE, box = FALSE, main = "Three groups"), NA)
-  expect_error(SAKPlot(d3, violin.trunc = FALSE, main = "No violin truncation"), NA)
-  expect_error(SAKPlot(d3, violin.trunc = 0.05, main = "0.05 violin truncation"), NA)
-  expect_error(SAKPlot(d3, ef.size.violin = FALSE, main = "No effect size violin"), NA)
+  expect_error(DurgaPlot(d3, bar = FALSE, box = FALSE, main = "Three groups"), NA)
+  expect_error(DurgaPlot(d3, violin.trunc = FALSE, main = "No violin truncation"), NA)
+  expect_error(DurgaPlot(d3, violin.trunc = 0.05, main = "0.05 violin truncation"), NA)
+  expect_error(DurgaPlot(d3, ef.size.violin = FALSE, main = "No effect size violin"), NA)
 })
 
 test_that("three groups with factor", {
@@ -404,9 +404,9 @@ test_that("three groups with factor", {
                              ID = rep(1:N, 3)
   )
 
-  d3 <- SAKDifference(df, data.col = 1, group.col = 2)
+  d3 <- DurgaDiff(df, data.col = 1, group.col = 2)
   # This should NOT throw an error
-  expect_error(SAKPlot(d3, bar = FALSE, box = FALSE, main = "Group factor"), NA)
+  expect_error(DurgaPlot(d3, bar = FALSE, box = FALSE, main = "Group factor"), NA)
 })
 
 test_that("many groups", {
@@ -415,10 +415,10 @@ test_that("many groups", {
   val <- c(sapply(groupMean, function(m) rnorm(n, m, 4)))
   trt <- c(sapply(seq_along(groupMean), function(i) rep(paste0("G", i, "-", groupMean[i]), n)))
   df <- data.frame(Height = val, Treatment = trt)
-  d <- SAKDifference(df, "Height", "Treatment")
-  expect_error(SAKPlot(d, main = "1/3) Many groups"), NA)
-  expect_error(SAKPlot(d, main = "2/3) Many groups, control-.", contrasts = paste(df$Treatment[1], "-.")), NA)
-  expect_error(SAKPlot(d, main = "3/3) Many groups, .-control", contrasts = paste(" . - ", df$Treatment[1])), NA)
+  d <- DurgaDiff(df, "Height", "Treatment")
+  expect_error(DurgaPlot(d, main = "1/3) Many groups"), NA)
+  expect_error(DurgaPlot(d, main = "2/3) Many groups, control-.", contrasts = paste(df$Treatment[1], "-.")), NA)
+  expect_error(DurgaPlot(d, main = "3/3) Many groups, .-control", contrasts = paste(" . - ", df$Treatment[1])), NA)
 })
 
 test_that("plots work", {
@@ -443,8 +443,8 @@ test_that("plots work", {
     )
     # Shuffle
     data <- data[sample(nrow(data)), ]
-    es <- SAKDifference(data[data$Group %in% c("ZControl1", "Group1"),], data.col = "Measurement", group.col = "Group", R = 1000)
-    es2 <- SAKDifference(data[data$Group %in% c("ZControl1", "Group1"),],
+    es <- DurgaDiff(data[data$Group %in% c("ZControl1", "Group1"),], data.col = "Measurement", group.col = "Group", R = 1000)
+    es2 <- DurgaDiff(data[data$Group %in% c("ZControl1", "Group1"),],
                          data.col = "Measurement", group.col = "Group", R = 1000,
                          id.col = "ID")
 
@@ -455,147 +455,147 @@ test_that("plots work", {
 
     #par(mfrow = c(2, 4))
     #a)
-    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = FALSE, box.fill = FALSE,
+    DurgaPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = FALSE, box.fill = FALSE,
             central.tendency = "median", error.bars.type = "CI", ef.size = FALSE,
-            points = SAKTransparent(c("red", "blue"), .5))
+            points = DurgaTransparent(c("red", "blue"), .5))
 
     #b)
-    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "white", box.fill = "white",
+    DurgaPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "white", box.fill = "white",
             central.tendency = "median", error.bars = "SD", ef.size = FALSE,
-            points = SAKTransparent(c("red", "blue"), .5),)
+            points = DurgaTransparent(c("red", "blue"), .5),)
 
     #c)
-    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "white", box.fill = "white",
+    DurgaPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "white", box.fill = "white",
             central.tendency = "median", error.bars = "SE", ef.size = FALSE,
-            points = SAKTransparent(c("red", "blue"), .5),)
+            points = DurgaTransparent(c("red", "blue"), .5),)
 
     #d)
-    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "white", box.fill = "white",
+    DurgaPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "white", box.fill = "white",
             central.tendency.type = "mean", error.bars.type = "CI", ef.size = FALSE,
-            points = SAKTransparent(c("red", "blue"), .5),)
+            points = DurgaTransparent(c("red", "blue"), .5),)
 
     #e)
-    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "white", box.fill = "white",
+    DurgaPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "white", box.fill = "white",
             central.tendency.type = "mean", error.bars = "SD", ef.size = FALSE,
-            points = SAKTransparent(c("red", "blue"), .5),)
+            points = DurgaTransparent(c("red", "blue"), .5),)
 
     #f)
-    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "white", box.fill = "white",
+    DurgaPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "white", box.fill = "white",
             central.tendency.type = "mean", error.bars = "SE", ef.size = FALSE,
-            points = SAKTransparent(c("red", "blue"), .5),)
+            points = DurgaTransparent(c("red", "blue"), .5),)
 
     #g)
-    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = SAKTransparent(c("red", "blue"), .5),
+    DurgaPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = DurgaTransparent(c("red", "blue"), .5),
             box.fill = "white", error.bars.type = "CI",
             central.tendency.type = "mean", central.tendency = FALSE, ef.size = FALSE,
             points = FALSE)
 
     #h)
-    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = SAKTransparent(c("red", "blue"), .5),
+    DurgaPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = DurgaTransparent(c("red", "blue"), .5),
             box.fill = "white", error.bars.type = "CI",
             central.tendency.type = "mean", central.tendency = FALSE, ef.size = FALSE,
-            points = SAKTransparent(c("red", "blue"), .5))
+            points = DurgaTransparent(c("red", "blue"), .5))
 
     #i)
-    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = SAKTransparent(c("red", "blue"), .5),
-            box.fill = SAKTransparent(c("red", "blue"), .7), error.bars.type = "CI",
+    DurgaPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = DurgaTransparent(c("red", "blue"), .5),
+            box.fill = DurgaTransparent(c("red", "blue"), .7), error.bars.type = "CI",
             central.tendency.type = "mean", central.tendency = FALSE, ef.size = FALSE,
             points = FALSE)
 
     #j)
-    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = SAKTransparent(c("red", "blue"), .5),
-            box.fill = SAKTransparent(c("red", "blue"), .7), error.bars.type = "CI",
+    DurgaPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = DurgaTransparent(c("red", "blue"), .5),
+            box.fill = DurgaTransparent(c("red", "blue"), .7), error.bars.type = "CI",
             central.tendency.type = "mean", central.tendency = FALSE, ef.size = FALSE,
-            points = SAKTransparent(c("red", "blue"), .5))
+            points = DurgaTransparent(c("red", "blue"), .5))
 
 
     #k)
-    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin.shape = "left-half",
-            violin = SAKTransparent(c("red", "blue"), .6),
-            violin.fill = SAKTransparent(c("red", "blue"), .6),
+    DurgaPlot(es, bar = FALSE, bar.fill = FALSE, violin.shape = "left-half",
+            violin = DurgaTransparent(c("red", "blue"), .6),
+            violin.fill = DurgaTransparent(c("red", "blue"), .6),
             box = "white",
             box.fill = "white",
             error.bars.type = "CI",
             central.tendency.type = "mean", central.tendency = FALSE, ef.size = FALSE,
-            points = SAKTransparent(c("red", "blue"), .5))
+            points = DurgaTransparent(c("red", "blue"), .5))
 
     #l)
-    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin.shape = "left-half",
-            violin = SAKTransparent(c("red", "blue"), .6),
-            violin.fill = SAKTransparent(c("red", "blue"), .6),
-            box = SAKTransparent(c("red", "blue"), .5),
-            box.fill = SAKTransparent(c("red", "blue"), .7), error.bars.type = "CI",
+    DurgaPlot(es, bar = FALSE, bar.fill = FALSE, violin.shape = "left-half",
+            violin = DurgaTransparent(c("red", "blue"), .6),
+            violin.fill = DurgaTransparent(c("red", "blue"), .6),
+            box = DurgaTransparent(c("red", "blue"), .5),
+            box.fill = DurgaTransparent(c("red", "blue"), .7), error.bars.type = "CI",
             central.tendency.type = "mean", central.tendency = FALSE, ef.size = FALSE,
             points = FALSE)
 
     ##m)
-    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin.shape = "left-half",
-            violin = SAKTransparent(c("red", "blue"), .6),
-            violin.fill = SAKTransparent(c("red", "blue"), .6),
-            box = SAKTransparent(c("red", "blue"), .5),
-            box.fill = SAKTransparent(c("red", "blue"), .7), error.bars.type = "CI",
+    DurgaPlot(es, bar = FALSE, bar.fill = FALSE, violin.shape = "left-half",
+            violin = DurgaTransparent(c("red", "blue"), .6),
+            violin.fill = DurgaTransparent(c("red", "blue"), .6),
+            box = DurgaTransparent(c("red", "blue"), .5),
+            box.fill = DurgaTransparent(c("red", "blue"), .7), error.bars.type = "CI",
             central.tendency.type = "mean", central.tendency = FALSE, ef.size = FALSE,
-            points = SAKTransparent(c("red", "blue"), .5))
+            points = DurgaTransparent(c("red", "blue"), .5))
 
     #n)
-    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin.shape = "right-half",
-            violin = SAKTransparent(c("red", "blue"), .6),
-            violin.fill = SAKTransparent(c("red", "blue"), .6),
+    DurgaPlot(es, bar = FALSE, bar.fill = FALSE, violin.shape = "right-half",
+            violin = DurgaTransparent(c("red", "blue"), .6),
+            violin.fill = DurgaTransparent(c("red", "blue"), .6),
             box = "white",
             box.fill = "white",
             error.bars.type = "CI",
             central.tendency.type = "mean", central.tendency = FALSE, ef.size = FALSE,
-            points = SAKTransparent(c("red", "blue"), .5))
+            points = DurgaTransparent(c("red", "blue"), .5))
     #o)
-    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin.shape = "right-half",
-            violin = SAKTransparent(c("red", "blue"), .6),
-            violin.fill = SAKTransparent(c("red", "blue"), .6),
-            box = SAKTransparent(c("red", "blue"), .5),
-            box.fill = SAKTransparent(c("red", "blue"), .7), error.bars.type = "CI",
+    DurgaPlot(es, bar = FALSE, bar.fill = FALSE, violin.shape = "right-half",
+            violin = DurgaTransparent(c("red", "blue"), .6),
+            violin.fill = DurgaTransparent(c("red", "blue"), .6),
+            box = DurgaTransparent(c("red", "blue"), .5),
+            box.fill = DurgaTransparent(c("red", "blue"), .7), error.bars.type = "CI",
             central.tendency.type = "mean", central.tendency = FALSE, ef.size = FALSE,
             points = FALSE)
 
     #p)
-    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin.shape = "right-half",
-            violin = SAKTransparent(c("red", "blue"), .6),
-            violin.fill = SAKTransparent(c("red", "blue"), .6),
-            box = SAKTransparent(c("red", "blue"), .5),
-            box.fill = SAKTransparent(c("red", "blue"), .7), error.bars.type = "CI",
+    DurgaPlot(es, bar = FALSE, bar.fill = FALSE, violin.shape = "right-half",
+            violin = DurgaTransparent(c("red", "blue"), .6),
+            violin.fill = DurgaTransparent(c("red", "blue"), .6),
+            box = DurgaTransparent(c("red", "blue"), .5),
+            box.fill = DurgaTransparent(c("red", "blue"), .7), error.bars.type = "CI",
             central.tendency.type = "mean", central.tendency = FALSE, ef.size = FALSE,
-            points = SAKTransparent(c("red", "blue"), .5))
+            points = DurgaTransparent(c("red", "blue"), .5))
 
     #q)
-    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin.shape = "full",
-            violin = SAKTransparent(c("red", "blue"), .6),
-            violin.fill = SAKTransparent(c("red", "blue"), .6),
-            box = SAKTransparent(c("red", "blue"), .5),
-            box.fill = SAKTransparent(c("red", "blue"), .7), error.bars.type = "CI",
+    DurgaPlot(es, bar = FALSE, bar.fill = FALSE, violin.shape = "full",
+            violin = DurgaTransparent(c("red", "blue"), .6),
+            violin.fill = DurgaTransparent(c("red", "blue"), .6),
+            box = DurgaTransparent(c("red", "blue"), .5),
+            box.fill = DurgaTransparent(c("red", "blue"), .7), error.bars.type = "CI",
             central.tendency.type = "mean", central.tendency = FALSE, ef.size = FALSE,
             points = FALSE)
 
     #r)
-    SAKPlot(es2, bar = FALSE, bar.fill = FALSE, violin.shape = "full",
-            violin = SAKTransparent(c("red", "blue"), .4),
-            violin.fill = SAKTransparent(c("red", "blue"), .8),
-            box = SAKTransparent(c("grey10"), .1),
-            box.fill = SAKTransparent(c("red", "blue"), .7), error.bars.type = "CI",
+    DurgaPlot(es2, bar = FALSE, bar.fill = FALSE, violin.shape = "full",
+            violin = DurgaTransparent(c("red", "blue"), .4),
+            violin.fill = DurgaTransparent(c("red", "blue"), .8),
+            box = DurgaTransparent(c("grey10"), .1),
+            box.fill = DurgaTransparent(c("red", "blue"), .7), error.bars.type = "CI",
             central.tendency.type = "mean", central.tendency = FALSE, ef.size = TRUE,
-            points = SAKTransparent(c("red", "blue"), .5), paired = TRUE)
+            points = DurgaTransparent(c("red", "blue"), .5), paired = TRUE)
 
     #s)
-    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin.shape = "full",
-            violin = SAKTransparent(c("red", "blue"), .6),
-            violin.fill = SAKTransparent(c("red", "blue"), .6),
+    DurgaPlot(es, bar = FALSE, bar.fill = FALSE, violin.shape = "full",
+            violin = DurgaTransparent(c("red", "blue"), .6),
+            violin.fill = DurgaTransparent(c("red", "blue"), .6),
             box = "white",
             box.fill = "white",
             error.bars.type = "CI",
             central.tendency.type = "mean", central.tendency = FALSE, ef.size = FALSE,
-            points = SAKTransparent(c("red", "blue"), .5))
+            points = DurgaTransparent(c("red", "blue"), .5))
 
     #t)
-    SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin.shape = "full",
-            violin = SAKTransparent(c("red", "blue"), .6),
-            violin.fill = SAKTransparent(c("red", "blue"), .6),
+    DurgaPlot(es, bar = FALSE, bar.fill = FALSE, violin.shape = "full",
+            violin = DurgaTransparent(c("red", "blue"), .6),
+            violin.fill = DurgaTransparent(c("red", "blue"), .6),
             box = "white",
             box.fill = "white",
             error.bars.type = "CI",
@@ -608,11 +608,11 @@ test_that("plots work", {
 
 test_that("box FALSE works", {
   es <- makeES1()
-  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = FALSE, box.fill = FALSE,
+  DurgaPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = FALSE, box.fill = FALSE,
           central.tendency.type = "median", error.bars.type = "CI", error.bars.cross.width = 0.05,
-          ef.size = FALSE, points = SAKTransparent(c("red", "blue"), .5),
+          ef.size = FALSE, points = DurgaTransparent(c("red", "blue"), .5),
           main = "Violin FALSE, median, no effect size")
-  SAKPlot(es, violin = FALSE, central.tendency = FALSE, error.bars = FALSE, ef.size = FALSE,
+  DurgaPlot(es, violin = FALSE, central.tendency = FALSE, error.bars = FALSE, ef.size = FALSE,
           main = "No central tendency, error bar, effect size")
   expect_equal(1, 1)
 })
@@ -620,25 +620,25 @@ test_that("box FALSE works", {
 test_that("central tendency FALSE works", {
   es <- makeES1()
   expect_false(es$paired.data)
-  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "red", box.fill = "blue",
+  DurgaPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "red", box.fill = "blue",
          central.tendency = FALSE, error.bars.type = "CI", ef.size = FALSE,
-         points = SAKTransparent(c("red", "blue"), .5), main = "Central tendency FALSE")
+         points = DurgaTransparent(c("red", "blue"), .5), main = "Central tendency FALSE")
   expect_equal(1, 1)
 })
 
 test_that("paired works", {
   es <- makePairedData()
   expect_true(es$paired.data)
-  SAKPlot(es,
-          paired = SAKTransparent("green", 0.5), paired.lty = 2,
+  DurgaPlot(es,
+          paired = DurgaTransparent("green", 0.5), paired.lty = 2,
           bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "red", box.fill = "blue",
           central.tendency = FALSE, error.bars.type = "CI", ef.size = FALSE,
-          points = SAKTransparent(c("red", "blue"), .5), main = "Paired")
-  SAKPlot(es, violin = FALSE, ef.size = FALSE, paired.lwd = 3, main = "Paired, no violin, no effect size")
+          points = DurgaTransparent(c("red", "blue"), .5), main = "Paired")
+  DurgaPlot(es, violin = FALSE, ef.size = FALSE, paired.lwd = 3, main = "Paired, no violin, no effect size")
   op <- par(mar = c(5, 4, 4, 4) + 0.1)
   on.exit(par(op))
-  SAKPlot(es, violin = FALSE, ef.size = TRUE, points = FALSE, main = "Paired, no violin, effect size, no points")
-  SAKPlot(es, violin.shape = c("left", "right"), violin.width = 0.2, main = "Custom")
+  DurgaPlot(es, violin = FALSE, ef.size = TRUE, points = FALSE, main = "Paired, no violin, effect size, no points")
+  DurgaPlot(es, violin.shape = c("left", "right"), violin.width = 0.2, main = "Custom")
 
   # Craft simple paired data to ensure that pair lines are correct
   n <- 10
@@ -651,39 +651,39 @@ test_that("paired works", {
                    Value = c(control, before, after))
   # Shuffle
   set.seed(1)
-  sortedD <- SAKDifference(df, "Value", "Treatment", "Id", groups = treatments)
+  sortedD <- DurgaDiff(df, "Value", "Treatment", "Id", groups = treatments)
   df <- df[sample(nrow(df)), ]
   set.seed(1)
-  d <- SAKDifference(df, "Value", "Treatment", "Id", groups = treatments)
+  d <- DurgaDiff(df, "Value", "Treatment", "Id", groups = treatments)
   # Shuffling the rows should not affect the results
   compareDiffs(sortedD, d, tolerance = 0.1)
-  SAKPlot(d, contrasts = "Before-Control, After - Before", ef.size = FALSE, violin = FALSE, points.dx = c(0.2, 0, -0.2), main = "No intersecting lines?")
+  DurgaPlot(d, contrasts = "Before-Control, After - Before", ef.size = FALSE, violin = FALSE, points.dx = c(0.2, 0, -0.2), main = "No intersecting lines?")
 
   expect_equal(1, 1)
 })
 
 test_that("paired (reversed groups) works", {
   es <- makePairedData(reverseGroups = TRUE)
-  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "red", box.fill = "blue",
+  DurgaPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "red", box.fill = "blue",
          central.tendency = FALSE, error.bars.type = "CI", ef.size = FALSE,
-         points = SAKTransparent(c("red", "blue"), .5), main = "Paired with reversed groups")
+         points = DurgaTransparent(c("red", "blue"), .5), main = "Paired with reversed groups")
   expect_equal(1, 1)
 })
 
 test_that("paired with NAs works", {
   es <- makePairedData(addSomeNAs = TRUE)
-  SAKPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "red", box.fill = "blue",
+  DurgaPlot(es, bar = FALSE, bar.fill = FALSE, violin = FALSE, box = "red", box.fill = "blue",
          central.tendency = FALSE, error.bars.type = "CI", ef.size = FALSE,
-         points = SAKTransparent(c("red", "blue"), .5), main = "Paired with some NAs")
+         points = DurgaTransparent(c("red", "blue"), .5), main = "Paired with some NAs")
   expect_equal(1, 1)
 })
 
 test_that("bar charts work", {
   es <- makeES1()
-  SAKPlot(es, bar = TRUE, violin = FALSE, box = FALSE, box.fill = "blue",
+  DurgaPlot(es, bar = TRUE, violin = FALSE, box = FALSE, box.fill = "blue",
           error.bars = FALSE, error.bars.type = "CI", ef.size = FALSE,
           points = FALSE, main = "Bar chart, no error bars")
-  SAKPlot(es, bar = TRUE, violin = FALSE, box = FALSE, box.fill = "blue",
+  DurgaPlot(es, bar = TRUE, violin = FALSE, box = FALSE, box.fill = "blue",
           error.bars = TRUE, error.bars.type = "CI", ef.size = FALSE,
           points = FALSE, main = "Bar chart, error bars")
   expect_equal(1, 1)
@@ -701,35 +701,35 @@ test_that("custom effect axis", {
                     "Medium positive effect" = 0.5, "Large positive effect" = 0.8)
 
 
-  d <- SAKDifference(df, effect.type = "cohens", data.col = 1, group.col = 2)
+  d <- DurgaDiff(df, effect.type = "cohens", data.col = 1, group.col = 2)
   op <- par(mar = c(5, 4, 4, 10))
   on.exit(par(op))
-  expect_error(SAKPlot(d, ef.size.ticks = ef.size.ticks, ef.size.las = 1, ef.size.label = "", main = "Cohen's with custom labels"), NA)
+  expect_error(DurgaPlot(d, ef.size.ticks = ef.size.ticks, ef.size.las = 1, ef.size.label = "", main = "Cohen's with custom labels"), NA)
 })
 
 test_that("Axis las", {
   n <- 100
   df <- data.frame(val = c(rnorm(n, mean = 10), rnorm(n, mean = 10 + 1), rnorm(n, mean = 10 + 1.4)),
                    group = rep(c("Group1", "Group2", "Group3"), each = n))
-  d2 <- SAKDifference(df, groups = c("Group1", "Group2"), data.col = 1, group.col = 2)
+  d2 <- DurgaDiff(df, groups = c("Group1", "Group2"), data.col = 1, group.col = 2)
   op <- par(mar = c(5, 4, 4, 4))
-  expect_error(SAKPlot(d2, las = 1, ef.size.las = 1, main = "las horizontal"), NA)
+  expect_error(DurgaPlot(d2, las = 1, ef.size.las = 1, main = "las horizontal"), NA)
   par(op)
-  d3 <- SAKDifference(df, data.col = 1, group.col = 2)
-  expect_error(SAKPlot(d3, las = 1, ef.size.las = 1, main = "las horizontal"), NA)
+  d3 <- DurgaDiff(df, data.col = 1, group.col = 2)
+  expect_error(DurgaPlot(d3, las = 1, ef.size.las = 1, main = "las horizontal"), NA)
 })
 
 test_that("Other data frame classes", {
   n <- 40
   df <- tibble::tibble(val = c(rnorm(n, mean = 10), rnorm(n, mean = 10 + 1), rnorm(n, mean = 10 + 1.4)),
                    group = rep(c("Group1", "Group2", "Group3"), each = n))
-  d <- SAKDifference(df, data.col = 1, group.col = 2)
-  expect_error(SAKPlot(d, main = "Tibble"), NA)
+  d <- DurgaDiff(df, data.col = 1, group.col = 2)
+  expect_error(DurgaPlot(d, main = "Tibble"), NA)
 
   df <- data.table::data.table(val = c(rnorm(n, mean = 10), rnorm(n, mean = 10 + 1), rnorm(n, mean = 10 + 1.4)),
                                group = rep(c("Group1", "Group2", "Group3"), each = n))
-  d <- SAKDifference(df, data.col = 1, group.col = 2)
-  expect_error(SAKPlot(d, main = "Data.table"), NA)
+  d <- DurgaDiff(df, data.col = 1, group.col = 2)
+  expect_error(DurgaPlot(d, main = "Data.table"), NA)
 })
 
 test_that("point colours", {
@@ -737,10 +737,10 @@ test_that("point colours", {
   df <- data.frame(val = c(rnorm(n, mean = 10), rnorm(n, mean = 10 + 1)),
                    group = rep(c("Group1", "Group2"), each = n),
                    sex = sample(factor(c("Male", "Female")), n, replace = TRUE))
-  d <- SAKDifference(df, data.col = 1, group.col = 2)
-  expect_error(SAKPlot(d, points = 1:2, main = "Group colours"), NA)
-  expect_error(SAKPlot(d, points = 1:5, main = "Group colours (truncated palette)"), NA)
-  expect_error(SAKPlot(d, points = as.numeric(df$sex) + 1, main = "Sex colours"), NA)
+  d <- DurgaDiff(df, data.col = 1, group.col = 2)
+  expect_error(DurgaPlot(d, points = 1:2, main = "Group colours"), NA)
+  expect_error(DurgaPlot(d, points = 1:5, main = "Group colours (truncated palette)"), NA)
+  expect_error(DurgaPlot(d, points = as.numeric(df$sex) + 1, main = "Sex colours"), NA)
 })
 
 test_that("detect missing paired data", {
@@ -752,7 +752,7 @@ test_that("detect missing paired data", {
                    id = rep(1:n, 2))
   # If we take a random sample of rows, some will be missing their paired data
   df <- df[sample(seq_len(nrow(df)), round(n / 2)), ]
-  expect_error(SAKDifference(df, data.col = 1, group.col = 2, id = 3), "paired data")
+  expect_error(DurgaDiff(df, data.col = 1, group.col = 2, id = 3), "paired data")
 })
 
 test_that("plot contrasts", {
@@ -761,12 +761,12 @@ test_that("plot contrasts", {
   df <- data.frame(val = c(rnorm(n, mean = 10), rnorm(n, mean = 10 + 1)),
                    group = rep(c("Group1", "Group2"), each = n),
                    sex = sample(factor(c("Male", "Female")), n, replace = TRUE))
-  d <- SAKDifference(df, data.col = 1, group.col = 2)
-  expect_error(SAKPlot(d, points = 1:2, main = "1/3) Default contrast"), NA)
-  d <- SAKDifference(df, data.col = 1, group.col = 2, contrasts = ". - Group1")
-  expect_error(SAKPlot(d, points = 1:2, main = "2/3) SAKDifference contrast"), NA)
-  d <- SAKDifference(df, data.col = 1, group.col = 2)
-  expect_error(SAKPlot(d, points = 1:2, main = "3/3) SAKPlot contrast", contrasts = ". - Group1"), NA)
+  d <- DurgaDiff(df, data.col = 1, group.col = 2)
+  expect_error(DurgaPlot(d, points = 1:2, main = "1/3) Default contrast"), NA)
+  d <- DurgaDiff(df, data.col = 1, group.col = 2, contrasts = ". - Group1")
+  expect_error(DurgaPlot(d, points = 1:2, main = "2/3) DurgaDiff contrast"), NA)
+  d <- DurgaDiff(df, data.col = 1, group.col = 2)
+  expect_error(DurgaPlot(d, points = 1:2, main = "3/3) DurgaPlot contrast", contrasts = ". - Group1"), NA)
 })
 
 test_that("effect size position", {
@@ -775,16 +775,16 @@ test_that("effect size position", {
   df <- data.frame(val = c(rnorm(n, mean = 10), rnorm(n, mean = 10 + 0.8), rnorm(n, mean = 10 + 0.4)),
                    group = rep(c("Group1", "Group2", "Group3"), each = n),
                    sex = sample(factor(c("Male", "Female", "Juvenile")), n, replace = TRUE))
-  d <- SAKDifference(df, data.col = 1, group.col = 2)
+  d <- DurgaDiff(df, data.col = 1, group.col = 2)
 
-  expect_error(SAKPlot(d, contrasts = Filter(function(d) d$bca[4] > 0 || d$bca[5] < 0, d$group.differences),
+  expect_error(DurgaPlot(d, contrasts = Filter(function(d) d$bca[4] > 0 || d$bca[5] < 0, d$group.differences),
                        main = "1/3) ef.size position default, filtered contrasts"), NA)
-  expect_error(SAKPlot(d, ef.size.position = "below", contrasts = "Group3 - Group1", main = "2/3) ef.size below, 1 contrast"), NA)
-  expect_error(SAKPlot(d, main = "3/3) ef.size default position, shorthand contrasts", contrasts = ". - Group1"), NA)
+  expect_error(DurgaPlot(d, ef.size.position = "below", contrasts = "Group3 - Group1", main = "2/3) ef.size below, 1 contrast"), NA)
+  expect_error(DurgaPlot(d, main = "3/3) ef.size default position, shorthand contrasts", contrasts = ". - Group1"), NA)
 
   # Check missing contrast
-  d <- SAKDifference(df, data.col = 1, group.col = 2, contrasts = "Group2 - Group1")
-  expect_error(SAKPlot(d, contrasts = "Group3 - Group1"))
+  d <- DurgaDiff(df, data.col = 1, group.col = 2, contrasts = "Group2 - Group1")
+  expect_error(DurgaPlot(d, contrasts = "Group3 - Group1"))
 })
 
 test_that("expand contrasts", {
@@ -830,8 +830,8 @@ test_that("Grouped plot", {
   long$combined <- paste(long$group, long$treatment)
 
   cg <- sapply(names(meansA), function(t) paste(groups, t))
-  d <- SAKDifference(long, "prob", "combined", groups = cg, contrasts = NULL)
-  expect_error(SAKPlot(d, ef.size = FALSE, violin = FALSE, points = FALSE, group.dx = c(0.6, 0.2, -0.2, -0.6), central.tendency = c("green", "orange", "purple", "pink")), NA)
+  d <- DurgaDiff(long, "prob", "combined", groups = cg, contrasts = NULL)
+  expect_error(DurgaPlot(d, ef.size = FALSE, violin = FALSE, points = FALSE, group.dx = c(0.6, 0.2, -0.2, -0.6), central.tendency = c("green", "orange", "purple", "pink")), NA)
 })
 
 test_that("group labels etc", {
@@ -840,8 +840,8 @@ test_that("group labels etc", {
   # Thin it the data so individual symbols are visible
   data <- data[data$id %in% 1:15, ]
 
-  d <- SAKDifference(data, "sugar", "treatment", "id", groups = c("Before insulin" = "before", "After insulin" = "after"), na.rm = TRUE)
-  expect_error(SAKPlot(d,
+  d <- DurgaDiff(data, "sugar", "treatment", "id", groups = c("Before insulin" = "before", "After insulin" = "after"), na.rm = TRUE)
+  expect_error(DurgaPlot(d,
           left.ylab = "Blood sugar level",
           violin.shape = c("left", "right"), violin.dx = c(-0.055, 0.055), violin.width = 0.3,
           points = "black",
@@ -853,22 +853,22 @@ test_that("group labels etc", {
           main = "Customised plot"),
           NA)
 
-  d <- SAKDifference(iris, data.col = "Sepal.Length", group.col = "Species")
-  expect_error(SAKPlot(d, bar = TRUE, error.bars.type = "SD", points = FALSE, main = "Bar chart with std. deviation"), NA)
-  expect_error(SAKPlot(d, box = TRUE, error.bars = TRUE, central.tendency.type = "median", error.bars.type = "CI", points = FALSE, main = "Box plot with 95% CI"), NA)
-  expect_error(SAKPlot(d, bar = TRUE, central.tendency.symbol = "segment", error.bars.type = "SE", points = FALSE, main = "Box plot with SE"), NA)
+  d <- DurgaDiff(iris, data.col = "Sepal.Length", group.col = "Species")
+  expect_error(DurgaPlot(d, bar = TRUE, error.bars.type = "SD", points = FALSE, main = "Bar chart with std. deviation"), NA)
+  expect_error(DurgaPlot(d, box = TRUE, error.bars = TRUE, central.tendency.type = "median", error.bars.type = "CI", points = FALSE, main = "Box plot with 95% CI"), NA)
+  expect_error(DurgaPlot(d, bar = TRUE, central.tendency.symbol = "segment", error.bars.type = "SE", points = FALSE, main = "Box plot with SE"), NA)
 })
 
 test_that("plot miscellanea", {
-  d <- SAKDifference(damselfly, "length", "group",
+  d <- DurgaDiff(damselfly, "length", "group",
                      groups = c("Immature" = "juvenile", "Mature" = "adult"))
 
   # Axis text is smaller when there are multiple columns
   par(mfrow = c(1, 3))
-  SAKPlot(d, ef.size.position = "below", main = "Text size consistent")
+  DurgaPlot(d, ef.size.position = "below", main = "Text size consistent")
   par(mar = c(5, 4, 4, 6) + 0.1)
-  SAKPlot(d, bar = T)
-  SAKPlot(d, box = T, xlim = c(0, 5), ylim = c(28, 40))
+  DurgaPlot(d, bar = T)
+  DurgaPlot(d, box = T, xlim = c(0, 5), ylim = c(28, 40))
   expect_equal(1, 1)
 
 })
@@ -884,9 +884,9 @@ test_that("CI", {
   expect_gt(CI95[2], CI90[2])
 
   set.seed(1)
-  d90 <- SAKDifference(petunia, "height", "group", ci.conf = .9)
-  d95 <- SAKDifference(petunia, "height", "group", ci.conf = .95)
-  d99 <- SAKDifference(petunia, "height", "group", ci.conf = .99)
+  d90 <- DurgaDiff(petunia, "height", "group", ci.conf = .9)
+  d95 <- DurgaDiff(petunia, "height", "group", ci.conf = .95)
+  d99 <- DurgaDiff(petunia, "height", "group", ci.conf = .99)
   # CI should be smaller for lower levels
   for (g in seq_along(d90$groups)) {
     # Ensure we are comparing the same things

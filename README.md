@@ -4,15 +4,15 @@
 <!-- badges: end -->
 
 
-# SAKPlot: Swiss-army-knife of Estimation Plotting in R
+# DurgaPlot: Handy package forEstimation Plotting in R
 
-Effect size estimation and plotting is a component of [estimation statistics](https://en.wikipedia.org/wiki/Estimation_statistics). `SAKPlot` is an R package that aims to simplify sophisticated plotting of estimated differences in group means; an important part of communicating estimation statistics.
+Effect size estimation and plotting is a component of [estimation statistics](https://en.wikipedia.org/wiki/Estimation_statistics). `DurgaPlot` is an R package that aims to simplify sophisticated plotting of estimated differences in group means; an important part of communicating estimation statistics.
 
 ## Citation
 
-If you use `SAKPlot` in your research, please cite (and read) the article:
+If you use `DurgaPlot` in your research, please cite (and read) the article:
 
-`SAKPlot`: An R package for estimating and plotting effect sizes 
+`DurgaPlot`: An R package for estimating and plotting effect sizes 
 
 ## Installation
 
@@ -29,6 +29,6 @@ To install the development version (which is the only version available as yet):
   df <- data.frame(val = c(rnorm(n), rnorm(n, mean = 1)),
                    group = c(rep("Control", n), rep("Group", n)))
 
-  d <- SAKDifference(df, data.col = "val", group.col = "group")
-  SAKPlot(d)
+  d <- DurgaDiff(df, data.col = "val", group.col = "group")
+  DurgaPlot(d)
 ```
