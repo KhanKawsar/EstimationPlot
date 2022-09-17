@@ -5,11 +5,11 @@
 \alias{petunia}
 \title{Petunia data}
 \format{
-A data frame with 64 observations and 3 variables. Plants (self fertilised, inter-cross and westerham-cross) were measured to the tops of their stems when coming into flower. Data collated from of Darwin (1877)
+A data frame with 64 observations and 3 variables. Plants (self fertilised, inter-cross and westerham-cross) were measured to the tops of their stems when coming into flower. Data collated from Darwin (1877)
 \describe{
   \item{height}{Measured height of plants}
   \item{group}{Plant fertilisation groups; \code{westerham_cross}, \code{inter_cross} or \code{self_fertilised}}
-  \item{pot_no}{Identifier of pot number from where individual plants were grown and heights were measured}
+  \item{pot_no}{Identifier of pot number in which each plant was grown}
 }
 }
 \source{
