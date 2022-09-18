@@ -128,7 +128,7 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
   es$ci.type <- ci.type
 
   # Give it a class
-  class(es) <- c("DurgaPWDiff", class(es))
+  class(es) <- c("DurgaGroupDiff", class(es))
 
   es
 }
@@ -188,24 +188,29 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
 #'   for "paired" data (i.e. \code{id.col} is specified), all rows
 #'   (observations) for IDs with missing data are stripped.
 #'
-#' @return List containing:
+#' @return A \code{DurgaDiff} object, which is a list containing:
 #'
-#'   \item{\code{groups}}{Vector of group names}
 #'   \item{\code{group.statistics}}{Matrix with a row for each group, columns
-#'   are group mean, median, standard deviation, standard error of the mean,
-#'   lower and upper 95\% confidence intervals of the mean}
-#'   \item{\code{group.differences}}{List of \code{DurgaPWDiff} objects, which are
-#'   \code{boot} objects with added confidence interval information. See
-#'   \code{\link[boot]{boot}} and \code{\link[boot]{boot.ci}}}
+#'   are: \code{mean}, \code{median}, \code{sd} (standard deviation), \code{se}
+#'   (standard error of the mean), \code{CI.lower} and \code{CI.upper} (lower
+#'   and upper confidence intervals of the mean, confidence level as set by the
+#'   \code{ci.conf} parameter.)}
+#'
+#'   \item{\code{group.differences}}{List of \code{DurgaGroupDiff} objects, which are
+#'     \code{boot} objects with added confidence interval information. See
+#'     \code{\link[boot]{boot}} and \code{\link[boot]{boot.ci}}}
+#'   \item{\code{groups}}{Vector of group names}
+#'   \item{\code{group.names}}{Labels used to identify groups}
 #'   \item{\code{effect.type}}{Value of \code{effect.type} parameter}
 #'   \item{\code{effect.name}}{Pretty version of \code{effect.type}}
-#'   \item{\code{data.col}}{Value of \code{data.col} parameter}
+#'   \item{\code{data.col}}{Value of \code{data.col} parameter; may be an index or a name}
 #'   \item{\code{data.col.name}}{Name of the \code{data.col} column}
-#'   \item{\code{group.col}}{Value of \code{group.col} parameter}
+#'   \item{\code{group.col}}{Value of \code{group.col} parameter; may be an index or a name}
 #'   \item{\code{group.col.name}}{Name of the \code{group.col} column}
-#'   \item{\code{data}}{The input data frame} \item{\code{call}}{how this
-#'   function was called} \item{\code{groups}}{Value of \code{groups} parameter}
-#'   \item{\code{group.names}}{Labels used to identify groups}
+#'   \item{\code{id.col}}{Value of \code{id.col} parameter. May be \code{NULL}}
+#'   \item{\code{paired.data}}{\code{TRUE} if paired differences were estimated}
+#'   \item{\code{data}}{The input data frame}
+#'   \item{\code{call}}{How this function was called}
 #'
 #' @seealso \code{\link[boot]{boot}}, \code{\link[boot]{boot.ci}},
 #'   \code{\link{DurgaPlot}}, \code{\link{print.DurgaDiff}}
@@ -344,12 +349,13 @@ DurgaDiff <- function(data,
 #' Print a summary of a Durga Difference object
 #'
 #' This is a method for the function \code{print()} for objects of class
-#' \code{DurgaDiff} created by a call to {DurgaDiff}.
+#' \code{DurgaDiff}. \code{DurgaDiff} objects are created by calling the
+#' function \code{\link{DurgaDiff}}.
 #'
 #' @param x An object of class \code{DurgaDiff}.
 #' @param ... Ignored
 #'
-#' @seealso \code{\link{print.DurgaPWDiff}}
+#' @seealso \code{\link{DurgaDiff}}, \code{\link{print.DurgaGroupDiff}}
 #'
 #' @export
 print.DurgaDiff <- function(x, ...) {
@@ -366,15 +372,17 @@ print.DurgaDiff <- function(x, ...) {
 #' Print a summary of a Durga group difference object
 #'
 #' This is a method for the function \code{print()} for objects of class
-#' \code{DurgaPWDiff}, which is a row in the \code{group.differences} matrix
-#' belonging to an object returned by a call to \code{\link{DurgaDiff}}.
+#' \code{DurgaGroupDiff}. \code{DurgaGroupDiff} objects make up the rows in the
+#' \code{group.differences} matrix of a \code{DurgaDiff} object, which is itself
+#' returned by a call to \code{\link{DurgaDiff}}.
 #'
-#' @param x An object of class \code{DurgaPWDiff}.
+#' @param x An object of class \code{DurgaGroupDiff}.
 #' @param ... Ignored
 #'
 #' @seealso \code{\link{DurgaDiff}}, \code{\link{print.DurgaDiff}}
+#'
 #' @export
-print.DurgaPWDiff <- function(x, ...) {
+print.DurgaGroupDiff <- function(x, ...) {
   cat(sprintf("  %s - %s: %g, %g%% CI (%s) [%g, %g]\n",
               x$groupLabels[1], x$groupLabels[2],
               x$t0, x$bca[1] * 100, x$ci.type, x$bca[4], x$bca[5]))
