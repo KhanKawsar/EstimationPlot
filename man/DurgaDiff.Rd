@@ -111,5 +111,5 @@ Psychology, 4. doi:10.3389/fpsyg.2013.00863
 }
 \seealso{
 \code{\link[boot]{boot}}, \code{\link[boot]{boot.ci}},
-  \code{\link{DurgaPlot}}, \code{\link{print.DurgaDiff}}
+  \code{\link{DurgaPlot}}
 }

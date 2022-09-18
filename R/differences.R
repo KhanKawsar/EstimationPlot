@@ -213,7 +213,7 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
 #'   \item{\code{call}}{How this function was called}
 #'
 #' @seealso \code{\link[boot]{boot}}, \code{\link[boot]{boot.ci}},
-#'   \code{\link{DurgaPlot}}, \code{\link{print.DurgaDiff}}
+#'   \code{\link{DurgaPlot}}
 #'
 #' @references
 #'
