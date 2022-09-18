@@ -15,7 +15,6 @@ DurgaDiff(
   R = 1000,
   boot.params = list(),
   ci.conf = 0.95,
-  ci.type = "bca",
   na.rm = FALSE
 )
 }
@@ -58,10 +57,6 @@ the [boot]{boot} function.}
 
 \item{ci.conf}{Numeric confidence level of the required confidence interval.
 Applies to both CI of differences between group means and CI of group means.}
-
-\item{ci.type}{A single character  string representing the type of bootstrap
-interval required. See the \code{type} parameter to the [boot]{boot.ci}
-function for details.}
 
 \item{na.rm}{a logical evaluating to TRUE or FALSE indicating whether NA
 values should be stripped before the computation proceeds. If \code{TRUE}

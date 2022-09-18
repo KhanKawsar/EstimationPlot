@@ -183,9 +183,6 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
 #'   the [boot]{boot} function.
 #' @param ci.conf Numeric confidence level of the required confidence interval.
 #'   Applies to both CI of differences between group means and CI of group means.
-#' @param ci.type A single character  string representing the type of bootstrap
-#'   interval required. See the \code{type} parameter to the [boot]{boot.ci}
-#'   function for details.
 #' @param na.rm a logical evaluating to TRUE or FALSE indicating whether NA
 #'   values should be stripped before the computation proceeds. If \code{TRUE}
 #'   for "paired" data (i.e. \code{id.col} is specified), all rows
@@ -229,9 +226,19 @@ DurgaDiff <- function(data,
                        R = 1000,
                        boot.params = list(),
                        ci.conf = 0.95,
-                       ci.type = "bca",
                        na.rm = FALSE
 ) {
+
+  # *******
+  # For now, don't allow ci.type to be changed. Quite a lot of code assumes its
+  # value is "bca". If we add it in as a parameter, it can be documented as:
+
+  # @param ci.type A single character  string representing the type of bootstrap
+  #   interval required. See the \code{type} parameter to the [boot]{boot.ci}
+  #   function for details.
+  # *******
+  ci.type = "bca"
+
   # If data is a data.table, it breaks things, so convert to a data.frame
   data <- as.data.frame(data)
 
@@ -252,6 +259,9 @@ DurgaDiff <- function(data,
   if (!.isACol(group.col))
     stop(sprintf("group.col %s is not a valid column name or index (names are %s)",
                  group.col, paste(names(data), collapse = ", ")))
+  if (pairedData && !.isACol(id.col))
+    stop(sprintf("id.col %s is not a valid column name or index (names are %s)",
+                 id.col, paste(names(data), collapse = ", ")))
 
   # Optionally handle NA values
   if (na.rm) {
@@ -264,6 +274,9 @@ DurgaDiff <- function(data,
     }
     data <- data[toKeep, ]
   }
+
+  # Sanity check
+  if (nrow(data) == 0) stop("No data to analyse!")
 
   # Create return structure with administrative info
   .colName <- function(col) ifelse(is.numeric(col), names(data)[col], col)

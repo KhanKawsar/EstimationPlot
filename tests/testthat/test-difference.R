@@ -148,6 +148,20 @@ test_that("contrast plots", {
   # Invalid contrasts
   expect_error(DurgaDiff(data, "Measurement", "Group", groups = groups, contrasts = 1))
   expect_error(DurgaPlot(d, contrasts = 1))
+
+  # Just 1 contrast
+  data <- makeData()
+  d <- DurgaDiff(data, "Measurement", "Group", groups = groups)
+  DurgaPlot(d, contrasts = c(`Diff` = "Group3 - Group2"), main = "Plot 1 labelled diff")
+  DurgaPlot(d, contrasts = c(`Diff` = "Group2 - Group3"), mai = "Plot negative diff")
+  d <- DurgaDiff(data, "Measurement", "Group", groups = groups, effect.type = "cohens")
+  DurgaPlot(d, contrasts = c(`Diff` = "Group3 - Group2"), main = "Plot 1 Cohen's")
+  DurgaPlot(d, contrasts = c(`Diff` = "Group2 - Group3"), mai = "Plot negative Cohen's")
+  # Single contrast in diff
+  d <- DurgaDiff(data, "Measurement", "Group", groups = c("Group3", "Group2"))
+  DurgaPlot(d, main = "Restricted groups in diff")
+  d <- DurgaDiff(data, "Measurement", "Group", groups = c("Group3", "Group2"), effect.type = "cohens")
+  DurgaPlot(d, main = "Restricted groups in diff Cohen's")
 })
 
 test_that("group stats", {
@@ -374,12 +388,14 @@ test_that("difference handles NA", {
                    group = c(rep("Control", n), rep("Group", n)))
   df[c(1, 4, 10, 65), 1] <- NA
 
-  # This should throw an error
-  expect_error(DurgaDiff(df, na.rm = FALSE, data.col = 1, group.col = 2))
+  # This should throw an error (something about na.rm)
+  expect_error(DurgaDiff(df, na.rm = FALSE, data.col = 1, group.col = 2), "na.rm")
   # This should NOT throw an error
   expect_error(DurgaDiff(df, na.rm = TRUE, data.col = 1, group.col = 2), NA)
-  # This should throw an error if one of a pair is missing
-  expect_error(DurgaDiff(df, effect.type = "paired", id.col = "id", na.rm = TRUE, group.col = 2))
+  # Check column name checks
+  expect_error(DurgaDiff(df, id.col = "id", na.rm = TRUE, data.col = 1, group.col = 2), "column name")
+  expect_error(DurgaDiff(df, data.col = "XXX", group.col = 2), "column name")
+  expect_error(DurgaDiff(df, data.col = 1, group.col = "XXX"), "column name")
 })
 
 test_that("two groups", {
@@ -824,27 +840,27 @@ test_that("effect size position", {
 test_that("expand contrasts", {
   .makeX <- function(g) matrix(g, nrow = 2)
 
-  expect_equal(expandContrasts("g1 - g2, g3 - g4", c("g1", "g2", "g3", "g4")), .makeX(c("g1", "g2", "g3", "g4")))
+  expect_equal(expandContrasts("g1 - g2, g3 - g4", c("g1", "g2", "g3", "g4")), .makeX(c("g1", "g2", "g3", "g4")), ignore_attr = TRUE)
   expect_error(expandContrasts("g1 - g2, g3 - g5", c("g1", "g2", "g3", "g4")))
   expect_error(expandContrasts("g1 - g1", c("g1", "g2", "g3", "g4")))
-  expect_equal(expandContrasts(" g1-g2 ", c("g1", "g2")), .makeX(c("g1", "g2")))
-  expect_equal(expandContrasts(" g1    -g2 ", c("g2", "g1")), .makeX(c("g1", "g2")))
-  expect_equal(expandContrasts(" g2  - g1 ", c("g2", "g1")), .makeX(c("g2", "g1")))
-  expect_equal(expandContrasts("g1 - g2", c("g4", "g1", "g2")), .makeX(c("g1", "g2")))
-  expect_equal(expandContrasts("g1 - g2", c("g4", "g2", "g1")), .makeX(c("g1", "g2")))
-  expect_equal(expandContrasts(". - g1", c("g1", "g2", "g3")), .makeX(c("g2", "g1", "g3", "g1")))
-  expect_equal(expandContrasts(". - g2", c("g1", "g2", "g3")), .makeX(c("g1", "g2", "g3", "g2")))
-  expect_equal(expandContrasts("g3-.", c("g1", "g2", "g3")), .makeX(c("g3", "g1", "g3", "g2")))
-  expect_equal(expandContrasts("*", c("g1", "g2")), .makeX(c("g2", "g1")))
-  expect_equal(expandContrasts("*", c("g2", "g1")), .makeX(c("g1", "g2")))
-  expect_equal(expandContrasts("*", c("g1")), NULL)
-  expect_equal(expandContrasts(" g1 - g11 ", c("g1", "g11")), .makeX(c("g1", "g11")))
-  expect_equal(expandContrasts(" g1 - g11 ", c("g11", "g1")), .makeX(c("g1", "g11")))
-  expect_equal(expandContrasts(" g11 - g1 ", c("g1", "g11")), .makeX(c("g11", "g1")))
-  expect_equal(expandContrasts(" . - g1", c("g1", "g11")), .makeX(c("g11", "g1")))
-  expect_equal(expandContrasts(" . - g1", c("g1", "g11", "g111")), .makeX(c("g11", "g1", "g111", "g1")))
-  expect_equal(expandContrasts(" g1 - .", c("g1", "g11")), .makeX(c("g1", "g11")))
-  expect_equal(expandContrasts(" g1 - . ", c("g1", "g11", "g111")), .makeX(c("g1", "g11", "g1", "g111")))
+  expect_equal(expandContrasts(" g1-g2 ", c("g1", "g2")), .makeX(c("g1", "g2")), ignore_attr = TRUE)
+  expect_equal(expandContrasts(" g1    -g2 ", c("g2", "g1")), .makeX(c("g1", "g2")), ignore_attr = TRUE)
+  expect_equal(expandContrasts(" g2  - g1 ", c("g2", "g1")), .makeX(c("g2", "g1")), ignore_attr = TRUE)
+  expect_equal(expandContrasts("g1 - g2", c("g4", "g1", "g2")), .makeX(c("g1", "g2")), ignore_attr = TRUE)
+  expect_equal(expandContrasts("g1 - g2", c("g4", "g2", "g1")), .makeX(c("g1", "g2")), ignore_attr = TRUE)
+  expect_equal(expandContrasts(". - g1", c("g1", "g2", "g3")), .makeX(c("g2", "g1", "g3", "g1")), ignore_attr = TRUE)
+  expect_equal(expandContrasts(". - g2", c("g1", "g2", "g3")), .makeX(c("g1", "g2", "g3", "g2")), ignore_attr = TRUE)
+  expect_equal(expandContrasts("g3-.", c("g1", "g2", "g3")), .makeX(c("g3", "g1", "g3", "g2")), ignore_attr = TRUE)
+  expect_equal(expandContrasts("*", c("g1", "g2")), .makeX(c("g2", "g1")), ignore_attr = TRUE)
+  expect_equal(expandContrasts("*", c("g2", "g1")), .makeX(c("g1", "g2")), ignore_attr = TRUE)
+  expect_equal(expandContrasts("*", c("g1")), NULL, ignore_attr = TRUE)
+  expect_equal(expandContrasts(" g1 - g11 ", c("g1", "g11")), .makeX(c("g1", "g11")), ignore_attr = TRUE)
+  expect_equal(expandContrasts(" g1 - g11 ", c("g11", "g1")), .makeX(c("g1", "g11")), ignore_attr = TRUE)
+  expect_equal(expandContrasts(" g11 - g1 ", c("g1", "g11")), .makeX(c("g11", "g1")), ignore_attr = TRUE)
+  expect_equal(expandContrasts(" . - g1", c("g1", "g11")), .makeX(c("g11", "g1")), ignore_attr = TRUE)
+  expect_equal(expandContrasts(" . - g1", c("g1", "g11", "g111")), .makeX(c("g11", "g1", "g111", "g1")), ignore_attr = TRUE)
+  expect_equal(expandContrasts(" g1 - .", c("g1", "g11")), .makeX(c("g1", "g11")), ignore_attr = TRUE)
+  expect_equal(expandContrasts(" g1 - . ", c("g1", "g11", "g111")), .makeX(c("g1", "g11", "g1", "g111")), ignore_attr = TRUE)
   expect_error(expandContrasts(" . - . ", c("g1", "g11")))
 })
 
@@ -890,7 +906,7 @@ test_that("group labels etc", {
   d <- DurgaDiff(iris, data.col = "Sepal.Length", group.col = "Species")
   expect_error(DurgaPlot(d, bar = TRUE, error.bars.type = "SD", points = FALSE, main = "Bar chart with std. deviation"), NA)
   expect_error(DurgaPlot(d, box = TRUE, error.bars = TRUE, central.tendency.type = "median", error.bars.type = "CI", points = FALSE, main = "Box plot with 95% CI"), NA)
-  expect_error(DurgaPlot(d, bar = TRUE, central.tendency.symbol = "segment", error.bars.type = "SE", points = FALSE, main = "Box plot with SE"), NA)
+  expect_error(DurgaPlot(d, bar = TRUE, central.tendency.symbol = "segment", error.bars.type = "SE", points = FALSE, main = "Bar chart with SE"), NA)
 })
 
 test_that("plot miscellanea", {
@@ -902,7 +918,7 @@ test_that("plot miscellanea", {
   DurgaPlot(d, ef.size.position = "below", main = "Text size consistent")
   par(mar = c(5, 4, 4, 6) + 0.1)
   DurgaPlot(d, bar = T)
-  DurgaPlot(d, box = T, xlim = c(0, 5), ylim = c(28, 40))
+  DurgaPlot(d, box = T, xlim = c(0, 5), ylim = c(28, 40), main = "Explicit limits")
   expect_equal(1, 1)
 
 })
