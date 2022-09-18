@@ -79,11 +79,15 @@ expandContrasts <- function(contrasts, groups) {
     }
   }
 
-  if (!is.matrix(contrasts)) {
-    if (length(contrasts) == 1) {
-      # Split on commas
+  # Now handle general string representations
+  if (is.character(contrasts) && !is.matrix(contrasts)) {
+
+    # Split on commas, but only if there is a comma
+    if (length(contrasts) == 1 && grepl(",", contrasts, fixed = TRUE)) {
       contrasts <- strsplit(contrasts, ",")[[1]]
     }
+
+    contrastNames <- names(contrasts)
 
     # Assume syntax "group - group"
     contrasts <- sapply(contrasts, function(contrast) {
@@ -95,13 +99,15 @@ expandContrasts <- function(contrasts, groups) {
                      contrast, paste0(groups, collapse = ", ")))
       found <- found[found != 0]
       names(found)[order(found)]
-    })
+    }, USE.NAMES = FALSE)
+
+    colnames(contrasts) <- contrastNames
   }
 
   # Convert from factor matrix to character matrix
   if (is.factor(contrasts))
     contrasts <- structure(as.character(contrasts), dim = dim(contrasts))
 
-  unname(contrasts)
+  contrasts
 }
 

@@ -5,7 +5,6 @@
 #### How should we handle paired data with more than 2 groups? eg petunia
 #### How should we handle more than 1 comparison per group? E.g. all pairwise combinations
 
-#### Change difference labels
 
 
 
@@ -25,21 +24,30 @@ negatePairwiseDiff <- function(pwd) {
 
 # Given a pair of groups, finds (in diffs) the comparison for pair[1] - pair[2].
 # If the comparison pair[2] - pair[1] is found, it is negated and returned.
-findDiff <- function(pair, diffs) {
+findDiff <- function(pair, label, diffs) {
   # For each existing comparison...
   for (diff in diffs) {
     # Is this the requested comparison?
     if (diff$groups[1] == pair[1] && diff$groups[2] == pair[2]) {
+      attr(diff, "label") <- label
       return(diff)
 
       # Is this the negation of the requested comparison?
     } else if (diff$groupLabels[1] == pair[2] && diff$groupLabels[2] == pair[1]) {
-      #browser()
+      attr(diff, "label") <- label
       return(negatePairwiseDiff(diff))
     }
   }
   stop(sprintf("Contrast '%s - %s' has not been estimated, check the contrasts argument in your call to DurgaDiff",
                pair[1], pair[2]))
+}
+
+# Returns the label to be used to represent the specified diff
+getDiffLabel <- function(pwes) {
+  label <- attr(pwes, "label")
+  if (is.null(label) || label == "")
+    label <- sprintf("%s\nminus\n%s", pwes$groupLabels[1], pwes$groupLabels[2])
+  label
 }
 
 # Given a string representation of the required contrasts, returns a list of
@@ -49,7 +57,7 @@ findDiff <- function(pair, diffs) {
 buildPlotDiffs <- function(contrasts, es) {
   pairs <- expandContrasts(contrasts, es$groups)
   # For each specified contrast, find the corresponding group difference
-  apply(pairs, 2, findDiff, es$group.differences)
+  lapply(seq_len(ncol(pairs)), function(i) findDiff(pairs[, i], colnames(pairs)[i], es$group.differences))
 }
 
 # Calculate the probability density of one group, optionally truncating the extents
@@ -135,6 +143,14 @@ getErrorBars <- function(es, groupIdx, groupMean, error.bars) {
   bars
 }
 
+# Function to add text and tick marks to the x-axis, applying consistent spacing
+# etc.. Labels are positioned and aligned along the top of the bounding box, so
+# multi-line labels descend lower
+labelXAxis <- function(at, labels, tick) {
+  graphics::axis(1, tick = tick, at = at, labels = labels, padj = 1, mgp = c(3, 0, 0))
+}
+
+
 # Plot density x and y values as a violin. Since the violin is drawn vertically,
 # density$x is used for y-axis points and density$y for x-axis points.
 plotViolin <- function(shape, centreX, d, ...) {
@@ -176,17 +192,20 @@ plotEffectSize <- function(pwes, xo, centreY, showViolin, violinCol, violin.widt
 # Plot effect size to the right of the main plot. Only useful when showing a single effect size
 plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch,
                                  showViolin, violinCol, violin.width, violin.shape,
-                                 axisLabel, ticksAt, ef.size.las) {
+                                 axisLabel, ticksAt, ef.size.las,
+                                 groupX) {
 
   # Get the means of the 2 groups
-  y <- es$group.statistics[pwes$groupIndices[pwes$groupIndices[1]], 1]
-  y2 <- es$group.statistics[pwes$groupIndices[pwes$groupIndices[2]], 1]
+  gid1 <- pwes$groupIndices[1]
+  gid2 <- pwes$groupIndices[2]
+  y <- es$group.statistics[gid1, 1]
+  y2 <- es$group.statistics[gid2, 1]
 
   x <- length(es$groups) + 1
 
   if (es$effect.type == "unstandardised") {
     esRange <- range(c(0, pwes$t))
-    plotEffectSize(pwes, x, y2, showViolin, violinCol, violin.width, violin.shape, ef.size.col, ef.size.pch)
+    plotEffectSize(pwes, x, y, showViolin, violinCol, violin.width, violin.shape, ef.size.col, ef.size.pch)
 
     # Axis labels on right-hand
     labels <- names(ticksAt)
@@ -194,7 +213,7 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch,
       ticksAt <- pretty(esRange)
       labels <- ticksAt
     }
-    graphics::axis(4, at = y + ticksAt, labels = labels, las = ef.size.las)
+    graphics::axis(4, at = y2 + ticksAt, labels = labels, las = ef.size.las)
   } else {
     esRange <- range(c(0, pwes$t0))
     ylim <- range(y, y2)
@@ -215,13 +234,11 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch,
   }
 
   # Horizontal lines from group means
-  graphics::segments(1, y, x + 2, y, col = "grey50", lty = 1, lwd = 1.5)
-  graphics::segments(2, y2, x + 2, y2, col = "grey50", lty = 1, lwd = 1.5)
+  graphics::segments(groupX[gid1], y, x + 2, y, col = "grey50", lty = 1, lwd = 1.5)
+  graphics::segments(groupX[gid2], y2, x + 2, y2, col = "grey50", lty = 1, lwd = 1.5)
 
-  # Add x-axis label for effect size
-  label <- sprintf("%s\nminus\n%s", pwes$groupLabels[1], pwes$groupLabels[2])
-  graphics::mtext(label, at = x, side = 1, line = 3, cex = graphics::par("cex"))
-  graphics::axis(1, at = x, labels = FALSE) # X-axis tick mark
+  # Add x-axis label and tick mark for effect size
+  labelXAxis(at = x, labels = getDiffLabel(pwes), tick = TRUE)
 
   # Label the right y-axis
   graphics::mtext(axisLabel, side = 4, line = 2.5, cex = graphics::par("cex"))
@@ -233,7 +250,6 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
                                  showViolin, violinCol, violin.width, violin.shape,
                                  xlim, central.tendency.dx, ef.size.label, ticksAt, ef.size.las) {
   groups <- es$groups
-  nGroups <- length(groups)
 
   # What will we plot?
   ylim <- range(c(0, sapply(plotDiffs, function(pwes) if (is.null(pwes)) NA else range(pwes$t, na.rm = TRUE))), na.rm = TRUE)
@@ -263,13 +279,15 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
 
   # Plot the "Difference = 0" line, i.e. no effect
   graphics::lines(usr[1:2], c(mapY(0), mapY(0)), col = "grey50", lty = 3, xpd = TRUE)
+
+  # Plot all diffs
   for (i in seq_along(plotDiffs)) {
     pwes <- plotDiffs[[i]]
     if (!is.null(pwes)) {
       gid1 <- which(groups == pwes$groups[1])
       gid2 <- which(groups == pwes$groups[2])
       plotEffectSize(pwes, gid1 + central.tendency.dx[gid1], pwes$t0, showViolin, violinCol, violin.width, violin.shape, ef.size.col, ef.size.pch, mapY, xpd = TRUE)
-      graphics::text(gid1 + central.tendency.dx[gid1], mapY(ylim[1]), sprintf("%s\nminus\n%s", pwes$groupLabels[1], pwes$groupLabels[2]), xpd = TRUE, pos = 1)
+      graphics::text(gid1 + central.tendency.dx[gid1], mapY(ylim[1]), getDiffLabel(pwes), xpd = TRUE, pos = 1)
     }
   }
 }
@@ -334,6 +352,11 @@ DurgaTransparent <-  function(colour, alpha) {
 #' be below the main plot. If below, an effect size is drawn underneath its
 #' primary group. There is currently no way to display multiple effect sizes for
 #' a single primary group.
+#'
+#' Custom labels for effects can be specified as part of the \code{contrasts}
+#' parameter. If \code{contrasts} is a named vector, the names are used as
+#' contrast labels, e.g. \code{contrasts = c("Adult change" = "adult - control",
+#' "Juvenile change" = "juvenile - control")}.
 #'
 #' The \code{contrasts} parameter may be a single string, a vector of strings,
 #' or a matrix. A single string has a format such as \code{"group1 - group2,
@@ -755,8 +778,9 @@ DurgaPlot <- function(es,
     plot(NULL, xlim = xlim, ylim = ylim, type = "n",
          xaxt = "n", xlab = "", ylab = left.ylab, las = left.las, ...)
     # Label the groups along the x-axis
-    if (x.axis)
-      graphics::axis(1, at = groupAt, labels = es$group.names)
+    if (x.axis) {
+      labelXAxis(at = groupAt, labels = es$group.names, tick = TRUE)
+    }
   }
 
   ### Add the various components to the plot ###
@@ -900,7 +924,7 @@ DurgaPlot <- function(es,
   ef.size.col <- .boolToDef(ef.size, "black")
   violinCol <- .boolToDef(ef.size.violin, "grey40")
   if (.show(ef.size) && ef.size.position == "right") {
-    plotEffectSizesRight(es, plotDiffs[[1]], ef.size.col, ef.size.pch, .show(ef.size.violin), violinCol, violin.width, ef.size.violin.shape, ef.size.label, ef.size.ticks, ef.size.las)
+    plotEffectSizesRight(es, plotDiffs[[1]], ef.size.col, ef.size.pch, .show(ef.size.violin), violinCol, violin.width, ef.size.violin.shape, ef.size.label, ef.size.ticks, ef.size.las, groupAt)
   } else if (.show(ef.size) && ef.size.position == "below") {
     plotEffectSizesBelow(es, plotDiffs, ef.size.col, ef.size.pch, .show(ef.size.violin), violinCol, violin.width, ef.size.violin.shape, xlim, ef.size.dx, ef.size.label, ef.size.ticks, ef.size.las)
   }

@@ -266,6 +266,11 @@ be below the main plot. If below, an effect size is drawn underneath its
 primary group. There is currently no way to display multiple effect sizes for
 a single primary group.
 
+Custom labels for effects can be specified as part of the \code{contrasts}
+parameter: if \code{contrasts} is a named vector, the names are used as
+contrast labels, e.g. \code{contrasts = c("Adult change" = "adult - control",
+"Juvenile change" = "juvenile - control")}.
+
 The \code{contrasts} parameter may be a single string, a vector of strings,
 or a matrix. A single string has a format such as \code{"group1 - group2,
 group3 - group4"}. A single asterisk, \code{"*"} creates contrasts for all
