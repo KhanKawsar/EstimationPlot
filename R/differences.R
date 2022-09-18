@@ -119,9 +119,9 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
   }
 
   # Save group names
-  es$groups <- pair
-  es$groupLabels <- pairNames
-  es$groupIndices <- pairIndices
+  es$groups <- pair                # raw group values
+  es$groupLabels <- pairNames      # Display values
+  es$groupIndices <- pairIndices   # Indices within es$groups
   # Remove data because it is in the outer structure
   es$data <- NULL
   # Save CI type
@@ -346,17 +346,6 @@ DurgaDiff <- function(data,
 #######################################################################################
 # Print methods
 
-#' Print a summary of a Durga Difference object
-#'
-#' This is a method for the function \code{print()} for objects of class
-#' \code{DurgaDiff}. \code{DurgaDiff} objects are created by calling the
-#' function \code{\link{DurgaDiff}}.
-#'
-#' @param x An object of class \code{DurgaDiff}.
-#' @param ... Ignored
-#'
-#' @seealso \code{\link{DurgaDiff}}, \code{\link{print.DurgaGroupDiff}}
-#'
 #' @export
 print.DurgaDiff <- function(x, ...) {
   cat("Bootstrapped effect size\n")
@@ -369,18 +358,6 @@ print.DurgaDiff <- function(x, ...) {
   }
 }
 
-#' Print a summary of a Durga group difference object
-#'
-#' This is a method for the function \code{print()} for objects of class
-#' \code{DurgaGroupDiff}. \code{DurgaGroupDiff} objects make up the rows in the
-#' \code{group.differences} matrix of a \code{DurgaDiff} object, which is itself
-#' returned by a call to \code{\link{DurgaDiff}}.
-#'
-#' @param x An object of class \code{DurgaGroupDiff}.
-#' @param ... Ignored
-#'
-#' @seealso \code{\link{DurgaDiff}}, \code{\link{print.DurgaDiff}}
-#'
 #' @export
 print.DurgaGroupDiff <- function(x, ...) {
   cat(sprintf("  %s - %s: %g, %g%% CI (%s) [%g, %g]\n",

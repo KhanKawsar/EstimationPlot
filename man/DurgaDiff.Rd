@@ -64,24 +64,29 @@ for "paired" data (i.e. \code{id.col} is specified), all rows
 (observations) for IDs with missing data are stripped.}
 }
 \value{
-List containing:
+A \code{DurgaDiff} object, which is a list containing:
 
-  \item{\code{groups}}{Vector of group names}
   \item{\code{group.statistics}}{Matrix with a row for each group, columns
-  are group mean, median, standard deviation, standard error of the mean,
-  lower and upper 95\% confidence intervals of the mean}
-  \item{\code{group.differences}}{List of \code{DurgaPWDiff} objects, which are
-  \code{boot} objects with added confidence interval information. See
-  \code{\link[boot]{boot}} and \code{\link[boot]{boot.ci}}}
+  are: \code{mean}, \code{median}, \code{sd} (standard deviation), \code{se}
+  (standard error of the mean), \code{CI.lower} and \code{CI.upper} (lower
+  and upper confidence intervals of the mean, confidence level as set by the
+  \code{ci.conf} parameter.)}
+
+  \item{\code{group.differences}}{List of \code{DurgaGroupDiff} objects, which are
+    \code{boot} objects with added confidence interval information. See
+    \code{\link[boot]{boot}} and \code{\link[boot]{boot.ci}}}
+  \item{\code{groups}}{Vector of group names}
+  \item{\code{group.names}}{Labels used to identify groups}
   \item{\code{effect.type}}{Value of \code{effect.type} parameter}
   \item{\code{effect.name}}{Pretty version of \code{effect.type}}
-  \item{\code{data.col}}{Value of \code{data.col} parameter}
+  \item{\code{data.col}}{Value of \code{data.col} parameter; may be an index or a name}
   \item{\code{data.col.name}}{Name of the \code{data.col} column}
-  \item{\code{group.col}}{Value of \code{group.col} parameter}
+  \item{\code{group.col}}{Value of \code{group.col} parameter; may be an index or a name}
   \item{\code{group.col.name}}{Name of the \code{group.col} column}
-  \item{\code{data}}{The input data frame} \item{\code{call}}{how this
-  function was called} \item{\code{groups}}{Value of \code{groups} parameter}
-  \item{\code{group.names}}{Labels used to identify groups}
+  \item{\code{id.col}}{Value of \code{id.col} parameter. May be \code{NULL}}
+  \item{\code{paired.data}}{\code{TRUE} if paired differences were estimated}
+  \item{\code{data}}{The input data frame}
+  \item{\code{call}}{How this function was called}
 }
 \description{
 Calculates differences between groups ready for printing or plotting by

@@ -267,7 +267,7 @@ primary group. There is currently no way to display multiple effect sizes for
 a single primary group.
 
 Custom labels for effects can be specified as part of the \code{contrasts}
-parameter: if \code{contrasts} is a named vector, the names are used as
+parameter. If \code{contrasts} is a named vector, the names are used as
 contrast labels, e.g. \code{contrasts = c("Adult change" = "adult - control",
 "Juvenile change" = "juvenile - control")}.
 

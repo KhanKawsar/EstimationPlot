@@ -8,7 +8,7 @@
 
 
 
-# Returns the negation of the specified group difference (type DurgaPWDiff,
+# Returns the negation of the specified group difference (type DurgaGroupDiff,
 # usually a member of es$group.differences). I.e. changes "group1 - group2" to
 # "group2 - group1"
 negatePairwiseDiff <- function(pwd) {
@@ -51,7 +51,7 @@ getDiffLabel <- function(pwes) {
 }
 
 # Given a string representation of the required contrasts, returns a list of
-# DurgaPWDiff objects, one for each contrast. The DurgaPWDiff objects are extracted
+# DurgaGroupDiff objects, one for each contrast. The DurgaGroupDiff objects are extracted
 # from es$group.differences, so must already have been calculated by
 # DurgaDiff
 buildPlotDiffs <- function(contrasts, es) {
@@ -166,8 +166,9 @@ plotViolin <- function(shape, centreX, d, ...) {
 # Plot a single pairwise effect size
 #
 # @param mapYFn Function to map logical y values to display coordinates. If not
-#   specified, not mapping is performed.
-plotEffectSize <- function(pwes, xo, centreY, showViolin, violinCol, violin.width, violin.shape, ef.size.col, ef.size.pch, mapYFn = identity, xpd = FALSE) {
+#   specified, no mapping is performed.
+plotEffectSize <- function(pwes, xo, centreY, showViolin, violinCol, violin.width, violin.shape,
+                           ef.size.col, ef.size.pch, mapYFn = identity, xpd = FALSE) {
   deltaY <- centreY - pwes$t0
   if (showViolin) {
     d <- stats::density(pwes$t, na.rm = TRUE)
@@ -625,11 +626,11 @@ DurgaPlot <- function(es,
     } else if (is.character(contrasts)) {
       # Interpret string description
       plotDiffs <- buildPlotDiffs(contrasts, es)
-    } else if (is.list(contrasts) && all(sapply(contrasts, function(x) methods::is(x, "DurgaPWDiff")))) {
+    } else if (is.list(contrasts) && all(sapply(contrasts, function(x) methods::is(x, "DurgaGroupDiff")))) {
       # Contrasts were passed directly
       plotDiffs <- contrasts
     } else if (!is.null(contrasts)) {
-      stop("Invalid plot contrasts argument, must be character string or list of DurgaPWDiff objects")
+      stop("Invalid plot contrasts argument, must be character string or list of DurgaGroupDiff objects")
     }
   }
 
