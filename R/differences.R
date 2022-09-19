@@ -44,9 +44,10 @@ stCohensDz <- function(x) mean(x) / stats::sd(x)
 # TODO IS THIS CORRECT??? Hedges' g for paired data
 stHedgesGz <- function(x) stCohensDz(x) * (1 - 3 / (4 * length(x) - 9))
 
-calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, group.col, id.col, effect.type, R, ci.conf, ci.type, boot.params) {
+calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, group.col, id.col,
+                         effect.type, R, ci.conf, ci.type, boot.params, boot.ci.params) {
 
-  # Function to simplify writing bootstrap statistic functions
+  # Functions to simplify writing bootstrap statistic functions
   .wrap2GroupStatistic <- function(statisticFn) {
     function(data, indices) {
       measurement <- data[indices, data.col]
@@ -78,6 +79,7 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
       nBad <- sum(is.na(g1Idx))
       stop(sprintf("%d %s%s are not matched across groups in paired data", nBad, idColName, if (nBad == 1) "" else "s"))
     }
+    # Statistic functions operate on differences between paired values
     bootstrapData <- g1[[data.col]][g1Idx] - g2[[data.col]]
     if (effect.type == "unstandardised") {
       statistic <- .wrapPairedStatistic(mean)
@@ -102,13 +104,13 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
   }
 
   # Bootstrap the statistic
-  es <- do.call(boot::boot, c(list(data = bootstrapData, statistic = statistic, R = R), boot.params))
+  es <- do.call(boot::boot, c(list(data = bootstrapData, statistic = statistic, R = R, stype = "i"), boot.params))
 
   if (is.na(es$t0))
     stop(sprintf("Estimate is NA; do you need to specify na.rm = TRUE?"))
 
   # Calculate confidence interval
-  ci <- boot::boot.ci(es, type = ci.type, conf = ci.conf)
+  ci <- do.call(boot::boot.ci, c(list(es, type = ci.type, conf = ci.conf), boot.ci.params))
 
   # Save some parts of the CI data into the returned value (don't need values that are already there or misleading)
   es[["ci.type"]] <- ci.type
@@ -137,52 +139,67 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
 
 #############################################################################
 
-#' Calculate group mean differences
+#' Estimate group mean differences
 #'
-#' Calculates differences between groups ready for printing or plotting by
+#' Estimates differences between groups in preparation for plotting by
 #' \code{\link{DurgaPlot}}.
 #'
-#' Data format - long format, one column with measurement (\code{data.col}),
-#' another column with group identity (\code{group.col}). For repeated measures,
-#' a subject identity column is also required (\code{id.col}).
+#' The data set must be in \emph{long format}: one column (\code{data.col})
+#' contains the measurement or value to be compared, and another column
+#' (\code{group.col}) the group identity. For repeated measures, a subject
+#' identity column (\code{id.col}) is also required.
+#'
+#' The pairs of groups to be compared are defined by the parameter
+#' \code{contrasts}. An asterisk (\code{"*"}, the default) creates contrasts for
+#' all possible pairs of groups. A single string has a format such as
+#' \code{"group1 - group2, group3 - group4"}. A single string such as \code{".-
+#' control"} compares all groups against the \code{"control"} group, i.e. the
+#' \code{"."} expands to all groups except the named group. A vector of strings
+#' looks like \code{c("group1 - group2", "group3 - group4")}. If a matrix is
+#' specified, it must have a column for each contrast, with the first group in
+#' row 1 and the second in row 2.
 #'
 #' The formulae for Cohen's d and Hedges' g are from Lakens (2013), equations 1
 #' and 4 respectively. The Cohen's d we use is labelled
 #' \emph{\out{d<sub>s</sub>}} by Lakens (2013). Hedges' g is a corrected version
 #' of Cohen's d, and is more suitable for small sample sizes. For paired (i.e.
 #' repeated measures) Cohen's d, we apply equation 6 (Lakens 2013). For paired
-#' Hedges' g, we simply apply Hedges' correction to the paired Cohen's d.
+#' Hedges' g, we apply Hedges' correction to the paired Cohen's d.
+#'
+#' Confidence intervals for the estimate are determined using bootstrap
+#' resampling, using the adjusted bootstrap percentile (BCa) method (see
+#' \code{\link[boot]{boot}} and \code{\link[boot]{boot.ci}}). Additional
+#' arguments can be passed to the \code{\link[boot]{boot}}
+#' (\code{\link[boot]{boot.ci}}) by passing a named list of values as the
+#' argument \code{boot.params} (\code{boot.ci.params}).
 #'
 #' @param data A data frame containing values to be compared.
 #' @param data.col Name or index of the column within \code{data} containing the
 #'   measurement data.
 #' @param group.col Name or index of the column within \code{data} containing
 #'   the values to group by.
-#' @param id.col Specify for paired data/repeat measures only. Name or index of
-#'   ID column for repeated measures/paired data. For non-paired data, do not
-#'   specify an \code{id.col}.
+#' @param id.col Specify for paired data/repeated measures only. Name or index
+#'   of ID column for repeated measures/paired data. Observations for the same
+#'   individual must have the same ID. For non-paired data, do not specify an
+#'   \code{id.col}.
 #' @param effect.type Type of difference
 #' @param groups Vector of group names. Defaults to all groups in \code{data} in
 #'   \emph{natural} order. If \code{groups} is a named vector, the names are
-#'   used to identify groups for printing or plotting.
+#'   used as group labels for plotting or printing.
 #' @param contrasts Specify the pairs of groups to be compared. By default, all
 #'   pairwise differences are generated. May be a single string, a vector of
-#'   strings, or a matrix. A single string has a format such as \code{"group1 -
-#'   group2, group3 - group4"}. A single asterisk, \code{"*"} creates contrasts
-#'   for all possible pairs of groups. A single string such as \code{".-
-#'   control"} compares all groups against the \code{"control"} group, i.e. the
-#'   \code{"."} expands to all groups except the named group. A vector of
-#'   strings looks like \code{c("group1 - group2", "group3 - group4")}. If a
-#'   matrix is specified, it must have a column for each contrast, with the
-#'   first group in row 1 and the second in row 2.
-#' @param effect.type Type of group difference to be calculated. Possible types
+#'   strings, or a matrix. See Details for more information.
+#' @param effect.type Type of group difference to be estimated Possible types
 #'   are: \code{unstandardised}, difference in group means; \code{cohens},
 #'   Cohen's d; \code{hedges}, Hedges' g.
 #' @param R The number of bootstrap replicates.
 #' @param boot.params Optional list of additional names parameters to pass to
-#'   the [boot]{boot} function.
+#'   the \code{\link[boot]{boot}} function.
 #' @param ci.conf Numeric confidence level of the required confidence interval.
-#'   Applies to both CI of differences between group means and CI of group means.
+#'   Applies to both CI of differences between group means and CI of group
+#'   means.
+#' @param boot.ci.params Optional list of additional names parameters to pass to
+#'   the \code{\link[boot]{boot.ci}} function.
 #' @param na.rm a logical evaluating to TRUE or FALSE indicating whether NA
 #'   values should be stripped before the computation proceeds. If \code{TRUE}
 #'   for "paired" data (i.e. \code{id.col} is specified), all rows
@@ -196,20 +213,20 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
 #'   and upper confidence intervals of the mean, confidence level as set by the
 #'   \code{ci.conf} parameter.)}
 #'
-#'   \item{\code{group.differences}}{List of \code{DurgaGroupDiff} objects, which are
-#'     \code{boot} objects with added confidence interval information. See
-#'     \code{\link[boot]{boot}} and \code{\link[boot]{boot.ci}}}
+#'   \item{\code{group.differences}}{List of \code{DurgaGroupDiff} objects,
+#'   which are \code{boot} objects with added confidence interval information.
+#'   See \code{\link[boot]{boot}} and \code{\link[boot]{boot.ci}}}
 #'   \item{\code{groups}}{Vector of group names}
 #'   \item{\code{group.names}}{Labels used to identify groups}
 #'   \item{\code{effect.type}}{Value of \code{effect.type} parameter}
 #'   \item{\code{effect.name}}{Pretty version of \code{effect.type}}
-#'   \item{\code{data.col}}{Value of \code{data.col} parameter; may be an index or a name}
-#'   \item{\code{data.col.name}}{Name of the \code{data.col} column}
-#'   \item{\code{group.col}}{Value of \code{group.col} parameter; may be an index or a name}
-#'   \item{\code{group.col.name}}{Name of the \code{group.col} column}
-#'   \item{\code{id.col}}{Value of \code{id.col} parameter. May be \code{NULL}}
-#'   \item{\code{paired.data}}{\code{TRUE} if paired differences were estimated}
-#'   \item{\code{data}}{The input data frame}
+#'   \item{\code{data.col}}{Value of \code{data.col} parameter; may be an index
+#'   or a name} \item{\code{data.col.name}}{Name of the \code{data.col} column}
+#'   \item{\code{group.col}}{Value of \code{group.col} parameter; may be an
+#'   index or a name} \item{\code{group.col.name}}{Name of the \code{group.col}
+#'   column} \item{\code{id.col}}{Value of \code{id.col} parameter. May be
+#'   \code{NULL}} \item{\code{paired.data}}{\code{TRUE} if paired differences
+#'   were estimated} \item{\code{data}}{The input data frame}
 #'   \item{\code{call}}{How this function was called}
 #'
 #' @seealso \code{\link[boot]{boot}}, \code{\link[boot]{boot.ci}},
@@ -223,15 +240,16 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
 #'
 #' @export
 DurgaDiff <- function(data,
-                       data.col, group.col,
-                       id.col,
-                       groups = sort(unique(data[[group.col]])),
-                       contrasts = "*",
-                       effect.type = c("unstandardised", "cohens", "hedges"),
-                       R = 1000,
-                       boot.params = list(),
-                       ci.conf = 0.95,
-                       na.rm = FALSE
+                      data.col, group.col,
+                      id.col,
+                      groups = sort(unique(data[[group.col]])),
+                      contrasts = "*",
+                      effect.type = c("unstandardised", "cohens", "hedges"),
+                      R = 1000,
+                      boot.params = list(),
+                      ci.conf = 0.95,
+                      boot.ci.params = list(),
+                      na.rm = FALSE
 ) {
 
   # *******
@@ -336,7 +354,8 @@ DurgaDiff <- function(data,
       groupIndices <- c(which(groups == pair[1]), which(groups == pair[2]))
       groupLabels <- c(groupLabels[groupIndices[1]],
                        groupLabels[groupIndices[2]])
-      calcPairDiff(pairData, pair, pairedData, groupLabels, groupIndices, data.col, group.col, id.col, effect.type, R, ci.conf, ci.type, boot.params)
+      calcPairDiff(pairData, pair, pairedData, groupLabels, groupIndices, data.col, group.col, id.col,
+                   effect.type, R, ci.conf, ci.type, boot.params, boot.ci.params)
     })
   }
 
