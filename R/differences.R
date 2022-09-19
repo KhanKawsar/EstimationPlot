@@ -298,7 +298,12 @@ DurgaDiff <- function(data,
     data <- data[toKeep, ]
   }
 
-  # Sanity check
+  # Sanity checks
+  if (!all(groups %in% unique(data[[group.col]]))) {
+    badGroups <- which(!groups %in% unique(data[[group.col]]))
+    fmt <- ifelse(length(badGroups) == 1, "Group '%s' is missing from data", "Groups %s are missing from data")
+    stop(sprintf(fmt, paste(groups[badGroups], collapse = ", ")))
+  }
   if (nrow(data) == 0) stop("No data to analyse!")
 
   # Create return structure with administrative info

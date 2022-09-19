@@ -618,7 +618,7 @@ DurgaPlot <- function(es,
 
   # What contrasts are to be displayed (if any)?
   plotDiffs <- list()
-  if (.show(ef.size) || .show(paired)) {
+  if ((.show(ef.size) || .show(paired)) && length(groups) > 1) {
     # If contrasts were specified to DurgaDiff, use them
     if (missing(contrasts)) {
       if (es$explicit.contrasts)

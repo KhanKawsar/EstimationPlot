@@ -843,20 +843,39 @@ test_that("Grouped plot", {
   # Attempt to reproduce Figure 1 in
   # Ostap-Chec, M., Opalek, M., Stec, D., & Miler, K. (2021). Discontinued alcohol consumption elicits withdrawal symptoms in honeybees. Biology Letters, 17(6), 20210182. doi:10.1098/rsbl.2021.0182
 
-  n <- 6
-  meansA <- c("water" = 5, "0.125%" = 5, "1.25%" = 5, "2%" = 12, "sugar" = 100)
-  groups <- c("no exposure", "short exposure", "exposure withheld", "constant exposure")
-  df <- data.frame(group = rep(groups, each = n),
-                   prob = sapply(names(meansA), function(nm) pmin(100, rnorm(n * length(groups), meansA[nm], meansA[nm] / 2))),
-                   check.names = FALSE)
-  # Convert wide to long format
-  rows <- lapply(names(meansA), function(nm) cbind.data.frame(group = df$group, treatment = rep(nm, nrow(df)), prob = df[[paste0("prob.", nm)]]))
-  long <- as.data.frame(do.call(rbind, rows))
-  long$combined <- paste(long$group, long$treatment)
+  op <- par(mar = c(4, 5, 1, 10.5) + 0.1, mfrow = c(2, 1))
+  on.exit(par(op))
+  cols <- RColorBrewer::brewer.pal(4, "Dark2")
+  for (i in 1:2) {
 
-  cg <- sapply(names(meansA), function(t) paste(groups, t))
-  d <- DurgaDiff(long, "prob", "combined", groups = cg, contrasts = NULL)
-  expect_error(DurgaPlot(d, ef.size = FALSE, violin = FALSE, points = FALSE, group.dx = c(0.6, 0.2, -0.2, -0.6), central.tendency = c("green", "orange", "purple", "pink")), NA)
+    n <- 6
+    meansA <- c("water" = 5, "0.125%" = 5, "1.25%" = 5, "2%" = 12, "sugar" = 100)
+    groups <- c("no exposure", "short exposure", "exposure withheld", "constant exposure")
+    df <- data.frame(group = rep(groups, each = n),
+                     prob = sapply(names(meansA), function(nm) pmin(100, rnorm(n * length(groups), meansA[nm], meansA[nm] / 2))),
+                     check.names = FALSE)
+    # Convert wide to long format
+    rows <- lapply(names(meansA), function(nm) cbind.data.frame(group = df$group, treatment = rep(nm, nrow(df)), prob = df[[paste0("prob.", nm)]]))
+    long <- as.data.frame(do.call(rbind, rows))
+    long$combined <- paste(long$group, long$treatment)
+
+    cg <- sapply(names(meansA), function(t) paste(groups, t))
+    d <- DurgaDiff(long, "prob", "combined", groups = cg, contrasts = NULL)
+    ps <- expect_error(DurgaPlot(d, x.axis = FALSE, left.las = 1, left.ylab = "probability of\nresponding (%)",
+                                 frame.plot = FALSE, ef.size = FALSE, violin = FALSE, points = FALSE,
+                                 group.dx = c(0.6, 0.2, -0.2, -0.6),
+                                 central.tendency = cols, error.bars = cols), NA)
+    # Force axis lines to cover the plot extents
+    axis(1, at = par("usr")[1:2], labels = c("", ""), lwd.ticks = 0)
+    axis(2, at = par("usr")[3:4], labels = c("", ""), lwd.ticks = 0)
+    # Calculate centre of each group
+    at <- colMeans(matrix(ps[,1], nrow = 4))
+    axis(1, at = at, labels = names(meansA))
+    title(xlab = "solution")
+    legend(par("usr")[2] + 0.2, mean(par("usr")[3:4]), yjust = 0.5, xpd = NA,
+           c("1, no exposure", "2, short exposure", "3, exposure withheld", "4, constant exposure"),
+           col = cols, lwd = 3, pch = 19, bty = "n")
+  }
 })
 
 test_that("group labels etc", {
@@ -935,7 +954,7 @@ test_that("CI", {
 
 })
 
-test_that("factor IDs", {
+test_that("Diff error detection", {
   n <- 40
   set.seed(1)
   realDiff <- 1
@@ -944,6 +963,9 @@ test_that("factor IDs", {
                    id = c(1:n, 1:n))
   # Shuffle
   df <- df[sample(nrow(df)), ]
+
+  # Missing group
+  expect_error(DurgaDiff(df, data.col = 1, group.col = 2, groups = c("Control", "Group", "Nonexistent")), "Nonexistent")
 
   # Non factor ID
   d1 <- DurgaDiff(df, data.col = 1, group.col = 2, id.col = 3)
@@ -958,4 +980,23 @@ test_that("factor IDs", {
   removeIdxs <- sample(which(df$group == "Group"), 10)
   df <- df[-removeIdxs, ]
   expect_error(DurgaDiff(df, data.col = 1, group.col = 2, id.col = 3), "id")
+
+  # Non-numeric value
+  expect_error(DurgaDiff(df, data.col = 3, group.col = 2, id.col = 3), "numeric")
+  # Empty data frame
+  expect_error(DurgaDiff(df[numeric(0), ], data.col = 1, group.col = 2, id.col = 3), "No data")
+})
+
+test_that("single group", {
+  n <- 40
+  par(mfrow = c(1, 2))
+  df <- data.frame(val = rnorm(n, 10),
+                   group = rep("G1", each = n))
+  d <- DurgaDiff(df, data.col = 1, group.col = 2)
+  expect_error(DurgaPlot(d, main = "1 group in data"), NA)
+
+  df <- data.frame(val = c(rnorm(n, 10), rnorm(n, 11)),
+                   group = rep(c("G1", "G2"), each = n))
+  d <- DurgaDiff(df, data.col = 1, group.col = 2, groups = "G1")
+  expect_error(DurgaPlot(d, main = "1 group in diff"), NA)
 })
