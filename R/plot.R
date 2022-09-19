@@ -438,12 +438,14 @@ DurgaTransparent <-  function(colour, alpha) {
 #'   be \code{"mean"} or \code{"median"}?
 #' @param central.tendency.symbol Should central tendency be shown as a point or
 #'   a horizontal line segment?
+#' @param central.tendency.width Width of the central tendency line segment.
 #' @param central.tendency.params Additional arguments to be passed to
 #'   \code{\link[graphics]{points}} (if \code{central.tendency.symbol ==
 #'   "point"}) or \code{\link[graphics]{segments}} (if
 #'   \code{central.tendency.symbol == "segment"}).
 #' @param central.tendency.dx Horizontal shift to apply to central tendency
 #'   indicator and error bars.
+#'
 #' @param error.bars Should error bars be displayed? May be the colour to be
 #'   used for error bars.
 #' @param error.bars.type Should error bars depict 95%% confidence intervals of
@@ -565,6 +567,7 @@ DurgaPlot <- function(es,
                     central.tendency = isFALSE(box) && isFALSE(bar),
                     central.tendency.type = c("mean", "median"),
                     central.tendency.symbol = c("point", "segment"),
+                    central.tendency.width = violin.width,
                     central.tendency.params = list(),
                     central.tendency.dx = group.dx,
 
@@ -654,17 +657,18 @@ DurgaPlot <- function(es,
   data$.group.as.factor <- factor(data[[es$group.col]], levels = groups)
   f <- stats::as.formula(paste(es$data.col.name, "~.group.as.factor"))
 
-  # Calculate plot limits
-
-  # "Natural" xlim
-  nxlim <- c(0.5, nGroups + 0.5)
-
+  # Where does effect size go?
   if (length(plotDiffs) < 1) {
     ef.size <- FALSE # There's nothing to see here
   } else if (length(plotDiffs) > 1) {
     # Can't show more than one effect size to the right
     ef.size.position <- "below"
   }
+
+  # Calculate plot limits
+
+  # "Natural" xlim
+  nxlim <- c(0.5, nGroups + 0.5)
 
   # If needed extend x range to encompass effect size on right,
   # alternatively, extend bottom margin to display ES below
@@ -913,8 +917,8 @@ DurgaPlot <- function(es,
         do.call(graphics::points, c(list(x = i + central.tendency.dx[i], y = y, cex = cex, pch = pch, col = col[i]),
                                     central.tendency.params))
       } else {
-        do.call(graphics::segments, c(list(i - violin.width + central.tendency.dx[i], y,
-                                           i + violin.width + central.tendency.dx[i], y,
+        do.call(graphics::segments, c(list(i - central.tendency.width + central.tendency.dx[i], y,
+                                           i + central.tendency.width + central.tendency.dx[i], y,
                                            col = col[i], lwd = lwd),
                                       central.tendency.params))
       }

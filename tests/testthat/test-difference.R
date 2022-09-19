@@ -5,31 +5,6 @@
 
 
 
-# # TODO add something like this?
-# DrawGroupDiff <- function(es, plotStats, idx, y, text = "", ...) {
-#   # idsToDraw <- sapply(seq_along(es$group.differences), function(gi) es$group.differences[[gi]]$bca[4] > 0 || es$group.differences[[gi]]$bca[5] < 0)
-#
-#   diff <- es$group.differences[[idx]]
-#   fromGI <- diff$groupIndices[1]
-#   toGI <- diff$groupIndices[2]
-#
-#   x1 <- plotStats[fromGI, 1]
-#   x2 <- plotStats[toGI, 1]
-#   graphics::segments(x1, y, x2, y)
-#   inchesToUsr <- diff(graphics::par("usr")[1:2]) / graphics::par("fin")[1]
-#   dy <- 0.15 * inchesToUsr
-#   graphics::segments(c(x1, x2), y, c(x1, x2), y - dy)
-#
-#   if (length(text) > 0) {
-#     tx <- mean(c(x1, x2))
-#     text(tx, y, text, adj = c(0.5, 0), ...)
-#
-#     # w <- strwidth(text, ...)
-#     # h <- strheight(text, ...)
-#     # rect(tx - w / 2, y, tx + w / 2, y + h)
-#   }
-# }
-
 
 makeData <- function(N = 40) {
   set.seed(1)
@@ -132,7 +107,7 @@ test_that("contrast plots", {
   expect_equal(d$group.differences[[2]]$groups[2], "ZControl1")
   expect_equal(d$group.differences[[3]]$groups[1], "Group3")
   expect_equal(d$group.differences[[3]]$groups[2], "ZControl1")
-  DurgaPlot(d, violin = F, violin.width = 0.1, central.tendency.symbol = "segment", central.tendency.params = , main = "Explicit contrasts")
+  DurgaPlot(d, violin = F, central.tendency.width = 0.1, central.tendency.symbol = "segment", central.tendency.params = , main = "Explicit contrasts")
 
   # Shorthand for same as above
   d <- DurgaDiff(data, "Measurement", "Group", groups = groups, contrasts = ". - ZControl1")
@@ -958,4 +933,29 @@ test_that("CI", {
     expect_lt(d95$group.statistics[g, "CI.upper"], d99$group.statistics[g, "CI.upper"])
   }
 
+})
+
+test_that("factor IDs", {
+  n <- 40
+  set.seed(1)
+  realDiff <- 1
+  df <- data.frame(val = c(rnorm(n, mean = 10), rnorm(n, mean = 10 + realDiff)),
+                   group = c(rep("Control", n), rep("Group", n)),
+                   id = c(1:n, 1:n))
+  # Shuffle
+  df <- df[sample(nrow(df)), ]
+
+  # Non factor ID
+  d1 <- DurgaDiff(df, data.col = 1, group.col = 2, id.col = 3)
+  expect_true(d1$paired.data)
+  # Factor ID
+  df$id <- factor(df$id)
+  d2 <- DurgaDiff(df, data.col = 1, group.col = 2, id.col = 3)
+  expect_true(d2$paired.data)
+  compareDiffs(d2, d1)
+
+  # Missing IDs - remove some of the Group values
+  removeIdxs <- sample(which(df$group == "Group"), 10)
+  df <- df[-removeIdxs, ]
+  expect_error(DurgaDiff(df, data.col = 1, group.col = 2, id.col = 3), "id")
 })

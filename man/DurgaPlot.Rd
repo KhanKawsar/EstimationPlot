@@ -46,6 +46,7 @@ DurgaPlot(
   central.tendency = isFALSE(box) && isFALSE(bar),
   central.tendency.type = c("mean", "median"),
   central.tendency.symbol = c("point", "segment"),
+  central.tendency.width = violin.width,
   central.tendency.params = list(),
   central.tendency.dx = group.dx,
   error.bars = !isFALSE(central.tendency) || !isFALSE(bar),
@@ -190,6 +191,8 @@ be \code{"mean"} or \code{"median"}?}
 
 \item{central.tendency.symbol}{Should central tendency be shown as a point or
 a horizontal line segment?}
+
+\item{central.tendency.width}{Width of the central tendency line segment.}
 
 \item{central.tendency.params}{Additional arguments to be passed to
 \code{\link[graphics]{points}} (if \code{central.tendency.symbol ==
