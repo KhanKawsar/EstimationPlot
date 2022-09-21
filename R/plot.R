@@ -351,8 +351,8 @@ DurgaTransparent <-  function(colour, alpha) {
 #' positioned to the right of - or below - the main plot
 #' (\code{ef.size.position}). If more than one effect size is displayed, it must
 #' be below the main plot. If below, an effect size is drawn underneath its
-#' primary group. There is currently no way to display multiple effect sizes for
-#' a single primary group.
+#' primary group. See \code{\link{DurgaBrackets}} for a way to display multiple
+#' effect sizes that would overlap if displayed as normal effect sizes.
 #'
 #' Custom labels for effects can be specified as part of the \code{contrasts}
 #' parameter. If \code{contrasts} is a named vector, the names are used as
@@ -503,8 +503,9 @@ DurgaTransparent <-  function(colour, alpha) {
 #' @return A matrix with the x-axis locations and y-axis extents of each
 #'   displayed group (returned invisibly).
 #'
-#' @seealso \code{\link{DurgaDiff}}, \code{\link[vipor]{offsetX}},
-#'   \code{\link[graphics]{boxplot}}, \code{\link[graphics]{bxp}}
+#' @seealso \code{\link{DurgaDiff}}, \code{\link{DurgaBrackets}},
+#'   \code{\link[vipor]{offsetX}}, \code{\link[graphics]{boxplot}},
+#'   \code{\link[graphics]{bxp}}
 #'
 #' @references
 #'
@@ -934,8 +935,8 @@ DurgaPlot <- function(es,
   }
 
   # Return the coordinates of the group tick marks along the x-axis
-  result <- cbind(groupAt, do.call(rbind, groupRange))
-  colnames(result) <- c("x", "y.min", "y.max")
-  rownames(result) <- es$group.names
-  invisible(result)
+  extents <- cbind(groupAt, do.call(rbind, groupRange))
+  colnames(extents) <- c("x", "y.min", "y.max")
+  rownames(extents) <- es$group.names
+  invisible(list(es = es, extents = extents, plot.differences = plotDiffs))
 }

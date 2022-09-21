@@ -68,6 +68,24 @@ DurgaPlot(d, error.bars.type = "CI", central.tendency = rainbow(3),
         points = FALSE, violin = FALSE, main = "Mean and 95% CI")
 ```
 
+When there are too many group comparisons to be displayed underneath, you can choose to display confidence brackets above the plot. Confidence brackets communicate less information than standard effect sizes, but may be a reasonable compromise. You must manually ensure there is sufficient space for the brackets in the plot. 
+
+```{r fig.height=4, fig.width=8}
+d <- DurgaDiff(petunia, 1, 2)
+# Don't draw frame because brackets will appear in the upper margin
+op <- par(mar = c(1, 4, 4, 1) + 0.1)
+on.exit(par(op))
+p <- DurgaPlot(d, ef.size = FALSE, frame.plot = FALSE)
+nonZeroCI <- function(diff) diff$bca[4] < 0 && diff$bca[5] > 0
+lwd <- sapply(d$group.differences, function(diff) ifelse(nonZeroCI(diff), 1, 2))
+font <- sapply(d$group.differences, function(diff) ifelse(nonZeroCI(diff), 1, 2))
+lb.col <- sapply(d$group.differences, function(diff) ifelse(nonZeroCI(diff), "grey60", "grey20"))
+br.col <- sapply(d$group.differences, function(diff) ifelse(diff$bca[5] < 0, "red",
+                                                            ifelse(diff$bca[4] > 0, "blue", "grey60")))
+DurgaBrackets(p, labels = "CI-diff", snapTo = 2, lb.cex = 0.8, lb.col = lb.col, lb.font = font, 
+              br.col = br.col, br.lwd = lwd)
+```
+
 By default, effect sizes are "unstandardised", which means they are in the same units as the data. Alternatively, `DurgaDiff` can estimate standardised effect sizes, either Cohen's d or Hedges' g, which allow comparisons of effect sizes across data in different units.
 
 You can override the y-axis labels to aid interpretation of effect sizes. `DurgaPlot` does not provide text labels by default because effect size interpretation depends on context.

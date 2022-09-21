@@ -266,8 +266,8 @@ effect sizes (aka "contrasts") to be plotted is controlled by the
 positioned to the right of - or below - the main plot
 (\code{ef.size.position}). If more than one effect size is displayed, it must
 be below the main plot. If below, an effect size is drawn underneath its
-primary group. There is currently no way to display multiple effect sizes for
-a single primary group.
+primary group. See \code{\link{DurgaBrackets}} for a way to display multiple
+effect sizes that would overlap if displayed as normal effect sizes.
 
 Custom labels for effects can be specified as part of the \code{contrasts}
 parameter. If \code{contrasts} is a named vector, the names are used as
@@ -296,6 +296,7 @@ confidence intervals, and meta-analysis (1st edition ed.). New York:
 Routledge.
 }
 \seealso{
-\code{\link{DurgaDiff}}, \code{\link[vipor]{offsetX}},
-  \code{\link[graphics]{boxplot}}, \code{\link[graphics]{bxp}}
+\code{\link{DurgaDiff}}, \code{\link{DurgaBrackets}},
+  \code{\link[vipor]{offsetX}}, \code{\link[graphics]{boxplot}},
+  \code{\link[graphics]{bxp}}
 }

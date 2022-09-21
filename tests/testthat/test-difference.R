@@ -1,4 +1,3 @@
-#### TODO test different values of ci.type
 
 # To report test coverage, run
 # devtools::test_coverage()
@@ -869,7 +868,7 @@ test_that("Grouped plot", {
     axis(1, at = par("usr")[1:2], labels = c("", ""), lwd.ticks = 0)
     axis(2, at = par("usr")[3:4], labels = c("", ""), lwd.ticks = 0)
     # Calculate centre of each group
-    at <- colMeans(matrix(ps[,1], nrow = 4))
+    at <- colMeans(matrix(ps$extents[,1], nrow = 4))
     axis(1, at = at, labels = names(meansA))
     title(xlab = "solution")
     legend(par("usr")[2] + 0.2, mean(par("usr")[3:4]), yjust = 0.5, xpd = NA,

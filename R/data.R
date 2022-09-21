@@ -44,7 +44,7 @@
 #'   \item{group}{Male age groups; \code{adult} or \code{juvenile} used for body size and weight measurements}
 #' }
 #'
-#' @source Khan, M. K., & Herberstein, M. E. (2021). Male–male interactions select for conspicuous male coloration in damselflies. Animal Behaviour, 176, 157-166.
+#' @source Khan, M. K., & Herberstein, M. E. (2021). Male-male interactions select for conspicuous male coloration in damselflies. Animal Behaviour, 176, 157-166.
 "damselfly"
 
 

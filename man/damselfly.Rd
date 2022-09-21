@@ -13,7 +13,7 @@ A data frame with 77 observations and 3 variables.
 }
 }
 \source{
-Khan, M. K., & Herberstein, M. E. (2021). Male–male interactions select for conspicuous male coloration in damselflies. Animal Behaviour, 176, 157-166.
+Khan, M. K., & Herberstein, M. E. (2021). Male-male interactions select for conspicuous male coloration in damselflies. Animal Behaviour, 176, 157-166.
 }
 \usage{
 damselfly

@@ -2,6 +2,7 @@
 
 S3method(print,DurgaDiff)
 S3method(print,DurgaGroupDiff)
+export(DurgaBrackets)
 export(DurgaDiff)
 export(DurgaPlot)
 export(DurgaTransparent)
