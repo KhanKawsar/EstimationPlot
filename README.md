@@ -4,15 +4,15 @@
 <!-- badges: end -->
 
 
-# DurgaPlot: Handy package for Estimation Plotting in R
+# Durga: Handy package for Estimation Plotting in R
 
-Effect size estimation and plotting is a component of [estimation statistics](https://en.wikipedia.org/wiki/Estimation_statistics). `DurgaPlot` is an R package that aims to simplify sophisticated plotting of estimated differences in group means, which is an important part of communicating estimation statistics.
+Effect size estimation and plotting is a component of [estimation statistics](https://en.wikipedia.org/wiki/Estimation_statistics). `Durga` is an R package that aims to simplify sophisticated plotting of estimated differences in group means, which is an important part of communicating estimation statistics.
 
 ## Citation
 
-If you use `DurgaPlot` in your research, please cite (and read) the article:
+If you use `Durga` in your research, please cite (and read) the article:
 
-`DurgaPlot`: An R package for estimating and plotting effect sizes 
+`Durga`: An R package for estimating and plotting effect sizes 
 
 ## Installation
 

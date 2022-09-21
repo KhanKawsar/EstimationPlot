@@ -1,4 +1,4 @@
 library(testthat)
-library(DurgaPlot)
+library(Durga)
 
-test_check("DurgaPlot")
+test_check("Durga")

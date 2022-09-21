@@ -86,6 +86,17 @@ A \code{DurgaDiff} object, which is a list containing:
   \code{NULL}} \item{\code{paired.data}}{\code{TRUE} if paired differences
   were estimated} \item{\code{data}}{The input data frame}
   \item{\code{call}}{How this function was called}
+
+  A \code{DurgaGroupDiff} object is a \code{boot} object (as returned by
+  \code{\link[boot]{boot}}) with added \code{bootci} components (as returned
+  by \code{\link[boot]{boot.ci}}) and components identifying the groups used
+  to estimate the difference. Particularly relevant members are:
+
+  \item{\code{t0}}{The observed value of the statistic}
+  \item{\code{bac[4]}}{The lower endpoint of the confidence interval}
+  \item{\code{bac[5]}}{The upper endpoint of the confidence interval}
+  \item{\code{groups}}{The difference is estimated on \code{groups[1]} -
+  \code{groups[2]}}
 }
 \description{
 Estimates differences between groups in preparation for plotting by

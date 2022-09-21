@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 > “The primary product of a research inquiry is one or more measures of effect size, not _p_ values” (Cohen, 1990, p. 1310)
 
 ```{r setup}
-library(DurgaPlot)
+library(Durga)
 ```
 
 ## What is `DurgaPlot`?

@@ -867,8 +867,7 @@ DurgaPlot <- function(es,
     if (!es$paired.data)
       stop("To plot paired lines, data must be, i.e. id.col specified to DurgaDiffs")
     col <- .boolToDef(paired, DurgaTransparent("grey20", 0.7))
-    # TODO what pairs should we join?
-    # For now, display all contrasts, which can get very ugly if there's more than one
+    # Display all contrasts, which can get very ugly if there's more than one
     for (i in seq_len(length(plotDiffs))) {
       # Get the groups in the comparison
       idx1 <- plotDiffs[[i]]$groupIndices[1]
