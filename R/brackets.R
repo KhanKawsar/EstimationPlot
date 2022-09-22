@@ -1,7 +1,9 @@
+# DBG_SNAP_TO <- FALSE
+
 # Converts mm to screen user coordinates
 #
 # @param horizontal True if inch is measured parallel to the x-axis, otherwise parallel to the y-axis
-mmToUser <- function(inch, horizontal) {
+mmToUser <- function(mm, horizontal) {
   # Work out how to scale inches to user coordinates.
   # Plot size in user coordinates (x1, x2, y1, y2)
   usr <- graphics::par("usr")
@@ -11,7 +13,7 @@ mmToUser <- function(inch, horizontal) {
   fac <- c((usr[2] - usr[1]) / pin[1],
            (usr[4] - usr[3]) / pin[2])[(!horizontal) + 1]
   # Convert inches to mm
-  inch * fac / 25.4
+  mm * fac / 25.4
 }
 
 # Draw a confidence bracket across the top of two groups
@@ -112,14 +114,28 @@ fitBrackets <- function(plotExtents, diffs, text, shorten, dataGap, verticalGap,
 
   dataGapU <- mmToUser(dataGap, FALSE)
   verticalGapU <- mmToUser(verticalGap, FALSE)
+  snapToU <- mmToUser(snapTo, FALSE)
+
+  # Make the grid pass through the bracket position above the highest group
+  gridO <- max(plotExtents[, 2:3]) + dataGapU
+  # if (DBG_SNAP_TO) {
+  #   abline(h = gridO + -100:100 * snapToU, col = "grey80", xpd = NA)
+  # }
 
   ys <- sapply(seq_along(ord), function(i) {
     diff <- diffs[[ord[i]]]
     # Step 1, fit above data
     testy <- maxValInGroups(diff$groupIndices) + dataGapU
     # Snap upwards to "grid"
-    if (snapTo != 0)
-      testy <- testy + snapTo - testy %% snapTo
+    if (snapToU != 0) {
+      # Snap to the lowest grid level that is not below the starting point (testy)
+      # x * snapTo + gridO >= testy
+      # Solve for x: x >= (testy - gridO) / snapTo
+      # then the lowest integral value that satisfies the expression is
+      # ceiling(x) , then put that back into the original expression
+
+      testy <- ceiling((testy - gridO) / snapToU) * snapToU + gridO
+    }
 
     bb <- DrawBracket(diff, plotExtents, testy, text = text[ord[i]], plot = FALSE, shorten = shorten, ...)
     dy <- testy - bb[3]
@@ -164,9 +180,9 @@ shiftRect <- function(r, dx, dy) r + rep(c(dx, dy), each = 2)
 
 labelFns <- list(
   CI = function(diff) sprintf("[%g, %g]", signif(diff$bca[4], 3), signif(diff$bca[5], 2)),
-  difference = function(diff) as.character(round(diff$t0, 1)),
-  `CI-diff` = function(diff) sprintf("%g [%g, %g]", signif(diff$t0, 3), signif(diff$bca[4], 3), signif(diff$bca[5], 2)),
-  `CI-long` = function(diff) sprintf("%g%% CI [%g, %g]", diff$bca[1] * 100, signif(diff$bca[4], 3), signif(diff$bca[5], 2))
+  diff = function(diff) as.character(round(diff$t0, 1)),
+  `diff CI` = function(diff) sprintf("%g [%g, %g]", signif(diff$t0, 3), signif(diff$bca[4], 3), signif(diff$bca[5], 2)),
+  `level CI` = function(diff) sprintf("%g%% CI [%g, %g]", diff$bca[1] * 100, signif(diff$bca[4], 3), signif(diff$bca[5], 2))
 )
 
 # Returns an annotation function. Implemented to return a function in case I
@@ -224,14 +240,14 @@ BracketsAnnot <- function(labels, shorten, dataGap, verticalGap, textPad, tipLen
 #' @param diffs Set of brackets to be displayed as a list of
 #'   \code{DurgaGroupDiff} objects
 #' @param labels Text to display above each bracket. May be NULL, otherwise one
-#'   of: \code{"difference"}, \code{"CI"}, \code{"long-CI"} or \code{"diff-CI"};
+#'   of: \code{"diff"}, \code{"CI"}, \code{"level CI"} or \code{"diff CI"};
 #'   a vector of texts to display for each element of \code{diffs}, or a
 #'   function called with one argument; a \code{DurgaGroupDiff} object
 #' @param shorten Amount (mm) to shrink brackets at each end
 #' @param tipLength Length of bracket tips (mm). May be a vector with length 2;
 #'   length of tip at groups 1 and 2 respectively
 #' @param snapTo Shifts the base of the lowest brackets to a multiple of this
-#'   value. Used to improve vertical alignment.
+#'   value (mm). Used to improve aesthetics of vertical alignment.
 #' @param dataGap Vertical distance (mm) between top-most data point and bottom
 #'   of bracket
 #' @param verticalGap Vertical distance (mm) between overlapping brackets
@@ -249,7 +265,7 @@ BracketsAnnot <- function(labels, shorten, dataGap, verticalGap, textPad, tipLen
 #' d <- DurgaDiff(petunia, 1, 2)
 #' # Don't draw frame because brackets will appear in the upper margin
 #' p <- DurgaPlot(d, ef.size = FALSE, frame.plot = FALSE)
-#' DurgaBrackets(p, lb.cex = 0.8, br.lwd = 2, snapTo = 2)
+#' DurgaBrackets(p, lb.cex = 0.8, br.lwd = 2, snapTo = 1)
 #'
 #' @export
 DurgaBrackets <- function(plotStats,

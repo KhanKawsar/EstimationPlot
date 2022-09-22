@@ -33,7 +33,7 @@ test_that("Brackets", {
   d <- DurgaDiff(petunia, 1, 2)
   # Don't draw frame because brackets will appear in the upper margin
   ps <- DurgaPlot(d, ef.size = FALSE, frame.plot = FALSE)
-  expect_error(DurgaBrackets(ps, lb.cex = 0.8, br.lwd = 2, snapTo = 2), NA)
+  expect_error(DurgaBrackets(ps, lb.cex = 0.8, br.lwd = 2, snapTo = 1), NA)
 })
 
 test_that("many bars", {
@@ -48,10 +48,10 @@ test_that("many bars", {
   on.exit(par(op))
 
   ps <- DurgaPlot(d, box = T, box.outline = F, points = T, ylim = c(-20, 340), frame.plot = F, ef.size = F,
-                  main = "Differences, snapTo 10")
-  expect_error(DurgaBrackets(ps, diffs, labels = "difference",
+                  main = "Differences, snapTo 2")
+  expect_error(DurgaBrackets(ps, diffs, labels = "diff",
                              lb.cex = 0.8, lb.font = 1,
-                             snapTo = 10,
+                             snapTo = 2,
                              br.lwd = 2, br.col = col), NA)
   ps <- DurgaPlot(d, contrasts = diffs, box = T, box.outline = F, points = T, ylim = c(-20, 340), frame.plot = F, ef.size = F,
                   main = "CI, no snapTo")
@@ -70,12 +70,12 @@ test_that("many bars", {
 
   ps <- DurgaPlot(d, box = T, box.outline = F, points = T, ylim = c(-20, 270), frame.plot = F, ef.size = F,
                   main = "CI-long, big red labels")
-  expect_error(DurgaBrackets(ps, diffs, labels = "CI-long",
+  expect_error(DurgaBrackets(ps, diffs, labels = "level CI",
                              br.lwd = 2, br.col = col, lb.col = "red"), NA)
 
   ps <- DurgaPlot(d, box = T, box.outline = F, points = T, ylim = c(-20, 270), frame.plot = F, ef.size = F,
                   main = "CI-diff, bold labels")
-  expect_error(DurgaBrackets(ps, diffs, labels = "CI-diff",
+  expect_error(DurgaBrackets(ps, diffs, labels = "diff CI",
                              lb.cex = 0.8, lb.font = 2,
                              br.lwd = 2, br.col = col), NA)
 })

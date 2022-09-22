@@ -30,7 +30,7 @@ DurgaBrackets(
 \code{DurgaGroupDiff} objects}
 
 \item{labels}{Text to display above each bracket. May be NULL, otherwise one
-of: \code{"difference"}, \code{"CI"}, \code{"long-CI"} or \code{"diff-CI"};
+of: \code{"diff"}, \code{"CI"}, \code{"level CI"} or \code{"diff CI"};
 a vector of texts to display for each element of \code{diffs}, or a
 function called with one argument; a \code{DurgaGroupDiff} object}
 
@@ -40,7 +40,7 @@ function called with one argument; a \code{DurgaGroupDiff} object}
 length of tip at groups 1 and 2 respectively}
 
 \item{snapTo}{Shifts the base of the lowest brackets to a multiple of this
-value. Used to improve vertical alignment.}
+value (mm). Used to improve aesthetics of vertical alignment.}
 
 \item{dataGap}{Vertical distance (mm) between top-most data point and bottom
 of bracket}
@@ -73,6 +73,6 @@ into the margin without being cropped.
 d <- DurgaDiff(petunia, 1, 2)
 # Don't draw frame because brackets will appear in the upper margin
 p <- DurgaPlot(d, ef.size = FALSE, frame.plot = FALSE)
-DurgaBrackets(p, lb.cex = 0.8, br.lwd = 2, snapTo = 2)
+DurgaBrackets(p, lb.cex = 0.8, br.lwd = 2, snapTo = 1)
 
 }
