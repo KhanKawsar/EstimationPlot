@@ -76,6 +76,7 @@ d <- DurgaDiff(petunia, 1, 2)
 op <- par(mar = c(1, 4, 4, 1) + 0.1)
 on.exit(par(op))
 p <- DurgaPlot(d, ef.size = FALSE, frame.plot = FALSE)
+# For each difference, record whether it overlaps 0, is negative or positive
 sign <- sapply(d$group.differences, function(diff) ifelse(diff$bca[5] < 0, -1, 
                                                            ifelse(diff$bca[4] > 0, 1, 0)))
 lwd <- ifelse(sign == 0, 1, 2)

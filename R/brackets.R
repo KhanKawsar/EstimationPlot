@@ -240,24 +240,26 @@ BracketsAnnot <- function(labels, shorten, dataGap, verticalGap, textPad, tipLen
 #' @param diffs Set of brackets to be displayed as a list of
 #'   \code{DurgaGroupDiff} objects
 #' @param labels Text to display above each bracket. May be NULL, otherwise one
-#'   of: \code{"diff"}, \code{"CI"}, \code{"level CI"} or \code{"diff CI"};
-#'   a vector of texts to display for each element of \code{diffs}, or a
-#'   function called with one argument; a \code{DurgaGroupDiff} object
+#'   of: \code{"diff"}, \code{"CI"}, \code{"level CI"} or \code{"diff CI"}; a
+#'   vector of texts to display for each element of \code{diffs}, or a function
+#'   called with one argument; a \code{DurgaGroupDiff} object
+#' @param br.col,br.lwd,br.lty Graphical parameters (colour, line weight and
+#'   style) that control the bracket appearance - passed to
+#'   \code{\link[graphics]{segments}}. May be a single value or a vector with
+#'   one value per bracket.
+#' @param lb.col,lb.cex,lb.font Graphical parameters (colour, scale and font)
+#'   that control the label appearance - passed to \code{\link[graphics]{text}}.
+#'   May be a single value or a vector with one value per bracket.
+#' @param snapTo Snaps the base of the lowest brackets onto horizontal grid
+#'   lines separated by \code{snapTo} mm. Used to improve aesthetics of vertical
+#'   alignment.
 #' @param shorten Amount (mm) to shrink brackets at each end
 #' @param tipLength Length of bracket tips (mm). May be a vector with length 2;
 #'   length of tip at groups 1 and 2 respectively
-#' @param snapTo Shifts the base of the lowest brackets to a multiple of this
-#'   value (mm). Used to improve aesthetics of vertical alignment.
 #' @param dataGap Vertical distance (mm) between top-most data point and bottom
 #'   of bracket
 #' @param verticalGap Vertical distance (mm) between overlapping brackets
 #' @param textPad Gap (mm) between bracket and text
-#' @param br.lwd,br.col,br.lty Graphical parameters that control the bracket
-#'   appearance - passed to \code{\link[graphics]{segments}}. May be a single
-#'   value or a vector with one value per bracket.
-#' @param lb.cex,lb.col,lb.font Graphical parameters that control the label
-#'   appearance - passed to \code{\link[graphics]{text}}. May be a single
-#'   value or a vector with one value per bracket.
 #' @param ... Additional arguments passed to \code{\link[graphics]{text}}
 #'
 #' @examples
@@ -271,10 +273,11 @@ BracketsAnnot <- function(labels, shorten, dataGap, verticalGap, textPad, tipLen
 DurgaBrackets <- function(plotStats,
                           diffs = plotStats$es$group.differences,
                           labels = "CI",
-                          shorten = 1.5, tipLength = 2, snapTo = 0,
-                          dataGap = 2.5, verticalGap = 1.3, textPad = 1.5,
                           br.lwd = 1, br.col = 1, br.lty = 1,
                           lb.cex = 1, lb.col = 1, lb.font = 1,
+                          snapTo = 1,
+                          shorten = 1.5, tipLength = 2,
+                          dataGap = 2.5, verticalGap = 1.3, textPad = 1.5,
                           ...) {
   if (!is.list(plotStats) || !"extents" %in% names(plotStats))
     stop("plotStats must be an object returned by DurgaPlot")
