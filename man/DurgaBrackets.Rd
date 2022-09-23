@@ -8,18 +8,18 @@ DurgaBrackets(
   plotStats,
   diffs = plotStats$es$group.differences,
   labels = "CI",
-  shorten = 1.5,
-  tipLength = 2,
-  snapTo = 0,
-  dataGap = 2.5,
-  verticalGap = 1.3,
-  textPad = 1.5,
   br.lwd = 1,
   br.col = 1,
   br.lty = 1,
   lb.cex = 1,
   lb.col = 1,
   lb.font = 1,
+  snapTo = 1,
+  shorten = 1.5,
+  tipLength = 2,
+  dataGap = 2.5,
+  verticalGap = 1.3,
+  textPad = 1.5,
   ...
 )
 }
@@ -30,17 +30,27 @@ DurgaBrackets(
 \code{DurgaGroupDiff} objects}
 
 \item{labels}{Text to display above each bracket. May be NULL, otherwise one
-of: \code{"diff"}, \code{"CI"}, \code{"level CI"} or \code{"diff CI"};
-a vector of texts to display for each element of \code{diffs}, or a
-function called with one argument; a \code{DurgaGroupDiff} object}
+of: \code{"diff"}, \code{"CI"}, \code{"level CI"} or \code{"diff CI"}; a
+vector of texts to display for each element of \code{diffs}, or a function
+called with one argument; a \code{DurgaGroupDiff} object}
+
+\item{br.col, br.lwd, br.lty}{Graphical parameters (colour, line weight and
+style) that control the bracket appearance - passed to
+\code{\link[graphics]{segments}}. May be a single value or a vector with
+one value per bracket.}
+
+\item{lb.col, lb.cex, lb.font}{Graphical parameters (colour, scale and font)
+that control the label appearance - passed to \code{\link[graphics]{text}}.
+May be a single value or a vector with one value per bracket.}
+
+\item{snapTo}{Snaps the base of the lowest brackets onto horizontal grid
+lines separated by \code{snapTo} mm. Used to improve aesthetics of vertical
+alignment.}
 
 \item{shorten}{Amount (mm) to shrink brackets at each end}
 
 \item{tipLength}{Length of bracket tips (mm). May be a vector with length 2;
 length of tip at groups 1 and 2 respectively}
-
-\item{snapTo}{Shifts the base of the lowest brackets to a multiple of this
-value (mm). Used to improve aesthetics of vertical alignment.}
 
 \item{dataGap}{Vertical distance (mm) between top-most data point and bottom
 of bracket}
@@ -48,14 +58,6 @@ of bracket}
 \item{verticalGap}{Vertical distance (mm) between overlapping brackets}
 
 \item{textPad}{Gap (mm) between bracket and text}
-
-\item{br.lwd, br.col, br.lty}{Graphical parameters that control the bracket
-appearance - passed to \code{\link[graphics]{segments}}. May be a single
-value or a vector with one value per bracket.}
-
-\item{lb.cex, lb.col, lb.font}{Graphical parameters that control the label
-appearance - passed to \code{\link[graphics]{text}}. May be a single
-value or a vector with one value per bracket.}
 
 \item{...}{Additional arguments passed to \code{\link[graphics]{text}}}
 }
