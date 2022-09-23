@@ -19,7 +19,7 @@ If you use `Durga` in your research, please cite (and read) the article:
 To install the development version (which is the only version available as yet):
 
     > install.packages("devtools") # If not already installed
-    > devtools::install_github("KhanKawsar/EstimationPlot")
+    > devtools::install_github("KhanKawsar/EstimationPlot", build_vignettes = TRUE)
 
 ## Usage
 

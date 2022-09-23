@@ -68,7 +68,7 @@ DurgaPlot(d, error.bars.type = "CI", central.tendency = rainbow(3),
         points = FALSE, violin = FALSE, main = "Mean and 95% CI")
 ```
 
-When there are too many group comparisons to be displayed underneath, you can choose to display confidence brackets above the plot. Confidence brackets communicate less information than standard effect sizes, but may be a reasonable compromise. You must manually ensure there is sufficient space for the brackets in the plot. 
+When there are too many group comparisons to be displayed underneath, you can choose to display confidence brackets above the plot. Confidence brackets communicate less information than standard effect size visualisation, but may be a reasonable compromise. You must manually ensure there is sufficient space for the brackets in the plot (see `DurgaBrackets` for details). 
 
 ```{r fig.height=4, fig.width=8}
 d <- DurgaDiff(petunia, 1, 2)
