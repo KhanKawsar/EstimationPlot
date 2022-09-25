@@ -234,7 +234,7 @@ BracketsAnnot <- function(labels, shorten, dataGap, verticalGap, textPad, tipLen
 #' large top margin (\code{par(mar = c(...))}) and the turn off the plot frame
 #' (\code{DurgaPlot(..., frame.plot = FALSE)}). In either case, experiment with
 #' the values until the result is visually pleasing. The annotation can be drawn
-#' into the margin without being cropped.
+#' into the margin as it will not be cropped.
 #'
 #' @param plotStats Object returned by the call to \code{\link{DurgaPlot}}
 #' @param diffs Set of brackets to be displayed as a list of

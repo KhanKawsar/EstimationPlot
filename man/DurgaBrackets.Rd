@@ -68,7 +68,7 @@ this, either specify \code{ylim} to \code{\link{DurgaPlot}}, or create a
 large top margin (\code{par(mar = c(...))}) and the turn off the plot frame
 (\code{DurgaPlot(..., frame.plot = FALSE)}). In either case, experiment with
 the values until the result is visually pleasing. The annotation can be drawn
-into the margin without being cropped.
+into the margin as it will not be cropped.
 }
 \examples{
 
