@@ -75,6 +75,6 @@ into the margin as it will not be cropped.
 d <- DurgaDiff(petunia, 1, 2)
 # Don't draw frame because brackets will appear in the upper margin
 p <- DurgaPlot(d, ef.size = FALSE, frame.plot = FALSE)
-DurgaBrackets(p, lb.cex = 0.8, br.lwd = 2, snapTo = 1)
+DurgaBrackets(p, lb.cex = 0.8, br.lwd = 2)
 
 }

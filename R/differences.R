@@ -192,8 +192,8 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
 #' argument \code{boot.params} (\code{boot.ci.params}).
 #'
 #' @param data A data frame containing values to be compared.
-#' @param data.col Name or index of the column within \code{data} containing the
-#'   measurement data.
+#' @param data.col Name (character) or index (numeric) of the column
+#'   within \code{data} containing the measurement data.
 #' @param group.col Name or index of the column within \code{data} containing
 #'   the values to group by.
 #' @param id.col Specify for paired data/repeated measures only. Name or index
@@ -260,6 +260,11 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
 #'
 #' @seealso \code{\link[boot]{boot}}, \code{\link[boot]{boot.ci}},
 #'   \code{\link{DurgaPlot}}
+#'
+#' @examples
+#'
+#' d <- DurgaDiff(insulin, "sugar", "treatment", "id")
+#' print(d)
 #'
 #' @references
 #'

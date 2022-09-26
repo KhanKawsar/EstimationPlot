@@ -5,22 +5,31 @@
 \alias{insulin}
 \title{Insulin data}
 \format{
-A data frame with 104 observations and 5 variables. Insulin was administered in rabbits and blood sugar was measured within three hours. Data collated from Table 1 and Table 2 of Banting et al., (1922)
+A data frame with 104 observations and 5 variables.
+
 \describe{
   \item{sugar}{Measured blood sugar level}
-  \item{treatment}{Blood sugar measurements treatment group; \code{before} or \code{after} administering insulin}
-  \item{id}{Identifier of indivdual being measured (not in original data set)}
-  \item{experimenter_time}{Initial of researchers who performed the experiment and at what date}
-  \item{time}{Time in minutes when blood sugar were measured administering insulin}
+  \item{treatment}{Blood sugar measurements treatment group; \code{before} or \code{after}
+  administering insulin}
+  \item{id}{Identifier of individual being measured
+  (not in original data set)}
+  \item{experimenter_time}{Initial of researchers
+  who performed the experiment and at what date}
+  \item{time}{Time of blood sugar measurement; minutes after administration of insulin}
 }
 }
 \source{
-Banting, F. G., Best, C. H., Collip, J. B., Macleod, J. J., & Noble, E. C. (1922). The effect of pancreatic extract (insulin) on normal rabbits. American Journal of Physiology-Legacy Content, 62(1), 162-176.
+Banting, F. G., Best, C. H., Collip, J. B., Macleod, J. J., & Noble,
+  E. C. (1922). The effect of pancreatic extract (insulin) on normal rabbits.
+  American Journal of Physiology-Legacy Content, 62(1), 162-176.
 }
 \usage{
 insulin
 }
 \description{
-Results of experiments testing whether insulin reduces blood sugar.
+Selected results of experiments performed by Banting \emph{et al}., (1922),
+testing whether insulin reduces blood sugar. Insulin was administered in
+rabbits and blood sugar was measured within three hours. Data collated from
+Table 1 and Table 2 of Banting \emph{et al}., (1922)
 }
 \keyword{datasets}

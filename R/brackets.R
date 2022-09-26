@@ -1,3 +1,10 @@
+
+
+#______________________________________________________________#
+#### Private functions ####
+
+
+# For debugging snapTo
 # DBG_SNAP_TO <- FALSE
 
 # Converts mm to screen user coordinates
@@ -16,7 +23,7 @@ mmToUser <- function(mm, horizontal) {
   mm * fac / 25.4
 }
 
-# Draw a confidence bracket across the top of two groups
+# Draw a single confidence bracket across the top of two groups
 #
 # @param diff Object of class \code{DurgaGroupDiff}
 # @param plotStats Object returned by the call to \code{\link{DurgaPlot}}
@@ -88,6 +95,15 @@ DrawBracket <- function(diff, plotExtents, y, text, textPad, plot = TRUE,
 
   bb
 }
+
+# Returns TRUE if the two rectangles intersect
+rectsIntersect <- function(r1, r2) {
+  r1[1] < r2[2] && r1[2] > r2[1] &&
+    r1[3] < r2[4] && r1[4] > r2[3]
+}
+
+# Returns rectangle \code{r} shifted by the specified x and y deltas.
+shiftRect <- function(r, dx, dy) r + rep(c(dx, dy), each = 2)
 
 
 # Calculates how to fit confidence brackets depicting a set of group differences without overlaps.
@@ -169,15 +185,6 @@ fitBrackets <- function(plotExtents, diffs, text, shorten, dataGap, verticalGap,
   ys[order(ord)]
 }
 
-# Returns TRUE if the two rectangles intersect
-rectsIntersect <- function(r1, r2) {
-  r1[1] < r2[2] && r1[2] > r2[1] &&
-    r1[3] < r2[4] && r1[4] > r2[3]
-}
-
-# Returns rectangle \code{r} shifted by the specified x and y deltas.
-shiftRect <- function(r, dx, dy) r + rep(c(dx, dy), each = 2)
-
 labelFns <- list(
   CI = function(diff) sprintf("[%g, %g]", signif(diff$bca[4], 3), signif(diff$bca[5], 2)),
   diff = function(diff) as.character(round(diff$t0, 1)),
@@ -226,6 +233,9 @@ BracketsAnnot <- function(labels, shorten, dataGap, verticalGap, textPad, tipLen
   }
 }
 
+#_________________________________________________________________#
+#### Public functions ####
+
 #' Annotate a \code{DurgaPlot} with confidence brackets
 #'
 #' Brackets are added to a \code{DurgaPlot} that already exists. That means you
@@ -267,7 +277,7 @@ BracketsAnnot <- function(labels, shorten, dataGap, verticalGap, textPad, tipLen
 #' d <- DurgaDiff(petunia, 1, 2)
 #' # Don't draw frame because brackets will appear in the upper margin
 #' p <- DurgaPlot(d, ef.size = FALSE, frame.plot = FALSE)
-#' DurgaBrackets(p, lb.cex = 0.8, br.lwd = 2, snapTo = 1)
+#' DurgaBrackets(p, lb.cex = 0.8, br.lwd = 2)
 #'
 #' @export
 DurgaBrackets <- function(plotStats,

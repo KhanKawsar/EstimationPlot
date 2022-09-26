@@ -17,7 +17,7 @@ data(iris)
 
 `Durga` is an R package that aims to simplify the estimation and visualisation of one type of effect size: differences in means. It provides a function, `DurgaDiff`, to estimate raw or standardised mean differences. Most importantly, it provides a function, `DurgaPlot`, that will create a plot for visualising both the original data and the effect size, providing a diverse range of display options. The function `DurgaBrackets` can add _confidence brackets_ to an existing Durga plot. This vignette shows some example Durga plots. Each plot is preceded by the code used to generate it, which can be used to learn how to create the plot. 
 
-Before plotting your data, you must estimate the differences in group means by calling `DurgaDiff`. Your data should be in a data frame (or similar), with one observation per row. The data frame must contain a column for the measurement or value being analysed, and another for the group or treatment. Additional, paired or repeated measures data requires an ID column to match measurements for the same specimen/individual. For example, within the `insulin` data set, the value being measured - blood sugar level - is recorded in the column `sugar`; treatments are `before` and `after` in the `treatment` column; and the identity of the individual (rabbit) being tested is given in the `id` column. Each rabbit was tested before and after treatment, so, for each rabbit, there is a row with the `before` sugar level, and another with the `after` sugar level.
+Before plotting your data, you must estimate the differences in group means by calling `DurgaDiff`. Your data should be in a data frame (or similar), with one observation per row - this is known as _long format_ data. The data frame must contain a column for the measurement or value being analysed, and another for the group or treatment. Additional, paired or repeated measures data requires an ID column to match measurements for the same specimen/individual. For example, within the `insulin` data set, the value being measured - blood sugar level - is recorded in the column `sugar`; treatments are `before` and `after` in the `treatment` column; and the identity of the individual (rabbit) being tested is given in the `id` column. the blood sugar level of each rabbit was tested before and after treatment with insulin, so, for each rabbit, there is a row with the `before` sugar level, and another with the `after` sugar level.
 
 ```{r} 
 head(insulin[insulin$id < 4, ])
@@ -96,7 +96,7 @@ lwd <- ifelse(sign == 0, 1, 2)
 font <- ifelse(sign == 0, 1, 2)
 lb.col <- ifelse(sign == 0, "grey60", "grey20")
 br.col <- ifelse(sign < 0, "red", ifelse(sign > 0, "blue", "grey60"))
-DurgaBrackets(p, labels = "diff CI", snapTo = 2, lb.cex = 0.8, lb.col = lb.col, lb.font = font, 
+DurgaBrackets(p, labels = "diff CI", lb.cex = 0.8, lb.col = lb.col, lb.font = font, 
               br.col = br.col, br.lwd = lwd)
 ```
 

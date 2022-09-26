@@ -22,8 +22,8 @@ DurgaDiff(
 \arguments{
 \item{data}{A data frame containing values to be compared.}
 
-\item{data.col}{Name or index of the column within \code{data} containing the
-measurement data.}
+\item{data.col}{Name (character) or index (numeric) of the column
+within \code{data} containing the measurement data.}
 
 \item{group.col}{Name or index of the column within \code{data} containing
 the values to group by.}
@@ -131,6 +131,12 @@ resampling, using the adjusted bootstrap percentile (BCa) method (see
 arguments can be passed to the \code{\link[boot]{boot}}
 (\code{\link[boot]{boot.ci}}) by passing a named list of values as the
 argument \code{boot.params} (\code{boot.ci.params}).
+}
+\examples{
+
+d <- DurgaDiff(insulin, "sugar", "treatment", "id")
+print(d)
+
 }
 \references{
 Lakens, D. (2013). Calculating and reporting effect sizes to facilitate

@@ -3,7 +3,7 @@
 \docType{data}
 \name{damselfly}
 \alias{damselfly}
-\title{damselfly data}
+\title{Damselfly data}
 \format{
 A data frame with 77 observations and 3 variables.
 \describe{
