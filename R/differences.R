@@ -1,7 +1,9 @@
 # The difference function
 
+#_____________________________________________________________#
+#### Private functions ####
 
-### confidence interval of the mean a group
+# Confidence interval of the mean of a group
 CI <- function(x, alpha = 0.95){
   m <- mean(x)
   sd <- stats::sd(x)
@@ -44,6 +46,21 @@ stCohensDz <- function(x) mean(x) / stats::sd(x)
 # TODO IS THIS CORRECT??? Hedges' g for paired data
 stHedgesGz <- function(x) stCohensDz(x) * (1 - 3 / (4 * length(x) - 9))
 
+# Calculate the difference statistic for a pair of groups
+# @param data Values for the two groups
+# @param pair Vector with the two group names
+# @param paired Boolean, TRUE if data are paired
+# @param pairIndices Indices within groups of the two groups (not used here,
+#   just added to the return structure)
+# @param data.col Name/index of the data column
+# @param group.col Name/index of the group column
+# @param id.col Name/index of the id column
+# @param effect.type Name of the statistic to be calculated
+# @param R Number of bootstrap replicates
+# @param ci.conf Level for confidence interval
+# @param ci.type Value passed to the `boot::boot.ci` `type` parameter
+# @param boot.params List of additional argument to pass to boot::boot
+# @param boot.ci.params List of additional argument to pass to boot::boot.ci
 calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, group.col, id.col,
                          effect.type, R, ci.conf, ci.type, boot.params, boot.ci.params) {
 
@@ -136,8 +153,9 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
 }
 
 
+#__________________________________________________________________________#
+#### Public functions ####
 
-#############################################################################
 
 #' Estimate group mean differences
 #'
@@ -378,7 +396,7 @@ DurgaDiff <- function(data,
   es
 }
 
-#######################################################################################
+#___________________________________________________________#
 # Print methods
 
 #' @export

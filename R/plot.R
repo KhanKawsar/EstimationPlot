@@ -1,12 +1,5 @@
-### Private functions
-
-#### TODO
-# Perhaps don't do these, just require people to create more than 1 plot:
-#### How should we handle paired data with more than 2 groups? eg petunia
-#### How should we handle more than 1 comparison per group? E.g. all pairwise combinations
-
-
-
+#_____________________________________________________________#
+#### Private functions ####
 
 # Returns the negation of the specified group difference (type DurgaGroupDiff,
 # usually a member of es$group.differences). I.e. changes "group1 - group2" to
@@ -296,7 +289,9 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
 # Convenience operator like Ruby's || operator. Returns a if it is not null, otherwise b
 `%||%` <- function(a, b) if (!is.null(a)) a else b
 
-#############################################################################
+#_____________________________________________________________#
+#### Public functions ####
+
 
 #' Returns a transparent version of the specified colour(s).
 #'
@@ -704,7 +699,7 @@ DurgaPlot <- function(es,
     }
   }
 
-  #### Y limits ####
+  #--- Y limits ---
 
   rowsToBePlotted <- data[[es$group.col]] %in% groups
 
@@ -769,13 +764,13 @@ DurgaPlot <- function(es,
     ylim <- range(groupRange)
   }
 
-  #### X limits ####
+  #--- X limits ---
 
   if (missing(xlim)) {
     xlim <- nxlim
   }
 
-  #### Prepare plot ####
+  #--- Prepare plot ---
 
   # Positions of group ticks along the x-axis
   groupAt <- seq_len(nGroups) + x.axis.dx
