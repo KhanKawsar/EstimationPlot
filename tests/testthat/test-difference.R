@@ -907,7 +907,9 @@ test_that("plot miscellanea", {
                      groups = c("Immature" = "juvenile", "Mature" = "adult"))
 
   # Axis text is smaller when there are multiple columns
-  par(mfrow = c(1, 3))
+  op <- par(mfrow = c(1, 3))
+  on.exit(par(op))
+
   DurgaPlot(d, ef.size.position = "below", main = "Text size consistent")
   par(mar = c(5, 4, 4, 6) + 0.1)
   DurgaPlot(d, bar = T)
@@ -987,8 +989,10 @@ test_that("Diff error detection", {
 })
 
 test_that("single group", {
+  op <- par(mfrow = c(1, 2))
+  on.exit(par(op))
+
   n <- 40
-  par(mfrow = c(1, 2))
   df <- data.frame(val = rnorm(n, 10),
                    group = rep("G1", each = n))
   d <- DurgaDiff(df, data.col = 1, group.col = 2)
@@ -998,4 +1002,21 @@ test_that("single group", {
                    group = rep(c("G1", "G2"), each = n))
   d <- DurgaDiff(df, data.col = 1, group.col = 2, groups = "G1")
   expect_error(DurgaPlot(d, main = "1 group in diff"), NA)
+})
+
+test_that("group colours", {
+  op <- par(mfrow = c(2, 2))
+  on.exit(par(op))
+
+  d <- DurgaDiff(petunia, 1, 2)
+  DurgaPlot(d, ef.size = FALSE, group.colour = "Set1", main = "Group colours Set1")
+  DurgaPlot(d, ef.size = FALSE, group.colour = "blue", main = "group.colours blue")
+  DurgaPlot(d, ef.size = FALSE, group.colour = c("red", "Green", "blue"), main = "group.colours RGB, points fill coloured",
+            points = "black", points.params = list(pch = 21))
+  DurgaPlot(d, ef.size = FALSE, group.colour = c("red", "Green", "#0000ff"), main = "group.colours RGB, points red fill",
+            points.params = list(pch = 21, bg = "red"))
+
+  # Invalid colour/palette
+  expect_error(DurgaPlot(d, group.colour = "Fred"))
+  expect_error(DurgaPlot(d, group.colour = c("Set1", "Dark1")))
 })

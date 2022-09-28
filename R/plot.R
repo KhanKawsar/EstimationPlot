@@ -330,8 +330,7 @@ DurgaTransparent <-  function(colour, alpha) {
 #' colour (e.g. \code{box \ "blue"}), which is used as the border/outline for
 #' the boxes. You may also specify a vector of colours, one for each group. For
 #' \code{points}, you may specify a colour for each individual point. When
-#' colours are not specified, they are selected from an
-#' \code{\link{RColorBrewer}} qualitative palette.
+#' colours are not specified, they default to the group colours (\code{group.colour}).
 #'
 #' Group data annotations are controlled with parameters \code{central.tendency}
 #' and \code{error.bars}. \code{central.tendency} visually represents the mean
@@ -377,6 +376,8 @@ DurgaTransparent <-  function(colour, alpha) {
 #' @param group.dx Used to shift group centres horizontally. E.g.,
 #'   \code{group.dx = c(0.1, -0.1)} will group into pairs. Individual components
 #'   can be shifted independently using the appropriate \code{*.dx} parameters.
+#' @param group.colour Colours to use for each group. Either an \code{\link{RColorBrewer}}
+#'   palette name or a vector of colours.
 #'
 #' @param points If not FALSE, points are plotted. If \code{TRUE}, points are
 #'   displayed with a default colour. You may specify a vector of colours; if
@@ -517,8 +518,11 @@ DurgaTransparent <-  function(colour, alpha) {
 #'           box = TRUE, points = "black", points.params = list(cex = 0.8))
 #'
 #' # Use confidence brackets to show all group differences
-#' p <- DurgaPlot(d, ef.size = FALSE, points.method = "jitter",
-#'           violin.dx = -0.05, points.dx = 0.15, violin = "black", ylim = c(12, 75))
+#' p <- DurgaPlot(d, ef.size = FALSE, group.colour = "Set1",
+#'           points = "black", points.method = "jitter",
+#'           points.params = list(pch = 21), points.dx = 0.15,
+#'           violin.dx = -0.05, violin = "black", violin.adj = 0.5,
+#'           ylim = c(12, 75))
 #' DurgaBrackets(p)
 #'
 #' @references
@@ -537,6 +541,7 @@ DurgaPlot <- function(es,
                     contrasts,
 
                     group.dx = 0,
+                    group.colour = "Set2",
 
                     points = TRUE,
                     points.method = c("quasirandom", "pseudorandom", "smiley", "maxout", "frowney", "minout", "tukey",
@@ -661,8 +666,16 @@ DurgaPlot <- function(es,
   points.dx <- .extend(points.dx)
   ef.size.dx <- .extend(ef.size.dx)
 
-  # Prepare some palettes, the border palette has no transparency, the fill palette is 80% transparent
-  defBorderPalette <- pickPalette(nGroups)
+  # Prepare some palettes. Use User's choice of palette if specified
+  if (length(group.colour) == 1 && group.colour %in% rownames(RColorBrewer::brewer.pal.info)) {
+    # The border palette has no transparency, the fill palette is 80% transparent
+    defBorderPalette <- pickPalette(nGroups, group.colour)
+  } else if (.isColour(group.colour)) {
+    defBorderPalette <- .extend(group.colour)
+  } else {
+    stop("Invalid group.colour argument, must be an RColorBrewer palette name or a vector of colours")
+  }
+  # The default fill palette is 80% transparent version of group colours
   defFillPalette <- DurgaTransparent(defBorderPalette, 0.8)
 
   # Calculate densities for violin plots
@@ -858,6 +871,9 @@ DurgaPlot <- function(es,
       pointCol <- pointCol[as.numeric(data$.group.as.factor)]
     }
 
+    # Extend background colours to define colour per group
+    defBg <- defFillPalette[as.numeric(data$.group.as.factor)]
+
     x <- as.numeric(data$.group.as.factor)
     # Optional shift
     x <- x + points.dx[x]
@@ -873,8 +889,10 @@ DurgaPlot <- function(es,
     }
     # Complicated way of calling is to allow user to pass in arbitrary parameters
     pch <- points.params[["pch"]] %||% 19
+    bg <- points.params[["bg"]] %||% defBg
     points.params[c("pch")] <- NULL
-    do.call(graphics::points, c(list(x = x, y = data[[es$data.col]], pch = pch, col = pointCol), points.params))
+    points.params[c("bg")] <- NULL
+    do.call(graphics::points, c(list(x = x, y = data[[es$data.col]], pch = pch, col = pointCol, bg = bg), points.params))
   }
 
   # Draw lines between paired points

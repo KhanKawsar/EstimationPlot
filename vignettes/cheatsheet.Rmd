@@ -38,8 +38,8 @@ d <- DurgaDiff(damselfly, "weight", "group", na.rm = TRUE)
 DurgaPlot(d, main = "Default display")
 
 d <- DurgaDiff(damselfly, "weight", "group", na.rm = TRUE,
-                   groups = c("Immature" = "juvenile", "Mature" = "adult"))
-DurgaPlot(d, main = "Groups labelled and ordered", left.ylab = "Weight")
+               groups = c("Immature" = "juvenile", "Mature" = "adult"))
+DurgaPlot(d, main = "Groups labelled and ordered", left.ylab = "Weight", group.colour = "Set1")
 ```
 
 A `DurgaPlot` raw data visualisation is a combination of one or more visual components: data `points`; `violin` plots; `bar` charts; `box` plots; a mean or median indicator (`central.tendency`); and error bars (`error.bars`). Each component is controlled by a set of parameters. The names of the parameters indicate the component they apply to, so to adjust the violin plot component, read the documentation about all parameters starting with `violin`. Parameters have sensible default values, so for example, if you turn on bar charts, then violin plots and the central tendency indicator will be turned off. Obviously, you are able to override the defaults if you wish.
