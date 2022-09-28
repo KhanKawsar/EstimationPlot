@@ -277,7 +277,9 @@ BracketsAnnot <- function(labels, shorten, dataGap, verticalGap, textPad, tipLen
 #' d <- DurgaDiff(petunia, 1, 2)
 #' # Don't draw frame because brackets will appear in the upper margin
 #' p <- DurgaPlot(d, ef.size = FALSE, frame.plot = FALSE)
-#' DurgaBrackets(p, lb.cex = 0.8, br.lwd = 2)
+#' # Find which intervals don't cover 0
+#' nzero <- sapply(d$group.differences, function(diff) diff$bca[4] > 0 || diff$bca[5] < 0)
+#' DurgaBrackets(p, lb.cex = 0.8, br.lwd = ifelse(nzero, 2, 1), lb.font = ifelse(nzero, 2, 1))
 #'
 #' @export
 DurgaBrackets <- function(plotStats,

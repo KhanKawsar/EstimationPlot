@@ -231,15 +231,20 @@ FALSE, a new plot is created.}
 \code{\link[graphics]{plot}} function.}
 }
 \value{
-A matrix with the x-axis locations and y-axis extents of each
-  displayed group (returned invisibly).
+A list (returned invisibly) with 3 elements:
+
+  \item{\code{es}}{Value of the \code{es} parameter.}
+  \item{\code{extents}}{Matrix with the x-axis locations and y-axis extents
+  of each displayed group.} \item{\code{plot.differences}}{A list of the
+  displayed differences, as \code{DurgaGroupDiff} objects.}
 }
 \description{
 Plot grouped data and effect size in base R, with control over a large range
 of possible display formats and options. To plot your data, first calculate
 group differences by calling \code{\link{DurgaDiff}}, then pass the result to
-\code{\link{DurgaPlot}}. Parameters are grouped according to the component
-they affect, so all parameters that affect box plots are prefixed with
+\code{\link{DurgaPlot}}. Because there are so many parameters to this
+function, they are prefixed according to the component they affect. Hence,
+for example, all parameters that affect box plots are prefixed with
 \code{box}.
 }
 \details{
@@ -285,6 +290,22 @@ must have a column for each contrast, with the first group in row 1 and the
 second in row 2. See also the \code{contrasts} parameter to
 \code{\link{DurgaDiff}}. It is an error to attempt to plot a contrast that
 was not estimated by \code{\link{DurgaDiff}}.
+}
+\examples{
+
+d <- DurgaDiff(petunia, "height", "group")
+# Default plot
+DurgaPlot(d)
+
+# Boxplot with a single effect size plotted on the right
+DurgaPlot(d, contrasts = "westerham_cross - self_fertilised",
+          box = TRUE, points = "black", points.params = list(cex = 0.8))
+
+# Use confidence brackets to show all group differences
+p <- DurgaPlot(d, ef.size = FALSE, points.method = "jitter",
+          violin.dx = -0.05, points.dx = 0.15, violin = "black", ylim = c(12, 75))
+DurgaBrackets(p)
+
 }
 \references{
 Gardner, M. J., & Altman, D. G. (1986). Confidence intervals rather than P

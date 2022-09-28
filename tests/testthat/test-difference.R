@@ -776,7 +776,7 @@ test_that("detect missing paired data", {
                    id = rep(1:n, 2))
   # If we take a random sample of rows, some will be missing their paired data
   df <- df[sample(seq_len(nrow(df)), round(n / 2)), ]
-  expect_error(DurgaDiff(df, data.col = 1, group.col = 2, id = 3), "paired data")
+  expect_error(DurgaDiff(df, data.col = 1, group.col = 2, id.col = 3), "paired data")
 })
 
 test_that("plot contrasts", {
