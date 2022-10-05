@@ -41,6 +41,7 @@ DurgaPlot(
   ef.size.label = es$effect.name,
   ef.size.dx = group.dx,
   ef.size.adj.margin = TRUE,
+  ef.size.mean.line.dx = group.dx,
   paired = es$paired.data,
   paired.lty = 1,
   paired.lwd = 1,
@@ -52,6 +53,8 @@ DurgaPlot(
   central.tendency.dx = group.dx,
   error.bars = !isFALSE(central.tendency) || !isFALSE(bar),
   error.bars.type = c("CI", "SD", "SE"),
+  error.bars.lty = 1,
+  error.bars.lwd = 3,
   error.bars.cross.width = 0,
   x.axis = TRUE,
   x.axis.dx = group.dx,
@@ -75,8 +78,8 @@ information.}
 \code{group.dx = c(0.1, -0.1)} will group into pairs. Individual components
 can be shifted independently using the appropriate \code{*.dx} parameters.}
 
-\item{group.colour}{Colours to use for each group. Either an \code{\link{RColorBrewer}}
-palette name or a vector of colours.}
+\item{group.colour}{Colours to use for each group. Either an
+\code{\link{RColorBrewer}} palette name or a vector of colours.}
 
 \item{points}{If not FALSE, points are plotted. If \code{TRUE}, points are
 displayed with a default colour. You may specify a vector of colours; if
@@ -179,6 +182,10 @@ right) or bottom margin (if ES is below) is automatically adjusted to make
 room to display the effect size or axis annotations. The margins are
 restored before control returns from \code{DurgaPlot}.}
 
+\item{ef.size.mean.line.dx}{Horizontal shift to be applied to the start (i.e.
+left end) of the group mean horizontal lines when effect size is on the
+right.}
+
 \item{paired}{If \code{TRUE}, lines are drawn joining the individual data
 points.}
 
@@ -212,6 +219,10 @@ used for error bars.}
 \item{error.bars.type}{Should error bars depict 95%% confidence intervals of
 the mean (\code{"CI"}), standard deviation (\code{"SD"}) or standard error
 (\code{"SE"})?}
+
+\item{error.bars.lty}{Line style for error bars.}
+
+\item{error.bars.lwd}{Line width for error bars.}
 
 \item{error.bars.cross.width}{Length (in inches) of the horizontal crossbars
 at the ends of the error bars. If 0, no crossbar is drawn.}
@@ -259,7 +270,8 @@ specify \code{box = TRUE}. Rather than \code{box = TRUE}, you may specify a
 colour (e.g. \code{box \ "blue"}), which is used as the border/outline for
 the boxes. You may also specify a vector of colours, one for each group. For
 \code{points}, you may specify a colour for each individual point. When
-colours are not specified, they default to the group colours (\code{group.colour}).
+colours are not specified, they default to the group colours
+(\code{group.colour}).
 
 Group data annotations are controlled with parameters \code{central.tendency}
 and \code{error.bars}. \code{central.tendency} visually represents the mean

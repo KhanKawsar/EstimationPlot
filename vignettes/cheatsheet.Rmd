@@ -35,11 +35,11 @@ In the damselfly data set, the groups are `juvenile` and `adult`. The example be
 par(mfrow = c(1, 2))
 # There are missing values in the damselfly data set, so specify na.rm = TRUE
 d <- DurgaDiff(damselfly, "weight", "group", na.rm = TRUE)
-DurgaPlot(d, main = "Default display")
+DurgaPlot(d, main = "Default display", ef.size.label = "")
 
 d <- DurgaDiff(damselfly, "weight", "group", na.rm = TRUE,
                groups = c("Immature" = "juvenile", "Mature" = "adult"))
-DurgaPlot(d, main = "Groups labelled and ordered", left.ylab = "Weight", group.colour = "Set1")
+DurgaPlot(d, main = "Groups labelled and ordered", left.ylab = "", group.colour = "Set1")
 ```
 
 A `DurgaPlot` raw data visualisation is a combination of one or more visual components: data `points`; `violin` plots; `bar` charts; `box` plots; a mean or median indicator (`central.tendency`); and error bars (`error.bars`). Each component is controlled by a set of parameters. The names of the parameters indicate the component they apply to, so to adjust the violin plot component, read the documentation about all parameters starting with `violin`. Parameters have sensible default values, so for example, if you turn on bar charts, then violin plots and the central tendency indicator will be turned off. Obviously, you are able to override the defaults if you wish.
@@ -76,8 +76,10 @@ d <- DurgaDiff(iris, data.col = "Sepal.Length", group.col = "Species")
 DurgaPlot(d, bar = TRUE, error.bars.type = "SD", points = FALSE, violin = FALSE, 
         main = "Bar chart with std. deviation")
 
+par(mar = c(5, 2.4, 4, 2) + 0.1)
 DurgaPlot(d, error.bars.type = "CI", central.tendency = rainbow(3), 
-        points = FALSE, violin = FALSE, main = "Mean and 95% CI")
+        points = FALSE, violin = FALSE, main = "Mean and 95% CI",
+        left.ylab = "", ef.size.label = "")
 ```
 
 When there are too many group comparisons to be displayed underneath, you can choose to display confidence brackets above the plot. Confidence brackets communicate less information than the standard effect size visualisation, but may be a reasonable compromise for many group comparisons. You must manually ensure there is sufficient space for the brackets in the plot (see `DurgaBrackets` for details). 

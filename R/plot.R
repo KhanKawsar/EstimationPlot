@@ -330,7 +330,8 @@ DurgaTransparent <-  function(colour, alpha) {
 #' colour (e.g. \code{box \ "blue"}), which is used as the border/outline for
 #' the boxes. You may also specify a vector of colours, one for each group. For
 #' \code{points}, you may specify a colour for each individual point. When
-#' colours are not specified, they default to the group colours (\code{group.colour}).
+#' colours are not specified, they default to the group colours
+#' (\code{group.colour}).
 #'
 #' Group data annotations are controlled with parameters \code{central.tendency}
 #' and \code{error.bars}. \code{central.tendency} visually represents the mean
@@ -376,8 +377,8 @@ DurgaTransparent <-  function(colour, alpha) {
 #' @param group.dx Used to shift group centres horizontally. E.g.,
 #'   \code{group.dx = c(0.1, -0.1)} will group into pairs. Individual components
 #'   can be shifted independently using the appropriate \code{*.dx} parameters.
-#' @param group.colour Colours to use for each group. Either an \code{\link{RColorBrewer}}
-#'   palette name or a vector of colours.
+#' @param group.colour Colours to use for each group. Either an
+#'   \code{\link{RColorBrewer}} palette name or a vector of colours.
 #'
 #' @param points If not FALSE, points are plotted. If \code{TRUE}, points are
 #'   displayed with a default colour. You may specify a vector of colours; if
@@ -449,6 +450,8 @@ DurgaTransparent <-  function(colour, alpha) {
 #'   (\code{"SE"})?
 #' @param error.bars.cross.width Length (in inches) of the horizontal crossbars
 #'   at the ends of the error bars. If 0, no crossbar is drawn.
+#' @param error.bars.lty Line style for error bars.
+#' @param error.bars.lwd Line width for error bars.
 #'
 #' @param paired If \code{TRUE}, lines are drawn joining the individual data
 #'   points.
@@ -476,6 +479,9 @@ DurgaTransparent <-  function(colour, alpha) {
 #'   positive effect" = 0.8)}
 #' @param ef.size.las Orientation of tick labels on the effect size axis (0 =
 #'   parallel to axis, 1 = horizontal).
+#' @param ef.size.mean.line.dx Horizontal shift to be applied to the start (i.e.
+#'   left end) of the group mean horizontal lines when effect size is on the
+#'   right.
 #' @param ef.size.label Label to display on y-axis for effect size.
 #' @param ef.size.adj.margin If TRUE (the default), the right margin (if ES is
 #'   right) or bottom margin (if ES is below) is automatically adjusted to make
@@ -579,6 +585,7 @@ DurgaPlot <- function(es,
                     ef.size.label = es$effect.name,
                     ef.size.dx = group.dx,
                     ef.size.adj.margin = TRUE,
+                    ef.size.mean.line.dx = group.dx,
 
                     paired = es$paired.data, # if true draw lines between paired points
                     paired.lty = 1,
@@ -593,6 +600,8 @@ DurgaPlot <- function(es,
 
                     error.bars = !isFALSE(central.tendency) || !isFALSE(bar),
                     error.bars.type = c("CI", "SD", "SE"),
+                    error.bars.lty = 1,
+                    error.bars.lwd = 3,
                     error.bars.cross.width = 0,
 
                     x.axis = TRUE,
@@ -922,13 +931,13 @@ DurgaPlot <- function(es,
   ## add CI/SD/SE error bars
   if (.show(error.bars)) {
     error.bars <- .boolToDef(error.bars, "grey20")
-    col <- rep(.colour(error.bars), length = nGroups)
+    col <- .extend(.colour(error.bars))
     for (i in seq_along(groups)) {
       y <- es$group.statistics[i, central.tendency.type]
       bars <- getErrorBars(es, i, y, error.bars.type)
       graphics::arrows(i + central.tendency.dx[i], bars[1], i + central.tendency.dx[i], bars[2],
                        code = 3, length = error.bars.cross.width, angle = 90,
-                       col = col[i], lty = 1, lwd = 3)
+                       col = col[i], lty = error.bars.lty, lwd = error.bars.lwd)
     }
   }
 
@@ -936,7 +945,7 @@ DurgaPlot <- function(es,
   central.tendency <- .boolToDef(central.tendency, "grey20")
   if (.show(central.tendency)) {
     col <- central.tendency.params[["col"]] %||% .colour(central.tendency)
-    col <- rep(col, length = nGroups)
+    col <- .extend(col)
     pch <- central.tendency.params[["pch"]] %||% 19
     cex <- central.tendency.params[["cex"]] %||% 1.1
     lwd <- central.tendency.params[["lwd"]] %||% 2
@@ -961,7 +970,8 @@ DurgaPlot <- function(es,
   ef.size.col <- .boolToDef(ef.size, "black")
   violinCol <- .boolToDef(ef.size.violin, "grey40")
   if (.show(ef.size) && ef.size.position == "right") {
-    plotEffectSizesRight(es, plotDiffs[[1]], ef.size.col, ef.size.pch, .show(ef.size.violin), violinCol, violin.width, ef.size.violin.shape, ef.size.label, ef.size.ticks, ef.size.las, groupAt)
+    lineStartAt <- seq_len(nGroups) + ef.size.mean.line.dx
+    plotEffectSizesRight(es, plotDiffs[[1]], ef.size.col, ef.size.pch, .show(ef.size.violin), violinCol, violin.width, ef.size.violin.shape, ef.size.label, ef.size.ticks, ef.size.las, lineStartAt)
   } else if (.show(ef.size) && ef.size.position == "below") {
     plotEffectSizesBelow(es, plotDiffs, ef.size.col, ef.size.pch, .show(ef.size.violin), violinCol, violin.width, ef.size.violin.shape, xlim, ef.size.dx, ef.size.label, ef.size.ticks, ef.size.las)
   }
