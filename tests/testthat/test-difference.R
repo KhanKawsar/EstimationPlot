@@ -1023,7 +1023,13 @@ test_that("group colours", {
 
 test_that("minor formatting", {
   d <- DurgaDiff(damselfly, 1, 3)
-  expect_error(DurgaPlot(d, main = "Offset lines, styled error bars",
+  expect_error(DurgaPlot(d, main = "Offset lines, styled error bars, ef size lines",
                          error.bars = "red", error.bars.lwd = 5, error.bars.lty = 4,
-                         ef.size.mean.line.dx = 0.2), NA)
+                         ef.size.mean.line.dx = 0.2, ef.size.line.col = "blue",
+                         ef.size.line.lwd = 3, ef.size.line.lty = 3), NA)
+  expect_error(DurgaPlot(d, main = "Offset lines, styled error bars, ef size line",
+                         ef.size.position = "below",
+                         error.bars = "red", error.bars.lwd = 5, error.bars.lty = 4,
+                         ef.size.mean.line.dx = 0.2, ef.size.line.col = "blue",
+                         ef.size.line.lwd = 3, ef.size.line.lty = 1), NA)
 })

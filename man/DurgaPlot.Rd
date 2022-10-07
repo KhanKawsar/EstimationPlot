@@ -42,6 +42,9 @@ DurgaPlot(
   ef.size.dx = group.dx,
   ef.size.adj.margin = TRUE,
   ef.size.mean.line.dx = group.dx,
+  ef.size.line.col = "grey50",
+  ef.size.line.lty = ifelse(ef.size.position == "below", 3, 1),
+  ef.size.line.lwd = 1,
   paired = es$paired.data,
   paired.lty = 1,
   paired.lwd = 1,
@@ -185,6 +188,13 @@ restored before control returns from \code{DurgaPlot}.}
 \item{ef.size.mean.line.dx}{Horizontal shift to be applied to the start (i.e.
 left end) of the group mean horizontal lines when effect size is on the
 right.}
+
+\item{ef.size.line.col}{Colour of horizontal effect-size lines that depict
+group means if effect size is on the right, otherwise y = 0.}
+
+\item{ef.size.line.lty}{Line style of horizontal effect-size lines.}
+
+\item{ef.size.line.lwd}{Line width of horizontal effect-size lines.}
 
 \item{paired}{If \code{TRUE}, lines are drawn joining the individual data
 points.}

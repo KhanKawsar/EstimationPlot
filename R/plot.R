@@ -177,7 +177,7 @@ plotEffectSize <- function(pwes, xo, centreY, showViolin, violinCol, violin.widt
 plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch,
                                  showViolin, violinCol, violin.width, violin.shape,
                                  axisLabel, ticksAt, ef.size.las,
-                                 groupX) {
+                                 groupX, ef.size.line.col, ef.size.line.lty, ef.size.line.lwd) {
 
   # Get the means of the 2 groups
   gid1 <- pwes$groupIndices[1]
@@ -218,8 +218,11 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch,
   }
 
   # Horizontal lines from group means
-  graphics::segments(groupX[gid1], y, x + 2, y, col = "grey50", lty = 1, lwd = 1.5)
-  graphics::segments(groupX[gid2], y2, x + 2, y2, col = "grey50", lty = 1, lwd = 1.5)
+  ef.size.line.col <- rep_len(ef.size.line.col, 2)
+  ef.size.line.lty <- rep_len(ef.size.line.lty, 2)
+  ef.size.line.lwd <- rep_len(ef.size.line.lwd, 2)
+  graphics::segments(groupX[gid1], y, x + 2, y, col = ef.size.line.col[1], lty = ef.size.line.lty[1], lwd = ef.size.line.lwd[1])
+  graphics::segments(groupX[gid2], y2, x + 2, y2, col = ef.size.line.col[1], lty = ef.size.line.lty[1], lwd = ef.size.line.lwd[1])
 
   # Add x-axis label and tick mark for effect size
   labelXAxis(at = x, labels = getDiffLabel(pwes), tick = TRUE)
@@ -232,7 +235,8 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch,
 # enough to accommodate the effect size plot
 plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
                                  showViolin, violinCol, violin.width, violin.shape,
-                                 xlim, ef.size.dx, ef.size.label, ticksAt, ef.size.las) {
+                                 xlim, ef.size.dx, ef.size.label, ticksAt, ef.size.las,
+                                 ef.size.line.col, ef.size.line.lty, ef.size.line.lwd) {
   groups <- es$groups
 
   # What will we plot?
@@ -262,7 +266,7 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
   graphics::mtext(ef.size.label, side = 2, at = mapY(mean(ylim)), line = 3, cex = graphics::par("cex"))
 
   # Plot the "Difference = 0" line, i.e. no effect
-  graphics::lines(usr[1:2], c(mapY(0), mapY(0)), col = "grey50", lty = 3, xpd = TRUE)
+  graphics::lines(usr[1:2], c(mapY(0), mapY(0)), col = ef.size.line.col, lty = ef.size.line.lty, lwd = ef.size.line.lwd, xpd = TRUE)
 
   # Plot all diffs
   for (i in seq_along(plotDiffs)) {
@@ -270,6 +274,7 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
     if (!is.null(pwes)) {
       gid1 <- which(groups == pwes$groups[1])
       plotEffectSize(pwes, gid1 + ef.size.dx[gid1], pwes$t0, showViolin, violinCol, violin.width, violin.shape, ef.size.col, ef.size.pch, mapY, xpd = TRUE)
+      # Label this difference
       graphics::text(gid1 + ef.size.dx[gid1], mapY(ylim[1]), getDiffLabel(pwes), xpd = TRUE, pos = 1)
     }
   }
@@ -472,6 +477,10 @@ DurgaTransparent <-  function(colour, alpha) {
 #' @param ef.size.mean.line.dx Horizontal shift to be applied to the start (i.e.
 #'   left end) of the group mean horizontal lines when effect size is on the
 #'   right.
+#' @param ef.size.line.col Colour of horizontal effect-size lines that depict
+#'   group means if effect size is on the right, otherwise y = 0.
+#' @param ef.size.line.lty Line style of horizontal effect-size lines.
+#' @param ef.size.line.lwd Line width of horizontal effect-size lines.
 #' @param ef.size.label Label to display on y-axis for effect size.
 #' @param ef.size.adj.margin If TRUE (the default), the right margin (if ES is
 #'   right) or bottom margin (if ES is below) is automatically adjusted to make
@@ -575,7 +584,11 @@ DurgaPlot <- function(es,
                     ef.size.label = es$effect.name,
                     ef.size.dx = group.dx,
                     ef.size.adj.margin = TRUE,
+
                     ef.size.mean.line.dx = group.dx,
+                    ef.size.line.col = "grey50",
+                    ef.size.line.lty = ifelse(ef.size.position == "below", 3, 1),
+                    ef.size.line.lwd = 1,
 
                     paired = es$paired.data, # if true draw lines between paired points
                     paired.lty = 1,
@@ -676,6 +689,7 @@ DurgaPlot <- function(es,
     # Can't show more than one effect size to the right
     ef.size.position <- "below"
   }
+
 
   # Calculate plot limits
 
@@ -946,9 +960,15 @@ DurgaPlot <- function(es,
   violinCol <- .boolToDef(ef.size.violin, "grey40")
   if (.show(ef.size) && ef.size.position == "right") {
     lineStartAt <- seq_len(nGroups) + ef.size.mean.line.dx
-    plotEffectSizesRight(es, plotDiffs[[1]], ef.size.col, ef.size.pch, .show(ef.size.violin), violinCol, violin.width, ef.size.violin.shape, ef.size.label, ef.size.ticks, ef.size.las, lineStartAt)
+    plotEffectSizesRight(es, plotDiffs[[1]], ef.size.col, ef.size.pch,
+                         .show(ef.size.violin), violinCol, violin.width, ef.size.violin.shape,
+                         ef.size.label, ef.size.ticks, ef.size.las,
+                         lineStartAt, ef.size.line.col, ef.size.line.lty, ef.size.line.lwd)
   } else if (.show(ef.size) && ef.size.position == "below") {
-    plotEffectSizesBelow(es, plotDiffs, ef.size.col, ef.size.pch, .show(ef.size.violin), violinCol, violin.width, ef.size.violin.shape, xlim, ef.size.dx, ef.size.label, ef.size.ticks, ef.size.las)
+    plotEffectSizesBelow(es, plotDiffs, ef.size.col, ef.size.pch,
+                         .show(ef.size.violin), violinCol, violin.width, ef.size.violin.shape,
+                         xlim, ef.size.dx, ef.size.label, ef.size.ticks, ef.size.las,
+                         ef.size.line.col, ef.size.line.lty, ef.size.line.lwd)
   }
 
   # Return the coordinates of the group tick marks along the x-axis
