@@ -34,6 +34,7 @@ DurgaPlot(
   ef.size = TRUE,
   ef.size.position = c("right", "below"),
   ef.size.violin = TRUE,
+  ef.size.violin.fill = TRUE,
   ef.size.violin.shape = c("right-half", "left-half", "full"),
   ef.size.pch = 17,
   ef.size.ticks = NULL,
@@ -161,6 +162,8 @@ increase the size of the right margin before plotting (see
 \item{ef.size.violin}{If not FALSE, boostrapped effect size estimates are
 show as a violin plot. May be a colour, used for the violin border, and a
 transparent version is used for the violin fill.}
+
+\item{ef.size.violin.fill}{Colour used to fill effect size violins.}
 
 \item{ef.size.violin.shape}{Shape of the effect size violin.}
 

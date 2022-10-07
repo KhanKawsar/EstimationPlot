@@ -150,7 +150,7 @@ plotViolin <- function(shape, centreX, d, ...) {
 #
 # @param mapYFn Function to map logical y values to display coordinates. If not
 #   specified, no mapping is performed.
-plotEffectSize <- function(pwes, xo, centreY, showViolin, violinCol, violin.width, violin.shape,
+plotEffectSize <- function(pwes, xo, centreY, showViolin, violinCol, violin.fill, violin.width, violin.shape,
                            ef.size.col, ef.size.pch, mapYFn = identity, xpd = FALSE) {
   deltaY <- centreY - pwes$t0
   if (showViolin) {
@@ -162,8 +162,7 @@ plotEffectSize <- function(pwes, xo, centreY, showViolin, violinCol, violin.widt
     d$x <- d$x + deltaY
     # Map y values as required - note that we show density$x on the y-axis
     d$x <- mapYFn(d$x)
-    fill <- DurgaTransparent(violinCol, .8)
-    plotViolin(violin.shape, xo, d, col = fill, border = violinCol, xpd = xpd)
+    plotViolin(violin.shape, xo, d, col = violin.fill, border = violinCol, xpd = xpd)
   }
 
   # Draw mean of effect size
@@ -175,7 +174,7 @@ plotEffectSize <- function(pwes, xo, centreY, showViolin, violinCol, violin.widt
 
 # Plot effect size to the right of the main plot. Only useful when showing a single effect size
 plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch,
-                                 showViolin, violinCol, violin.width, violin.shape,
+                                 showViolin, violinCol, violin.fill, violin.width, violin.shape,
                                  axisLabel, ticksAt, ef.size.las,
                                  groupX, ef.size.line.col, ef.size.line.lty, ef.size.line.lwd) {
 
@@ -189,7 +188,7 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch,
 
   if (es$effect.type == "unstandardised") {
     esRange <- range(c(0, pwes$t))
-    plotEffectSize(pwes, x, y, showViolin, violinCol, violin.width, violin.shape, ef.size.col, ef.size.pch)
+    plotEffectSize(pwes, x, y, showViolin, violinCol, violin.fill, violin.width, violin.shape, ef.size.col, ef.size.pch)
 
     # Axis labels on right-hand
     labels <- names(ticksAt)
@@ -206,7 +205,7 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch,
       # Interpolate/extrapolate along the line (esRange[1], ylim[1]), (esRange[2], ylim[2])
       ylim[1] + (y - esRange[1]) * (ylim[2] - ylim[1]) / (esRange[2] - esRange[1])
     }
-    plotEffectSize(pwes, x, pwes$t0, showViolin, violinCol, violin.width, violin.shape, ef.size.col, ef.size.pch, mapYFn = mapY)
+    plotEffectSize(pwes, x, pwes$t0, showViolin, violinCol, violin.fill, violin.width, violin.shape, ef.size.col, ef.size.pch, mapYFn = mapY)
 
     # Axis labels on right-hand
     labels <- names(ticksAt)
@@ -234,7 +233,7 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch,
 # Plot effect size below the main plot. Assumes that bottom margin is large
 # enough to accommodate the effect size plot
 plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
-                                 showViolin, violinCol, violin.width, violin.shape,
+                                 showViolin, violinCol, violin.fill, violin.width, violin.shape,
                                  xlim, ef.size.dx, ef.size.label, ticksAt, ef.size.las,
                                  ef.size.line.col, ef.size.line.lty, ef.size.line.lwd) {
   groups <- es$groups
@@ -273,7 +272,7 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
     pwes <- plotDiffs[[i]]
     if (!is.null(pwes)) {
       gid1 <- which(groups == pwes$groups[1])
-      plotEffectSize(pwes, gid1 + ef.size.dx[gid1], pwes$t0, showViolin, violinCol, violin.width, violin.shape, ef.size.col, ef.size.pch, mapY, xpd = TRUE)
+      plotEffectSize(pwes, gid1 + ef.size.dx[gid1], pwes$t0, showViolin, violinCol, violin.fill, violin.width, violin.shape, ef.size.col, ef.size.pch, mapY, xpd = TRUE)
       # Label this difference
       graphics::text(gid1 + ef.size.dx[gid1], mapY(ylim[1]), getDiffLabel(pwes), xpd = TRUE, pos = 1)
     }
@@ -464,6 +463,7 @@ DurgaTransparent <-  function(colour, alpha) {
 #'   show as a violin plot. May be a colour, used for the violin border, and a
 #'   transparent version is used for the violin fill.
 #' @param ef.size.violin.shape Shape of the effect size violin.
+#' @param ef.size.violin.fill Colour used to fill effect size violins.
 #' @param ef.size.pch Symbol to represent mean effect size.
 #' @param ef.size.dx Horizontal shift to be applied to each effect size.
 #' @param ef.size.ticks Optional locations and labels for ticks on the effect
@@ -577,6 +577,7 @@ DurgaPlot <- function(es,
                     ef.size = TRUE,
                     ef.size.position = c("right", "below"),
                     ef.size.violin = TRUE,
+                    ef.size.violin.fill = TRUE,
                     ef.size.violin.shape = c("right-half", "left-half", "full"),
                     ef.size.pch = 17,
                     ef.size.ticks = NULL,
@@ -958,15 +959,16 @@ DurgaPlot <- function(es,
   # Effect size. Handle default colour
   ef.size.col <- .boolToDef(ef.size, "black")
   violinCol <- .boolToDef(ef.size.violin, "grey40")
+  violinFill <- .boolToDef(ef.size.violin.fill, DurgaTransparent(violinCol, 0.8))
   if (.show(ef.size) && ef.size.position == "right") {
     lineStartAt <- seq_len(nGroups) + ef.size.mean.line.dx
     plotEffectSizesRight(es, plotDiffs[[1]], ef.size.col, ef.size.pch,
-                         .show(ef.size.violin), violinCol, violin.width, ef.size.violin.shape,
+                         .show(ef.size.violin), violinCol, violinFill, violin.width, ef.size.violin.shape,
                          ef.size.label, ef.size.ticks, ef.size.las,
                          lineStartAt, ef.size.line.col, ef.size.line.lty, ef.size.line.lwd)
   } else if (.show(ef.size) && ef.size.position == "below") {
     plotEffectSizesBelow(es, plotDiffs, ef.size.col, ef.size.pch,
-                         .show(ef.size.violin), violinCol, violin.width, ef.size.violin.shape,
+                         .show(ef.size.violin), violinCol, violinFill, violin.width, ef.size.violin.shape,
                          xlim, ef.size.dx, ef.size.label, ef.size.ticks, ef.size.las,
                          ef.size.line.col, ef.size.line.lty, ef.size.line.lwd)
   }
