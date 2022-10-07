@@ -957,20 +957,25 @@ DurgaPlot <- function(es,
   }
 
   # Effect size. Handle default colour
-  ef.size.col <- .boolToDef(ef.size, "black")
-  violinCol <- .boolToDef(ef.size.violin, "grey40")
-  violinFill <- .boolToDef(ef.size.violin.fill, DurgaTransparent(violinCol, 0.8))
-  if (.show(ef.size) && ef.size.position == "right") {
-    lineStartAt <- seq_len(nGroups) + ef.size.mean.line.dx
-    plotEffectSizesRight(es, plotDiffs[[1]], ef.size.col, ef.size.pch,
-                         .show(ef.size.violin), violinCol, violinFill, violin.width, ef.size.violin.shape,
-                         ef.size.label, ef.size.ticks, ef.size.las,
-                         lineStartAt, ef.size.line.col, ef.size.line.lty, ef.size.line.lwd)
-  } else if (.show(ef.size) && ef.size.position == "below") {
-    plotEffectSizesBelow(es, plotDiffs, ef.size.col, ef.size.pch,
-                         .show(ef.size.violin), violinCol, violinFill, violin.width, ef.size.violin.shape,
-                         xlim, ef.size.dx, ef.size.label, ef.size.ticks, ef.size.las,
-                         ef.size.line.col, ef.size.line.lty, ef.size.line.lwd)
+  if (.show(ef.size)) {
+    # Handle default colours
+    ef.size.col <- .boolToDef(ef.size, "black")
+    violinCol <- .boolToDef(ef.size.violin, "grey40")
+    if (.show(ef.size.violin))
+      violinFill <- .boolToDef(ef.size.violin.fill, DurgaTransparent(violinCol, 0.8))
+
+    if (ef.size.position == "right") {
+      lineStartAt <- seq_len(nGroups) + ef.size.mean.line.dx
+      plotEffectSizesRight(es, plotDiffs[[1]], ef.size.col, ef.size.pch,
+                           .show(ef.size.violin), violinCol, violinFill, violin.width, ef.size.violin.shape,
+                           ef.size.label, ef.size.ticks, ef.size.las,
+                           lineStartAt, ef.size.line.col, ef.size.line.lty, ef.size.line.lwd)
+    } else if (ef.size.position == "below") {
+      plotEffectSizesBelow(es, plotDiffs, ef.size.col, ef.size.pch,
+                           .show(ef.size.violin), violinCol, violinFill, violin.width, ef.size.violin.shape,
+                           xlim, ef.size.dx, ef.size.label, ef.size.ticks, ef.size.las,
+                           ef.size.line.col, ef.size.line.lty, ef.size.line.lwd)
+    }
   }
 
   # Return the coordinates of the group tick marks along the x-axis
