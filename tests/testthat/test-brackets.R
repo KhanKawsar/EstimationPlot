@@ -91,3 +91,20 @@ test_that("labels", {
   DurgaBrackets(p, labels = labels, lb.cex = 0.6, textPad = 1, verticalGap = 0.5, tipLength = 1, snapTo = 4, br.col = "blue", lb.col = "purple")
   expect_equal(1, 1)
 })
+
+test_that("one group", {
+  n <- 40
+  df <- data.frame(val = rnorm(n, 10),
+                   group = rep("G1", each = n))
+  d <- DurgaDiff(df, data.col = 1, group.col = 2)
+  p <- expect_error(DurgaPlot(d, main = "1 group in data - no bracket"), NA)
+  expect_error(DurgaBrackets(p), NA)
+})
+
+test_that("contrasts", {
+  d <- DurgaDiff(damselfly, 1, 3)
+  p <- expect_error(DurgaPlot(d, main = "Bracket sign consistent", ef.size = FALSE, ylim = c(29.5, 36.5)), NA)
+  DurgaBrackets(p)
+  DurgaBrackets(p, contrasts = "adult - juvenile", dataGap = 10)
+  DurgaBrackets(p, contrasts = "juvenile - adult", dataGap = 17)
+})

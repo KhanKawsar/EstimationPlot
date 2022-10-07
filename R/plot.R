@@ -43,16 +43,6 @@ getDiffLabel <- function(pwes) {
   label
 }
 
-# Given a string representation of the required contrasts, returns a list of
-# DurgaGroupDiff objects, one for each contrast. The DurgaGroupDiff objects are extracted
-# from es$group.differences, so must already have been calculated by
-# DurgaDiff
-buildPlotDiffs <- function(contrasts, es) {
-  pairs <- expandContrasts(contrasts, es$groups)
-  # For each specified contrast, find the corresponding group difference
-  lapply(seq_len(ncol(pairs)), function(i) findDiff(pairs[, i], colnames(pairs)[i], es$group.differences))
-}
-
 # Calculate the probability density of one group, optionally truncating the extents
 getGroupDensity <- function(group, es, violin.adj, violin.trunc, violin.width) {
   groupVals <- es$data[[es$data.col]][es$data[[es$group.col]] == group]
@@ -648,22 +638,7 @@ DurgaPlot <- function(es,
   # What contrasts are to be displayed (if any)?
   plotDiffs <- list()
   if ((.show(ef.size) || .show(paired)) && length(groups) > 1) {
-    # If contrasts were specified to DurgaDiff, use them
-    if (missing(contrasts)) {
-      if (es$explicit.contrasts)
-        plotDiffs <- es$group.differences
-      else
-        # Contrasts were never specified, default to all minus the first group
-        plotDiffs <- buildPlotDiffs(paste(".-", groups[1]), es)
-    } else if (is.character(contrasts)) {
-      # Interpret string description
-      plotDiffs <- buildPlotDiffs(contrasts, es)
-    } else if (is.list(contrasts) && all(sapply(contrasts, function(x) methods::is(x, "DurgaGroupDiff")))) {
-      # Contrasts were passed directly
-      plotDiffs <- contrasts
-    } else if (!is.null(contrasts)) {
-      stop("Invalid plot contrasts argument, must be character string or list of DurgaGroupDiff objects")
-    }
+    plotDiffs <- plotDiffsFromContrasts(contrasts, missing(contrasts), es, "DurgaPlot", defaultToAll = FALSE)
   }
 
   # Recycle all the *.dx arguments

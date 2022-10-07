@@ -996,7 +996,7 @@ test_that("single group", {
   df <- data.frame(val = rnorm(n, 10),
                    group = rep("G1", each = n))
   d <- DurgaDiff(df, data.col = 1, group.col = 2)
-  expect_error(DurgaPlot(d, main = "1 group in data"), NA)
+  p <- expect_error(DurgaPlot(d, main = "1 group in data"), NA)
 
   df <- data.frame(val = c(rnorm(n, 10), rnorm(n, 11)),
                    group = rep(c("G1", "G2"), each = n))

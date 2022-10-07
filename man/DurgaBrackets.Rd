@@ -6,7 +6,7 @@
 \usage{
 DurgaBrackets(
   plotStats,
-  diffs = plotStats$es$group.differences,
+  contrasts,
   labels = "CI",
   br.lwd = 1,
   br.col = 1,
@@ -26,8 +26,13 @@ DurgaBrackets(
 \arguments{
 \item{plotStats}{Object returned by the call to \code{\link{DurgaPlot}}}
 
-\item{diffs}{Set of brackets to be displayed as a list of
-\code{DurgaGroupDiff} objects}
+\item{contrasts}{Set of contrasts (i.e. group comparisons) to be displayed as
+brackets. Defaults to contrasts passed to \code{\link{DurgaDiff}}. Can be
+specified as a character string (\code{"group 1 - group 2"}) or a list of
+\code{DurgaDiff} objects. The bracket label always displays the effect size
+for right-hand-group - left-hand-group, regardless of the order that groups
+are specified in \code{contrasts}, i.e. \code{contrasts = "G1 - G2"} will
+appear the same as \code{contrasts = "G2 - G1"}.}
 
 \item{labels}{Text to display above each bracket. May be NULL, otherwise one
 of: \code{"diff"}, \code{"CI"}, \code{"level CI"} or \code{"diff CI"}; a

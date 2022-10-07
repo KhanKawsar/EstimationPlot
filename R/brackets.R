@@ -48,19 +48,17 @@ DrawBracket <- function(diff, plotExtents, y, text, textPad, plot = TRUE,
   fromGI <- diff$groupIndices[1]
   toGI <- diff$groupIndices[2]
 
+  # Note that fromGI should always be > toGI because otherwise we negated the diff in DurgaBrackets
+  if (fromGI <= toGI) stop("Internal error: bracket from LHS to RHS")
+
   x1 <- plotExtents[fromGI, 1]
   x2 <- plotExtents[toGI, 1]
 
   if (shorten != 0) {
     # mm to user coordinates in x direction
     shortenU <- mmToUser(shorten, TRUE)
-    if (x1 < x2) {
-      x1 <- x1 + shortenU
-      x2 <- x2 - shortenU
-    } else {
-      x1 <- x1 - shortenU
-      x2 <- x2 + shortenU
-    }
+    x1 <- x1 - shortenU
+    x2 <- x2 + shortenU
   }
 
   # Calculate mm to user coordinates vertically
@@ -233,6 +231,11 @@ BracketsAnnot <- function(labels, shorten, dataGap, verticalGap, textPad, tipLen
   }
 }
 
+# Returns TRUE if the difference is the right-hand-group - the left-hand-group
+isRightToLeft <- function(diff) {
+  diff$groupIndices[1] > diff$groupIndices[2]
+}
+
 #_________________________________________________________________#
 #### Public functions ####
 
@@ -247,8 +250,14 @@ BracketsAnnot <- function(labels, shorten, dataGap, verticalGap, textPad, tipLen
 #' into the margin as it will not be cropped.
 #'
 #' @param plotStats Object returned by the call to \code{\link{DurgaPlot}}
-#' @param diffs Set of brackets to be displayed as a list of
-#'   \code{DurgaGroupDiff} objects
+#' @param contrasts Set of contrasts (i.e. group comparisons) to be displayed as
+#'   brackets. Defaults to contrasts passed to \code{\link{DurgaDiff}}. Can be
+#'   specified as a character string (\code{"group 1 - group 2"}) or a list of
+#'   \code{DurgaDiff} objects. The bracket label always displays the effect size
+#'   for right-hand-group - left-hand-group, regardless of the order that groups
+#'   are specified in \code{contrasts}, i.e. \code{contrasts = "G1 - G2"} will
+#'   appear the same as \code{contrasts = "G2 - G1"}.
+#'
 #' @param labels Text to display above each bracket. May be NULL, otherwise one
 #'   of: \code{"diff"}, \code{"CI"}, \code{"level CI"} or \code{"diff CI"}; a
 #'   vector of texts to display for each element of \code{diffs}, or a function
@@ -283,7 +292,7 @@ BracketsAnnot <- function(labels, shorten, dataGap, verticalGap, textPad, tipLen
 #'
 #' @export
 DurgaBrackets <- function(plotStats,
-                          diffs = plotStats$es$group.differences,
+                          contrasts,
                           labels = "CI",
                           br.lwd = 1, br.col = 1, br.lty = 1,
                           lb.cex = 1, lb.col = 1, lb.font = 1,
@@ -295,6 +304,11 @@ DurgaBrackets <- function(plotStats,
     stop("plotStats must be an object returned by DurgaPlot")
   if (snapTo < 0)
     plot("snapTo must be zero or positive")
+
+  diffs <- plotDiffsFromContrasts(contrasts, missing(contrasts), plotStats$es, "DurgaBrackets", defaultToAll = TRUE)
+
+  # Display all differences as (right-hand-group) - (left-hand-group)
+  diffs <- lapply(diffs, function(diff) if(isRightToLeft(diff)) { diff } else { negatePairwiseDiff(diff) })
 
   ann <- BracketsAnnot(labels = labels,
                        shorten = shorten, dataGap = dataGap, verticalGap = verticalGap, tipLength = tipLength,

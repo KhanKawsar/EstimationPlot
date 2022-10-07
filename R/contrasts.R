@@ -111,3 +111,42 @@ expandContrasts <- function(contrasts, groups) {
   contrasts
 }
 
+# Given a string representation of the required contrasts, returns a list of
+# DurgaGroupDiff objects, one for each contrast. The DurgaGroupDiff objects are extracted
+# from es$group.differences, so must already have been calculated by
+# DurgaDiff
+buildPlotDiffs <- function(contrasts, es) {
+  pairs <- expandContrasts(contrasts, es$groups)
+  # For each specified contrast, find the corresponding group difference
+  lapply(seq_len(ncol(pairs)), function(i) findDiff(pairs[, i], colnames(pairs)[i], es$group.differences))
+}
+
+
+# Converts a contrasts argument to a list of DurgaGroupDiff objects.
+#
+# @return List of DurgaDiff objects. The list will be empty if there is only one
+#   group or there are no contrasts to be displayed for some other reason
+# @param defaultToAll If TRUE and constrasts were unspecified, returns the list
+#   of all calculated group differences, otherwise returns all - the first group
+plotDiffsFromContrasts <- function(contrasts, contrastsMissing, es, fnName, defaultToAll) {
+  plotDiffs <- list()
+  if (length(es$groups) > 1) {
+    if (contrastsMissing) {
+      # If contrasts were specified to DurgaDiff, use them
+      if (es$explicit.contrasts || defaultToAll)
+        plotDiffs <- es$group.differences
+      else
+        # Contrasts were never specified, default to all minus the first group
+        plotDiffs <- buildPlotDiffs(paste(".-", es$groups[1]), es)
+    } else if (is.character(contrasts)) {
+      # Interpret string description
+      plotDiffs <- buildPlotDiffs(contrasts, es)
+    } else if (is.list(contrasts) && all(sapply(contrasts, function(x) methods::is(x, "DurgaGroupDiff")))) {
+      # Contrasts were passed directly
+      plotDiffs <- contrasts
+    } else if (!is.null(contrasts)) {
+      stop(sprintf("Invalid contrasts argument in %s call, must be character string or list of DurgaGroupDiff objects", fnName))
+    }
+  }
+  plotDiffs
+}
