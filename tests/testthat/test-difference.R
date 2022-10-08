@@ -184,7 +184,7 @@ test_that("print", {
   expected <- paste0("Bootstrapped effect size\\n",
               "  Measurement ~ Group\\n",
               "Groups:\\n",
-              "              mean   median       sd       se  CI\\.lower CI\\.upper  N\\n",
+              "              mean   median       sd       se  CI\\.lower CI\\.upper  n\\n",
               "Group1    122\\.9210 118\\.8367 21\\.31850 3\\.370750 116\\.10300 129\\.7390 40\\n",
               "ZControl1 102\\.3007 103\\.2276 22\\.16668 3\\.504859  95\\.21141 109\\.3899 40\\n",
               "Unpaired Mean difference:\\n",
@@ -289,8 +289,8 @@ test_that("difference effect types", {
   expect_equal(pwd$groups[1], "Group")
   expect_equal(pwd$groups[2], "Control")
   # Estimate Hedges' g by correcting Cohen's d (Lakens 2013, p. 3 eqn 4)
-  n1 <- d$group.statistics[2,"N"]
-  n2 <- d$group.statistics[1,"N"]
+  n1 <- d$group.statistics[2,"n"]
+  n2 <- d$group.statistics[1,"n"]
   hedgesG <- cohensD * (1 - 3 / (4 * (n1 + n2) - 9))
   expect_equal(pwd$t0, hedgesG, tolerance = 0.0001)
   expect_lt(pwd$bca[4], 0.918991) # Should be positive but small

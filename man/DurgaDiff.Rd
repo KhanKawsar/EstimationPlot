@@ -69,7 +69,7 @@ A \code{DurgaDiff} object, which is a list containing:
   are: \code{mean}, \code{median}, \code{sd} (standard deviation), \code{se}
   (standard error of the mean), \code{CI.lower} and \code{CI.upper} (lower
   and upper confidence intervals of the mean, confidence level as set by the
-  \code{ci.conf} parameter.)}
+  \code{ci.conf} parameter) and \code{n} (group sample size.)}
 
   \item{\code{group.differences}}{List of \code{DurgaGroupDiff} objects,
   which are \code{boot} objects with added confidence interval information.

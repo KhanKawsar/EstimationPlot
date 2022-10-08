@@ -229,7 +229,7 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
 #'   are: \code{mean}, \code{median}, \code{sd} (standard deviation), \code{se}
 #'   (standard error of the mean), \code{CI.lower} and \code{CI.upper} (lower
 #'   and upper confidence intervals of the mean, confidence level as set by the
-#'   \code{ci.conf} parameter.)}
+#'   \code{ci.conf} parameter) and \code{n} (group sample size.)}
 #'
 #'   \item{\code{group.differences}}{List of \code{DurgaGroupDiff} objects,
 #'   which are \code{boot} objects with added confidence interval information.
@@ -375,7 +375,7 @@ DurgaDiff <- function(data,
       # CI of mean
       CI.lower = ci[1],
       CI.upper = ci[2],
-      N = length(grpVals)
+      n = length(grpVals)
     )
   })
   df <- do.call(rbind, gil)
