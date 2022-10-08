@@ -179,16 +179,16 @@ test_that("group stats", {
   }
 })
 
-test_that("plots", {
+test_that("print", {
   d <- makeES1()
   expected <- paste0("Bootstrapped effect size\\n",
-                     "  Measurement ~ Group\\n",
-                     "Groups:\\n",
-                     "              mean   median       sd       se  CI\\.lower CI\\.upper  N\\n",
-                     "Group1    122\\.9210 118\\.8367 21\\.31850 3\\.370750 116\\.10300 129\\.7390 40\\n",
-                     "ZControl1 102\\.3007 103\\.2276 22\\.16668 3\\.504859  95\\.21141 109\\.3899 40\\n",
-                     "Pairwise unstandardised effect size:\\n",
-                     "  ZControl1 - Group1: -20\\.[0-9]+, 95% CI \\(bca\\) \\[-30\\.[0-9]+, -10\\.[0-9]+\\]")
+              "  Measurement ~ Group\\n",
+              "Groups:\\n",
+              "              mean   median       sd       se  CI\\.lower CI\\.upper  N\\n",
+              "Group1    122\\.9210 118\\.8367 21\\.31850 3\\.370750 116\\.10300 129\\.7390 40\\n",
+              "ZControl1 102\\.3007 103\\.2276 22\\.16668 3\\.504859  95\\.21141 109\\.3899 40\\n",
+              "Unpaired Mean difference:\\n",
+              "  ZControl1 - Group1: -20\\.6203, 95% CI \\(bca\\) \\[-30\\.[0-9]+, -10\\.[0-9]+\\]")
   expect_output(print(d), expected)
 })
 

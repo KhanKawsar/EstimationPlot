@@ -410,7 +410,7 @@ print.DurgaDiff <- function(x, ...) {
   cat(sprintf("  %s ~ %s\n", x$data.col.name, x$group.col.name))
   cat("Groups:\n")
   print(x$group.statistics)
-  cat(sprintf("Pairwise %s effect size:\n", x$effect.type))
+  cat(sprintf("%s %s:\n", ifelse(x$paired.data, "Paired", "Unpaired"), x$effect.name))
   for (i in seq_len(length(x$group.differences))) {
     print(x$group.differences[[i]])
   }

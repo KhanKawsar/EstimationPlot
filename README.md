@@ -10,7 +10,7 @@ Effect size estimation and plotting is a component of [estimation statistics](ht
 
 ## Citation
 
-If you use `Durga` in your research, please cite (and read) the article:
+If you use `Durga` in your research, please cite (and read) the article (which does not yet exist :):
 
 `Durga`: An R package for estimating and plotting effect sizes 
 
@@ -23,6 +23,17 @@ To install the development version (which is the only version available as yet):
 
 ## Usage
 
+Once Durga is installed, you can read the vignette named `cheatsheet` for a range of examples of possible plots, together with the code used to produce them.
+
+```{R}
+# Display the vignette in a browser
+RShowDoc("cheatsheet", package = "Durga")
+
+# Display the vignette in the help window pane
+vignette("cheatsheet", package = "Durga")
+```
+
+A minimal example using constructed data:
 
 ```{R}
   n <- 100
