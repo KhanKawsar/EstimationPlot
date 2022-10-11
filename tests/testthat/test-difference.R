@@ -1039,7 +1039,8 @@ test_that("minor formatting", {
 test_that("Spaces in column names", {
   n <- 40
   df <- data.frame(`Genital length` = c(rnorm(n, mean = 10)),
-                   `Cannibalism y/n` = sample(c("y", "n"), n, replace = TRUE))
+                   `Cannibalism y/n` = sample(c("y", "n"), n, replace = TRUE),
+                   check.names = FALSE)
   d <- DurgaDiff(df, "Genital length", "Cannibalism y/n")
-  expect_error(DurgaPlot(d, main = "Spaces in names"), NA)
+  expect_error(DurgaPlot(d, xlab = "Cannibalism?", main = "Spaces in names, xlab"), NA)
 })

@@ -490,6 +490,7 @@ DurgaTransparent <-  function(colour, alpha) {
 #' @param x.axis if TRUE, display the x-axis.
 #' @param x.axis.dx Horizontal shifts to be applied to each x-axis tick and
 #'   label.
+#' @param xlab X axis label.
 #'
 #' @param left.ylab Left-hand y-axis label.
 #' @param left.las Orientation of axis labels on left-hand y-axis label (0 =
@@ -610,6 +611,7 @@ DurgaPlot <- function(es,
 
                     x.axis = TRUE,
                     x.axis.dx = group.dx,
+                    xlab = "",
 
                     left.ylab = es$data.col.name,
                     left.las = 0,
@@ -808,7 +810,7 @@ DurgaPlot <- function(es,
 
   if (!add) {
     plot(NULL, xlim = xlim, ylim = ylim, type = "n",
-         xaxt = "n", xlab = "", ylab = left.ylab, las = left.las, ...)
+         xaxt = "n", xlab = xlab, ylab = left.ylab, las = left.las, ...)
     # Label the groups along the x-axis
     if (x.axis) {
       labelXAxis(at = groupAt, labels = es$group.names, tick = TRUE)

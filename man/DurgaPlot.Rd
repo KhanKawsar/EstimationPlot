@@ -62,6 +62,7 @@ DurgaPlot(
   error.bars.cross.width = 0,
   x.axis = TRUE,
   x.axis.dx = group.dx,
+  xlab = "",
   left.ylab = es$data.col.name,
   left.las = 0,
   add = FALSE,
@@ -244,6 +245,8 @@ at the ends of the error bars. If 0, no crossbar is drawn.}
 
 \item{x.axis.dx}{Horizontal shifts to be applied to each x-axis tick and
 label.}
+
+\item{xlab}{X axis label.}
 
 \item{left.ylab}{Left-hand y-axis label.}
 
