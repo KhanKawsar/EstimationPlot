@@ -681,7 +681,7 @@ DurgaPlot <- function(es,
 
   # Turn group column into a factor with levels potentially specified by the user so they customise groups order
   data$.group.as.factor <- factor(data[[es$group.col]], levels = groups)
-  f <- stats::as.formula(paste(es$data.col.name, "~.group.as.factor"))
+  f <- stats::as.formula(paste0("`", es$data.col.name, "`", "~.group.as.factor"))
 
   # Where does effect size go?
   if (length(plotDiffs) < 1) {
