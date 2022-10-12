@@ -1,10 +1,11 @@
+# Durga: Handy package for Estimation Plotting in R
+
+
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/KhanKawsar/EstimationPlot/workflows/R-CMD-check/badge.svg)](https://github.com/KhanKawsar/EstimationPlot/actions)
 [![Codecov test coverage](https://codecov.io/gh/KhanKawsar/EstimationPlot/branch/main/graph/badge.svg)](https://app.codecov.io/gh/KhanKawsar/EstimationPlot?branch=main)
 <!-- badges: end -->
 
-
-# Durga: Handy package for Estimation Plotting in R
 
 Effect size estimation and plotting is a component of [estimation statistics](https://en.wikipedia.org/wiki/Estimation_statistics). `Durga` is an R package that aims to simplify sophisticated plotting of estimated differences in group means, which is an important part of communicating estimation statistics.
 
@@ -25,7 +26,7 @@ To install the development version (which is the only version available as yet):
 
 Once Durga is installed, you can read the vignette named `cheatsheet` for a range of examples of possible plots, together with the code used to produce them.
 
-```{R}
+```R
 # Display the vignette in a browser
 RShowDoc("cheatsheet", package = "Durga")
 
@@ -35,7 +36,7 @@ vignette("cheatsheet", package = "Durga")
 
 A minimal example using constructed data:
 
-```{R}
+```R
   n <- 100
   df <- data.frame(val = c(rnorm(n), rnorm(n, mean = 1)),
                    group = c(rep("Control", n), rep("Group", n)))
