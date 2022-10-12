@@ -41,5 +41,7 @@ A minimal example using constructed data:
                    group = c(rep("Control", n), rep("Group", n)))
 
   d <- DurgaDiff(df, data.col = "val", group.col = "group")
+  # or equivalently
+  d <- DurgaDiff(val ~ group, df)
   DurgaPlot(d)
 ```
