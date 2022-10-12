@@ -86,6 +86,13 @@ compareDiffs <- function(d1, d2, tolerance = 0.1) {
 ##########################################################################
 # Tests start here ####
 
+test_that("matrix data", {
+  n <- 20
+  m <- matrix(c(val = rnorm(n), sample(1:3, n, replace = TRUE)), nrow = n)
+  d <- DurgaDiff(m, 1, 2)
+  expect_error(DurgaPlot(d), NA)
+})
+
 test_that("contrast plots", {
   data <- makeData()
   groups <- c("ZControl1", "Group1", "Group2", "Group3")
@@ -190,6 +197,36 @@ test_that("print", {
               "Unpaired Mean difference:\\n",
               "  ZControl1 - Group1: -20\\.6203, 95% CI \\(bca\\) \\[-30\\.[0-9]+, -10\\.[0-9]+\\]")
   expect_output(print(d), expected)
+
+  checkSummaryMatches <- function(d1, d2) {
+    d1s <- capture.output(print(d1))
+    d2s <- capture.output(print(d2))
+    # Crude check - just remove all numbers
+    d1s <- sub("[0-9].*", "", d1s)
+    d2s <- sub("[0-9].*", "", d2s)
+    expect_equal(d1s, d2s)
+  }
+
+  # Check that formula output matches non-formula
+  d1 <- DurgaDiff(petunia, 1, 2)
+  d2 <- DurgaDiff(height ~ group, petunia)
+  checkSummaryMatches(d1, d2)
+
+  # Paired
+  d1 <- DurgaDiff(insulin, 1, 2, 3)
+  d2 <- DurgaDiff(sugar ~ treatment + id, insulin)
+  checkSummaryMatches(d1, d2)
+
+  d <- DurgaDiff(log(sugar) ~ treatment + id, insulin)
+  s <- capture.output(print(d))
+  expect_equal(s[2], "  log(sugar) ~ treatment + id")
+
+  # Spaces in names
+  `Scapus length` <- rnorm(40, 10)
+  `Group name` <- sample(c("Group one", "Group two", "Group three"), 40, replace = TRUE)
+  # Just check it doesn't crash
+  expect_error(capture.output(print(DurgaDiff(`Scapus length` ~ `Group name`))), NA)
+  expect_error(capture.output(print(DurgaDiff(log(`Scapus length`) ~ `Group name`))), NA)
 })
 
 test_that("contrasts", {
@@ -1039,8 +1076,35 @@ test_that("minor formatting", {
 test_that("Spaces in column names", {
   n <- 40
   df <- data.frame(`Genital length` = c(rnorm(n, mean = 10)),
-                   `Cannibalism y/n` = sample(c("y", "n"), n, replace = TRUE),
+                   `Cannibalism y/n` = sample(c("Yes", "No"), n, replace = TRUE),
                    check.names = FALSE)
   d <- DurgaDiff(df, "Genital length", "Cannibalism y/n")
   expect_error(DurgaPlot(d, xlab = "Cannibalism?", main = "Spaces in names, xlab"), NA)
+})
+
+
+test_that("Formula", {
+
+  n <- 40
+  set.seed(1)
+  valVar <- c(rnorm(n, mean = 10), rnorm(n, mean = 11))
+  df <- data.frame(`Scapus length` = valVar,
+                   val = valVar,
+                   group = c(rep("Control", n), rep("Group", n)),
+                   id = c(1:n, 1:n),
+                   check.names = FALSE)
+  `Group cat` <- df$group
+
+  op <- par(mfrow = c(1, 2))
+  on.exit(par(op))
+  DurgaPlot(DurgaDiff(valVar ~ group + id, df, groups = c("Control", "Group")), main = "Formula interface")
+  DurgaPlot(DurgaDiff(df, "val", "group", "id", groups = c("Control", "Group")), main = "Standard interface")
+
+  # More complicated formulae
+  DurgaPlot(DurgaDiff(log(valVar) ~ group, df), main = "Formula interface")
+  DurgaPlot(DurgaDiff(`Scapus length` ~ group, data = df), main = "Formula interface")
+  DurgaPlot(DurgaDiff(log(`Scapus length`) ~ group, data = df), main = "Formula interface")
+  DurgaPlot(DurgaDiff(log(`Scapus length`) ~ `Group cat`, data = df), main = "Formula interface")
+
+  expect_error(DurgaDiff(`Scapus lengh` ~ group, data = df))
 })

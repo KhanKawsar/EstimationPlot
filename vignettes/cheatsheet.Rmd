@@ -12,7 +12,6 @@ vignette: >
 knitr::opts_chunk$set(echo = TRUE)
 library(Durga)
 library(datasets)
-data(iris)
 ```
 
 `Durga` is an R package that aims to simplify the estimation and visualisation of one type of effect size: differences in means. It provides a function, `DurgaDiff`, to estimate raw or standardised mean differences. Most importantly, it provides a function, `DurgaPlot`, that will create a plot for visualising both the original data and the effect size, and provides a diverse range of display options. The function `DurgaBrackets` can add _confidence brackets_ to an existing Durga plot. This vignette shows some example Durga plots. Each plot is preceded by the code used to generate it, which can be used to learn how to create the plot. 
@@ -28,6 +27,13 @@ d <- DurgaDiff(insulin, data.col = "sugar", group.col = "treatment", id.col = "i
 d
 ```
 
+You may alternatively specify your data with a formula. Formulae provide a little more flexibility in specifying your model, but the end results are equivalent. the formula must be specified as either `<data variable> ~ <group variable>` or `<data variable> ~ <group variable> + <id variable>`.
+
+```{r} 
+# Formulae to define model
+DurgaDiff(sugar ~ treatment + id, insulin)
+```
+
 When plotted, groups are displayed in their natural order, i.e. alphabetical order for character data, and numeric order for factors. You can, however, specify the display order with the `groups` parameter to either `DurgaDiff` or `DurgaPlot`. Not all groups in the data need be included in the analysis or plot. To assign display labels to the groups, use a named vector to list the groups. The names will be used to label the groups on the plot. 
 
 In the damselfly data set, the groups are `juvenile` and `adult`. The example below demonstrates firstly the default names and group order, then how to change the displayed group names as well as the display order of the groups.
@@ -36,11 +42,11 @@ In the damselfly data set, the groups are `juvenile` and `adult`. The example be
 
 ```{r fig.height=4, fig.width=8}
 par(mfrow = c(1, 2))
-# There are missing values in the damselfly data set, so specify na.rm = TRUE
+# There are missing values in the damselfly data set, so must specify na.rm = TRUE
 d <- DurgaDiff(damselfly, "weight", "group", na.rm = TRUE)
 DurgaPlot(d, main = "Default display", ef.size.label = "")
 
-d <- DurgaDiff(damselfly, "weight", "group", na.rm = TRUE,
+d <- DurgaDiff(weight ~ group, damselfly, na.rm = TRUE,
                groups = c("Immature" = "juvenile", "Mature" = "adult"))
 DurgaPlot(d, main = "Groups labelled and ordered", left.ylab = "", group.colour = "Set1")
 ```

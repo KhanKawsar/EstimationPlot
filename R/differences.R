@@ -156,16 +156,58 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
 #__________________________________________________________________________#
 #### Public functions ####
 
+#' @rdname DurgaDiff
+#' @export
+DurgaDiff <- function(x, ...) {
+  UseMethod("DurgaDiff", x)
+}
+
+
+#' Formula interface for estimating group mean differences
+#'
+#' Estimates differences between groups in preparation for plotting by
+#' \code{\link{DurgaPlot}}. Applies the formula, \code{x}, and a data set,
+#' \code{data}, to construct a data frame that is then passed, with all
+#' remaining arguments, to the function \code{\link{DurgaDiff.default}}.
+
+#' @inherit DurgaDiff.default
+#'
+#' @inheritDotParams DurgaDiff.default -data.col -group.col -id.col
+#' @param x a formula, such as \code{y ~ grp} or \code{y ~ grp + id},
+#'   where \code{y} is a numeric vector of data values to be split into groups
+#'   according to the grouping variable \code{grp} (usually a categorical
+#'   value). If specified, \code{id} is the variable that identifies the identity
+#'   of individuals for paired/repeated measures.
+#' @param data a data.frame (or list) from which the variables in formula should be taken.
+#'
+#' @examples
+#'
+#' d <- DurgaDiff(sugar ~ treatment + id, insulin)
+#' print(d)
+#'
+#' @seealso \code{\link{DurgaDiff.default}}
+#'
+#' @export
+DurgaDiff.formula <- function(x, data = NULL, ...) {
+  md <- stats::model.frame(x, data)
+  d <- DurgaDiff(md, 1, 2, ifelse(ncol(md) > 2, 3, NA), ...)
+  # Add formula to result
+  d$formula <- x
+  d
+}
+
 
 #' Estimate group mean differences
 #'
 #' Estimates differences between groups in preparation for plotting by
 #' \code{\link{DurgaPlot}}.
 #'
-#' The data set must be in \emph{long format}: one column (\code{data.col})
-#' contains the measurement or value to be compared, and another column
-#' (\code{group.col}) the group identity. For repeated measures, a subject
-#' identity column (\code{id.col}) is also required.
+#' If \code{x} is a \code{data.frame} (or similar), it must be in \emph{long
+#' format}: one column (\code{data.col}) contains the measurement or value to be
+#' compared, and another column (\code{group.col}) the group identity. For
+#' repeated measures, a subject identity column (\code{id.col}) is also
+#' required. Alternatively, \code{x} may be a formula; see
+#' \code{\link{DurgaDiff.formula}}.
 #'
 #' The pairs of groups to be compared are defined by the parameter
 #' \code{contrasts}. An asterisk (\code{"*"}, the default) creates contrasts for
@@ -191,15 +233,16 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
 #' (\code{\link[boot]{boot.ci}}) by passing a named list of values as the
 #' argument \code{boot.params} (\code{boot.ci.params}).
 #'
-#' @param data A data frame containing values to be compared.
-#' @param data.col Name (character) or index (numeric) of the column
-#'   within \code{data} containing the measurement data.
+#' @param x A data frame (or similar) containing values to be compared, or a
+#'   formula (see \code{\link{DurgaDiff.formula}}).
+#' @param data.col Name (character) or index (numeric) of the column within
+#'   \code{data} containing the measurement data.
 #' @param group.col Name or index of the column within \code{data} containing
 #'   the values to group by.
 #' @param id.col Specify for paired data/repeated measures only. Name or index
 #'   of ID column for repeated measures/paired data. Observations for the same
 #'   individual must have the same ID. For non-paired data, do not specify an
-#'   \code{id.col}.
+#'   \code{id.col}, (or use \code{id.col = NA}).
 #' @param effect.type Type of difference
 #' @param groups Vector of group names. Defaults to all groups in \code{data} in
 #'   \emph{natural} order. If \code{groups} is a named vector, the names are
@@ -258,8 +301,12 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
 #'   \item{\code{groups}}{The difference is estimated on \code{groups[1]} -
 #'   \code{groups[2]}}
 #'
-#' @seealso \code{\link[boot]{boot}}, \code{\link[boot]{boot.ci}},
-#'   \code{\link{DurgaPlot}}
+#' @param ... Ignored
+#'
+#' @seealso \code{\link{DurgaDiff.formula}}, \code{\link[boot]{boot}},
+#'   \code{\link[boot]{boot.ci}}, \code{\link{DurgaPlot}}
+#'
+#' @rdname DurgaDiff
 #'
 #' @examples
 #'
@@ -273,17 +320,18 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
 #' Psychology, 4. doi:10.3389/fpsyg.2013.00863
 #'
 #' @export
-DurgaDiff <- function(data,
+DurgaDiff.default <- function(x,
                       data.col, group.col,
                       id.col,
-                      groups = sort(unique(data[[group.col]])),
+                      groups = sort(unique(x[[group.col]])),
                       contrasts = "*",
                       effect.type = c("unstandardised", "cohens", "hedges"),
                       R = 1000,
                       boot.params = list(),
                       ci.conf = 0.95,
                       boot.ci.params = list(),
-                      na.rm = FALSE
+                      na.rm = FALSE,
+                      ...
 ) {
 
   # *******
@@ -297,9 +345,9 @@ DurgaDiff <- function(data,
   ci.type = "bca"
 
   # If data is a data.table, it breaks things, so convert to a data.frame
-  data <- as.data.frame(data)
+  x <- as.data.frame(x)
 
-  pairedData <- !missing(id.col)
+  pairedData <- !missing(id.col) && !is.null(id.col) && !is.na(id.col)
 
   effectNames <- c(unstandardised = "Mean difference", cohens = "Cohen's d", hedges = "Hedges' g")
 
@@ -307,54 +355,55 @@ DurgaDiff <- function(data,
     effect.type <- match.arg(effect.type)
 
   # Check column specifications
-  .isACol <- function(spec) (is.numeric(spec) && spec >= 1 && spec <= ncol(data)) || (!is.numeric(spec) && spec %in% names(data))
+  .isACol <- function(spec) (is.numeric(spec) && spec >= 1 && spec <= ncol(x)) || (!is.numeric(spec) && spec %in% names(x))
   if (!.isACol(data.col))
     stop(sprintf("data.col %s is not a valid column name or index (names are %s)",
-                 data.col, paste(names(data), collapse = ", ")))
-  if (!is.numeric(data[[data.col]]))
-    stop(sprintf("data.col %s must be a numeric column, is %s", data.col, class(data[[data.col]])))
+                 data.col, paste(names(x), collapse = ", ")))
+  if (!is.numeric(x[[data.col]]))
+    stop(sprintf("data.col %s must be a numeric column, is %s", data.col, class(x[[data.col]])))
   if (!.isACol(group.col))
     stop(sprintf("group.col %s is not a valid column name or index (names are %s)",
-                 group.col, paste(names(data), collapse = ", ")))
+                 group.col, paste(names(x), collapse = ", ")))
   if (pairedData && !.isACol(id.col))
     stop(sprintf("id.col %s is not a valid column name or index (names are %s)",
-                 id.col, paste(names(data), collapse = ", ")))
+                 id.col, paste(names(x), collapse = ", ")))
 
   # Optionally handle NA values
   if (na.rm) {
-    toKeep <- !is.na(data[[data.col]]) & !is.na(data[[group.col]])
+    toKeep <- !is.na(x[[data.col]]) & !is.na(x[[group.col]])
     if (pairedData) {
-      toKeep <- toKeep & !is.na(data[[id.col]])
+      toKeep <- toKeep & !is.na(x[[id.col]])
       # Also delete pairs with missing data
-      badPairIds <- unique(data[[id.col]][!toKeep])
-      toKeep <- toKeep & !(data[[id.col]] %in% badPairIds)
+      badPairIds <- unique(x[[id.col]][!toKeep])
+      toKeep <- toKeep & !(x[[id.col]] %in% badPairIds)
     }
-    data <- data[toKeep, ]
+    x <- x[toKeep, ]
   }
 
   # Sanity checks
-  if (!all(groups %in% unique(data[[group.col]]))) {
-    badGroups <- which(!groups %in% unique(data[[group.col]]))
+  if (!all(groups %in% unique(x[[group.col]]))) {
+    badGroups <- which(!groups %in% unique(x[[group.col]]))
     fmt <- ifelse(length(badGroups) == 1, "Group '%s' is missing from data", "Groups %s are missing from data")
     stop(sprintf(fmt, paste(groups[badGroups], collapse = ", ")))
   }
-  if (nrow(data) == 0) stop("No data to analyse!")
+  if (nrow(x) == 0) stop("No data to analyse!")
 
   # Create return structure with administrative info
-  .colName <- function(col) ifelse(is.numeric(col), names(data)[col], col)
+  .colName <- function(col) ifelse(is.numeric(col), names(x)[col], col)
   groupLabels <- names(groups)
   if (is.null(groupLabels)) {
     groupLabels <- as.character(groups)
   } else {
     groupLabels <- ifelse(groupLabels == "", as.character(groups), groupLabels)
   }
-  es <- list(data = data,
+  es <- list(data = x,
              call = match.call(),
              data.col = data.col,
              data.col.name = .colName(data.col),
              group.col = group.col,
              group.col.name = .colName(group.col),
              id.col = if (pairedData) id.col else NULL,
+             id.col.name = if (pairedData) .colName(id.col) else NULL,
              paired.data = pairedData,
              groups = groups,
              group.names = groupLabels,
@@ -366,7 +415,7 @@ DurgaDiff <- function(data,
 
   # Fill in statistical summary about each of the groups
   gil <- lapply(groups, function(g) {
-    grpVals <- data[[data.col]][data[[group.col]] == g]
+    grpVals <- x[[data.col]][x[[group.col]] == g]
     ci <- CI(grpVals, ci.conf)
     c(mean = mean(grpVals),
       median = stats::median(grpVals),
@@ -389,7 +438,7 @@ DurgaDiff <- function(data,
   } else {
     # For each pair of groups...
     es$group.differences <- apply(contrasts, 2, function(pair) {
-      pairData <- data[as.character(data[[group.col]]) %in% pair, ]
+      pairData <- x[as.character(x[[group.col]]) %in% pair, ]
       groupIndices <- c(which(groups == pair[1]), which(groups == pair[2]))
       groupLabels <- c(groupLabels[groupIndices[1]],
                        groupLabels[groupIndices[2]])
@@ -407,7 +456,14 @@ DurgaDiff <- function(data,
 #' @export
 print.DurgaDiff <- function(x, ...) {
   cat("Bootstrapped effect size\n")
-  cat(sprintf("  %s ~ %s\n", x$data.col.name, x$group.col.name))
+
+  fs <- deparse(x$formula)
+  if (is.null(x$formula)) {
+    # Construct a formula description
+    fs <- sprintf("%s ~ %s%s", x$data.col.name, x$group.col.name,
+                  ifelse(x$paired.data, paste0(" + ", x$id.col.name), ""))
+  }
+  cat(sprintf("  %s\n", fs))
   cat("Groups:\n")
   print(x$group.statistics)
   cat(sprintf("%s %s:\n", ifelse(x$paired.data, "Paired", "Unpaired"), x$effect.name))
