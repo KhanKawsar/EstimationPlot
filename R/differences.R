@@ -173,24 +173,32 @@ DurgaDiff <- function(x, ...) {
 #' @inherit DurgaDiff.default
 #'
 #' @inheritDotParams DurgaDiff.default -data.col -group.col -id.col
-#' @param x a formula, such as \code{y ~ grp} or \code{y ~ grp + id},
+#' @param x a formula, such as \code{y ~ grp},
 #'   where \code{y} is a numeric vector of data values to be split into groups
 #'   according to the grouping variable \code{grp} (usually a categorical
-#'   value). If specified, \code{id} is the variable that identifies the identity
-#'   of individuals for paired/repeated measures.
+#'   value).
 #' @param data a data.frame (or list) from which the variables in formula should be taken.
 #'
 #' @examples
 #'
-#' d <- DurgaDiff(sugar ~ treatment + id, insulin)
+#' d <- DurgaDiff(sugar ~ treatment, insulin, id.col = "id")
 #' print(d)
 #'
 #' @seealso \code{\link{DurgaDiff.default}}
 #'
 #' @export
-DurgaDiff.formula <- function(x, data = NULL, ...) {
+DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
   md <- stats::model.frame(x, data)
-  d <- DurgaDiff(md, 1, 2, ifelse(ncol(md) > 2, 3, NA), ...)
+  if (ncol(md) != 2)
+    stop(sprintf("Formula must contain exactly two terms"))
+  # If id.col specified...
+  if (!missing(id.col) && !is.na(id.col) && !is.null(id.col)) {
+    # Add id.col to the model data set
+    md <- cbind(md, data[[id.col]])
+    d <- DurgaDiff(md, 1, 2, 3, ...)
+  } else {
+    d <- DurgaDiff(md, 1, 2, ...)
+  }
   # Add formula to result
   d$formula <- x
   d
@@ -357,15 +365,15 @@ DurgaDiff.default <- function(x,
   # Check column specifications
   .isACol <- function(spec) (is.numeric(spec) && spec >= 1 && spec <= ncol(x)) || (!is.numeric(spec) && spec %in% names(x))
   if (!.isACol(data.col))
-    stop(sprintf("data.col %s is not a valid column name or index (names are %s)",
+    stop(sprintf("data.col '%s' is not a valid column name or index (names are %s)",
                  data.col, paste(names(x), collapse = ", ")))
   if (!is.numeric(x[[data.col]]))
-    stop(sprintf("data.col %s must be a numeric column, is %s", data.col, class(x[[data.col]])))
+    stop(sprintf("data.col '%s' must be a numeric column, is %s", data.col, class(x[[data.col]])))
   if (!.isACol(group.col))
-    stop(sprintf("group.col %s is not a valid column name or index (names are %s)",
+    stop(sprintf("group.col '%s' is not a valid column name or index (names are %s)",
                  group.col, paste(names(x), collapse = ", ")))
   if (pairedData && !.isACol(id.col))
-    stop(sprintf("id.col %s is not a valid column name or index (names are %s)",
+    stop(sprintf("id.col '%s' is not a valid column name or index (names are %s)",
                  id.col, paste(names(x), collapse = ", ")))
 
   # Optionally handle NA values
@@ -460,8 +468,7 @@ print.DurgaDiff <- function(x, ...) {
   fs <- deparse(x$formula)
   if (is.null(x$formula)) {
     # Construct a formula description
-    fs <- sprintf("%s ~ %s%s", x$data.col.name, x$group.col.name,
-                  ifelse(x$paired.data, paste0(" + ", x$id.col.name), ""))
+    fs <- sprintf("%s ~ %s", x$data.col.name, x$group.col.name)
   }
   cat(sprintf("  %s\n", fs))
   cat("Groups:\n")

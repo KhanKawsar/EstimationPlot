@@ -4,16 +4,20 @@
 \alias{DurgaDiff.formula}
 \title{Formula interface for estimating group mean differences}
 \usage{
-\method{DurgaDiff}{formula}(x, data = NULL, ...)
+\method{DurgaDiff}{formula}(x, data = NULL, id.col, ...)
 }
 \arguments{
-\item{x}{a formula, such as \code{y ~ grp} or \code{y ~ grp + id},
+\item{x}{a formula, such as \code{y ~ grp},
 where \code{y} is a numeric vector of data values to be split into groups
 according to the grouping variable \code{grp} (usually a categorical
-value). If specified, \code{id} is the variable that identifies the identity
-of individuals for paired/repeated measures.}
+value).}
 
 \item{data}{a data.frame (or list) from which the variables in formula should be taken.}
+
+\item{id.col}{Specify for paired data/repeated measures only. Name or index
+of ID column for repeated measures/paired data. Observations for the same
+individual must have the same ID. For non-paired data, do not specify an
+\code{id.col}, (or use \code{id.col = NA}).}
 
 \item{...}{
   Arguments passed on to \code{\link[=DurgaDiff.default]{DurgaDiff.default}}
@@ -117,7 +121,7 @@ argument \code{boot.params} (\code{boot.ci.params}).
 }
 \examples{
 
-d <- DurgaDiff(sugar ~ treatment + id, insulin)
+d <- DurgaDiff(sugar ~ treatment, insulin, id.col = "id")
 print(d)
 
 }

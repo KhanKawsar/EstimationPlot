@@ -50,5 +50,5 @@ A minimal example using constructed data:
 ![alt text](https://github.com/KhanKawsar/EstimationPlot/blob/main/eg.png?raw=true)
 
 <!-- To create plot
-JPlotToPNG("eg.png", { par(mar = c(5, 4, 1, 1) + 0.1); DurgaPlot(d)})
+JPlotToPNG("eg.png", { par(mar = c(5, 4, 1, 1) + 0.1); DurgaPlot(d)}, width = 600)
 -->

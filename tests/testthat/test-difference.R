@@ -86,6 +86,16 @@ compareDiffs <- function(d1, d2, tolerance = 0.1) {
 ##########################################################################
 # Tests start here ####
 
+test_that("group names and contrasts", {
+  data <- makeData()
+  groups <- c(Ctrl = "ZControl1", `G 1` = "Group1", `G 2` = "Group2")
+  d <- DurgaDiff(data, "Measurement", "Group", groups = groups)
+
+  expect_error(DurgaPlot(d, contrasts = "Group1 - ZControl1"), NA)
+  expect_error(DurgaPlot(d, contrasts = "Group1 - ZControl1, Group2 - ZControl1"), NA)
+})
+
+
 test_that("matrix data", {
   n <- 20
   m <- matrix(c(val = rnorm(n), sample(1:3, n, replace = TRUE)), nrow = n)
@@ -214,12 +224,12 @@ test_that("print", {
 
   # Paired
   d1 <- DurgaDiff(insulin, 1, 2, 3)
-  d2 <- DurgaDiff(sugar ~ treatment + id, insulin)
+  d2 <- DurgaDiff(sugar ~ treatment, insulin, id.col = "id")
   checkSummaryMatches(d1, d2)
 
-  d <- DurgaDiff(log(sugar) ~ treatment + id, insulin)
+  d <- DurgaDiff(log(sugar) ~ treatment, insulin, id.col = "id")
   s <- capture.output(print(d))
-  expect_equal(s[2], "  log(sugar) ~ treatment + id")
+  expect_equal(s[2], "  log(sugar) ~ treatment")
 
   # Spaces in names
   `Scapus length` <- rnorm(40, 10)
@@ -1097,7 +1107,7 @@ test_that("Formula", {
 
   op <- par(mfrow = c(1, 2))
   on.exit(par(op))
-  DurgaPlot(DurgaDiff(valVar ~ group + id, df, groups = c("Control", "Group")), main = "Formula interface")
+  DurgaPlot(DurgaDiff(valVar ~ group, df, id.col = "id", groups = c("Control", "Group")), main = "Formula interface")
   DurgaPlot(DurgaDiff(df, "val", "group", "id", groups = c("Control", "Group")), main = "Standard interface")
 
   # More complicated formulae

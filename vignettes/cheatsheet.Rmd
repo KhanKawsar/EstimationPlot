@@ -14,7 +14,9 @@ library(Durga)
 library(datasets)
 ```
 
-`Durga` is an R package that aims to simplify the estimation and visualisation of one type of effect size: differences in means. It provides a function, `DurgaDiff`, to estimate raw or standardised mean differences. Most importantly, it provides a function, `DurgaPlot`, that will create a plot for visualising both the original data and the effect size, and provides a diverse range of display options. The function `DurgaBrackets` can add _confidence brackets_ to an existing Durga plot. This vignette shows some example Durga plots. Each plot is preceded by the code used to generate it, which can be used to learn how to create the plot. 
+`Durga` is an R package that aims to simplify the estimation and visualisation of one type of effect size: differences in means. It provides a function, `DurgaDiff`, to estimate raw or standardised mean differences. Most importantly, it provides a function, `DurgaPlot`, that will create a plot for visualising both the original data and the effect size, and provides a diverse range of display options. The function `DurgaBrackets` can add _confidence brackets_ to an existing Durga plot. Since `Durga` is implemented in base R, Durga plots can be positioned using the standard R plotting layout tools: `par(mfrow = c(...))`, `layout()` and `split.screen()`.
+
+This vignette shows some example Durga plots. Each plot is preceded by the code used to generate it, which can be used to learn how to create the plot. 
 
 Before plotting your data, you must estimate the differences in group means by calling `DurgaDiff`. Your raw data should be in a data frame (or similar), with one observation per row - this is known as _long format_ data. The data frame must contain a column for the measurement or value being analysed, and another for the group or treatment. In addition, paired or repeated measures data requires an ID column to match measurements for the same specimen/individual. For example, within the `insulin` data set, the value being measured - blood sugar level - is recorded in the column `sugar` (`data.col = "sugar"`); treatments are `before` and `after` in the `treatment` column (`group.col = "treatment"`); and the identity of the individual (rabbit) being tested is given in the `id` column (`id.col = "id"`). The blood sugar level of each rabbit was tested before and after treatment with insulin, so for each rabbit, there is a row with the `before` sugar level, and another with the `after` sugar level.
 
@@ -30,8 +32,8 @@ d
 You may alternatively specify your data with a formula. Formulae provide a little more flexibility in specifying your model, but the end results are equivalent. the formula must be specified as either `<data variable> ~ <group variable>` or `<data variable> ~ <group variable> + <id variable>`.
 
 ```{r} 
-# Formulae to define model
-DurgaDiff(sugar ~ treatment + id, insulin)
+# Alternatively, use a formula to define the model
+DurgaDiff(sugar ~ treatment, insulin, id.col = "id")
 ```
 
 When plotted, groups are displayed in their natural order, i.e. alphabetical order for character data, and numeric order for factors. You can, however, specify the display order with the `groups` parameter to either `DurgaDiff` or `DurgaPlot`. Not all groups in the data need be included in the analysis or plot. To assign display labels to the groups, use a named vector to list the groups. The names will be used to label the groups on the plot. 
@@ -41,6 +43,7 @@ In the damselfly data set, the groups are `juvenile` and `adult`. The example be
 
 
 ```{r fig.height=4, fig.width=8}
+# Position 2 plots side-by-side on the same row
 par(mfrow = c(1, 2))
 # There are missing values in the damselfly data set, so must specify na.rm = TRUE
 d <- DurgaDiff(damselfly, "weight", "group", na.rm = TRUE)
@@ -91,7 +94,7 @@ DurgaPlot(d, error.bars.type = "CI", central.tendency = rainbow(3),
         left.ylab = "", ef.size.label = "")
 ```
 
-When there are too many group comparisons to be displayed underneath, you can choose to display confidence brackets above the plot. Confidence brackets communicate less information than the standard effect size visualisation, but may be a reasonable compromise for many group comparisons. You must manually ensure there is sufficient space for the brackets in the plot (see `DurgaBrackets` for details). 
+When there are too many group comparisons to be displayed underneath, you can choose to display confidence brackets above the plot. Confidence brackets communicate less information than the standard effect size visualisation, but may be a reasonable compromise for many group comparisons. You must manually ensure there is sufficient space for the brackets in the plot (see `DurgaBrackets` for details). An alternative approach would be to plot the effect sizes below, and use `ef.size.dx` to shift one or more effect sizes horizontally so they don't overlap.   
 
 ```{r fig.height=4, fig.width=7}
 d <- DurgaDiff(petunia, 1, 2)
@@ -110,6 +113,7 @@ br.col <- ifelse(sign < 0, "red", ifelse(sign > 0, "blue", "grey60"))
 DurgaBrackets(p, labels = "diff CI", lb.cex = 0.8, lb.col = lb.col, lb.font = font, 
               br.col = br.col, br.lwd = lwd)
 ```
+
 
 By default, effect sizes are "unstandardised", which means they are in the same units as the data. Alternatively, `DurgaDiff` can estimate standardised effect sizes, either Cohen's d or Hedges' g, which allow comparisons of effect sizes across data in different units.
 
@@ -134,6 +138,7 @@ set.seed(1)
 data <- data.frame(Measurement = unlist(lapply(c(10, 12, 8, 8.5, 9, 9.1), function(m) rnorm(20, m))),
                    Group = rep(paste0("g", 1:6), each = 20),
                    Id = rep(1:6, 20))
+# Define display order and display pretty group names
 groups = c("Control 1" = "g1", "Treatment 1" = "g2", 
            "Control 2" = "g3", "Treatment 2" = "g4", 
            "Control 3" = "g5", "Treatment 3" = "g6")
@@ -141,9 +146,18 @@ d <- DurgaDiff(data, 1, 2, 3, groups = groups,
                    contrasts = "g2 - g1, g4 - g3, g6 - g5")
 # Reduce text size
 par(cex = 0.7)
-DurgaPlot(d, box = TRUE, group.dx = c(0.15, -0.15), paired = FALSE, points = FALSE, 
-        box.pars = list(boxwex = 0.4), ef.size.violin = FALSE, main = "Group offsets",
-        xlim = c(1, 6))
+DurgaPlot(d, box = TRUE, group.dx = c(0.15, -0.15), paired = FALSE, points = FALSE, xlim = c(1, 6), 
+          # Hide the boxplot median line and make the boxes narrow (box.pars = list(medcol = NA, boxwex = 0.4))
+          box.pars = list(medcol = NA, boxwex = 0.4), 
+          # Display mean and error bar
+          central.tendency = "#8060b0a0",      # Display and colour central tendency
+          central.tendency.symbol = "segment", 
+          central.tendency.width = 0.07,
+          error.bars = "#8060b0a0",            # Same colour for error bars
+          # Don't display the effect size violin
+          ef.size.violin = FALSE, 
+          main = "Group offsets"
+        )
 ```
 
 Any unknown parameters to `DurgaPlot` are passed on to the plot function, which allows some control over additional aspects of the plot. The labels underneath effect sizes can be controlled by passing a named vector for the `DurgaPlot` `contrasts` parameter.
@@ -158,8 +172,8 @@ d <- DurgaDiff(data, "sugar", "treatment", "id",
                    groups = c("Before insulin" = "before", "After insulin" = "after"), na.rm = TRUE)
 par(mar = c(2, 4, 4, 1))
 DurgaPlot(d, 
-          frame.plot = FALSE, # Don't draw containing box
-          contrasts = c("Change in sugar" = "after - before"),
+          frame.plot = FALSE,                                  # Don't draw containing box
+          contrasts = c("Change in sugar" = "after - before"), # Relabel the contrast
           left.ylab = "Blood sugar level",
           violin.shape = c("left", "right"), violin.dx = c(-0.055, 0.055), violin.width = 0.3, 
           points = "black",
