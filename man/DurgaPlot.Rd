@@ -36,11 +36,12 @@ DurgaPlot(
   ef.size.violin = TRUE,
   ef.size.violin.fill = TRUE,
   ef.size.violin.shape = c("right-half", "left-half", "full"),
+  ef.size.violin.trunc = TRUE,
   ef.size.pch = 17,
   ef.size.ticks = NULL,
   ef.size.las = 0,
   ef.size.label = es$effect.name,
-  ef.size.dx = group.dx,
+  ef.size.dx = 0,
   ef.size.adj.margin = TRUE,
   ef.size.mean.line.dx = group.dx,
   ef.size.line.col = "grey50",
@@ -168,6 +169,9 @@ transparent version is used for the violin fill.}
 
 \item{ef.size.violin.shape}{Shape of the effect size violin.}
 
+\item{ef.size.violin.trunc}{If \code{TRUE}, effect size violin is truncated
+vertically so that it just covers the estimated effect size.}
+
 \item{ef.size.pch}{Symbol to represent mean effect size.}
 
 \item{ef.size.ticks}{Optional locations and labels for ticks on the effect
@@ -182,7 +186,10 @@ parallel to axis, 1 = horizontal).}
 
 \item{ef.size.label}{Label to display on y-axis for effect size.}
 
-\item{ef.size.dx}{Horizontal shift to be applied to each effect size.}
+\item{ef.size.dx}{Horizontal shift to be applied to each contrast/effect
+size. Unlike other \code{.dx} parameters, \code{ef.size.dx} is indexed by
+contrast rather than group. When effect size is below the plot, the
+\code{group.dx} for the group above the effect size is also added.}
 
 \item{ef.size.adj.margin}{If TRUE (the default), the right margin (if ES is
 right) or bottom margin (if ES is below) is automatically adjusted to make
