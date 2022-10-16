@@ -315,17 +315,27 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
 #' @param alpha Transparency, from \code{0} meaning fully opaque (\code{colour}
 #'   is returned unchanged), through to \code{1} which is completely transparent
 #'   (i.e. invisible).
+#' @param relativeAlpha Determines what happens if \code{colour} is already
+#'   transparent. if \code{relative} is \code{TRUE}, the existing transparency
+#'   value is multiplied by \code{alpha}. If \code{FALSE}, then the original
+#'   transparency is ignored and \code{alpha} defines the transparency of the
+#'   returned colour.
 #'
 #' @returns A colour or colours that are transparent versions of \code{colour}.
 #'
 #' @seealso [grDevices]{col2rgb}, [grDevices]{rgb}
 #'
 #' @export
-DurgaTransparent <-  function(colour, alpha) {
+DurgaTransparent <-  function(colour, alpha, relative = FALSE) {
   rgba.val <- grDevices::col2rgb(colour, TRUE)
+  newAlpha <- (100 - alpha * 100) * 255 / 100
+  if (relative)
+    newAlpha <- newAlpha * rgba.val[4]
+  # Ensure it is limited to between 0 and 255
+  newAlpha <- min(255, max(0, newAlpha))
   grDevices::rgb(rgba.val[1, ], rgba.val[2, ], rgba.val[3, ],
                  maxColorValue = 255,
-                 alpha = (100 - alpha * 100) * 255 / 100)
+                 alpha = newAlpha)
 }
 
 #' Group and effect size plotting in base R.
@@ -405,6 +415,8 @@ DurgaTransparent <-  function(colour, alpha) {
 #'   \code{"overplot"} to overplot points and \code{"jitter"} to add random
 #'   noise to each x-value. See \code{\link[vipor]{offsetX}} for remaining
 #'   methods.
+#' @param points.spread Adjusts the points scatter method points horizontally (ignored if
+#'   \code{points.method = "overplot"}).
 #' @param points.dx Horizontal shift to be applied to points in each group.
 #' @param points.params List of named parameters to pass on to
 #'   \code{\link[graphics]{points}}, e.g. \code{DurgaPlot(es, points = "black",
@@ -578,6 +590,7 @@ DurgaPlot <- function(es,
                     points = TRUE,
                     points.method = c("quasirandom", "pseudorandom", "smiley", "maxout", "frowney", "minout", "tukey",
                                       "tukeyDense", "jitter", "overplot"),
+                    points.spread = ifelse(points.method == "jitter", 0.1, 0.3),
                     points.dx = group.dx,
                     points.params = list(),
 
@@ -787,6 +800,9 @@ DurgaPlot <- function(es,
     if (.show(box)) {
       # There is a lot of flexibility in box plots, so just use boxplot to determine the extents
       gr <- range(gr, bp$stats[, gi], na.rm = TRUE)
+      if (box.outline)
+        # Include outliers in range
+        gr <- range(gr, bp$out[bp$group == gi], na.rm = TRUE)
     }
 
     # Bar plots
@@ -911,11 +927,11 @@ DurgaPlot <- function(es,
     if (points.method == "overplot") {
       # Do nothing
     } else if (points.method == "jitter") {
-        x <- jitter(x, amount = 0.1)
+        x <- jitter(x, amount = points.spread)
     } else {
       # Scatter the points
       x <- x + vipor::offsetX(data[[es$data.col]], as.numeric(data$.group.as.factor),
-                              method = points.method, varwidth = TRUE, adjust = violin.width)
+                              method = points.method, varwidth = TRUE, width = points.spread)
     }
     # Complicated way of calling is to allow user to pass in arbitrary parameters
     pch <- points.params[["pch"]] %||% 19
