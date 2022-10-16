@@ -4,7 +4,7 @@
 \alias{DurgaTransparent}
 \title{Returns a transparent version of the specified colour(s).}
 \usage{
-DurgaTransparent(colour, alpha)
+DurgaTransparent(colour, alpha, relative = FALSE)
 }
 \arguments{
 \item{colour}{The R colour (or colours) to be made transparent. May be a
@@ -14,6 +14,12 @@ integer.}
 \item{alpha}{Transparency, from \code{0} meaning fully opaque (\code{colour}
 is returned unchanged), through to \code{1} which is completely transparent
 (i.e. invisible).}
+
+\item{relative}{Determines what happens if \code{colour} is already
+transparent. if \code{relative} is \code{TRUE}, the existing transparency
+value is multiplied by \code{alpha}. If \code{FALSE}, then the original
+transparency is ignored and \code{alpha} defines the transparency of the
+returned colour.}
 }
 \value{
 A colour or colours that are transparent versions of \code{colour}.

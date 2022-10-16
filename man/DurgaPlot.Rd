@@ -12,6 +12,7 @@ DurgaPlot(
   points = TRUE,
   points.method = c("quasirandom", "pseudorandom", "smiley", "maxout", "frowney",
     "minout", "tukey", "tukeyDense", "jitter", "overplot"),
+  points.spread = ifelse(points.method == "jitter", 0.1, 0.3),
   points.dx = group.dx,
   points.params = list(),
   violin = isFALSE(box) && isFALSE(bar),
@@ -98,6 +99,9 @@ should be a vector of colours with a value for each data point.}
 \code{"overplot"} to overplot points and \code{"jitter"} to add random
 noise to each x-value. See \code{\link[vipor]{offsetX}} for remaining
 methods.}
+
+\item{points.spread}{Adjusts the points scatter method points horizontally (ignored if
+\code{points.method = "overplot"}).}
 
 \item{points.dx}{Horizontal shift to be applied to points in each group.}
 
