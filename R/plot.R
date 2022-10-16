@@ -315,7 +315,7 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
 #' @param alpha Transparency, from \code{0} meaning fully opaque (\code{colour}
 #'   is returned unchanged), through to \code{1} which is completely transparent
 #'   (i.e. invisible).
-#' @param relativeAlpha Determines what happens if \code{colour} is already
+#' @param relative Determines what happens if \code{colour} is already
 #'   transparent. if \code{relative} is \code{TRUE}, the existing transparency
 #'   value is multiplied by \code{alpha}. If \code{FALSE}, then the original
 #'   transparency is ignored and \code{alpha} defines the transparency of the
@@ -330,7 +330,7 @@ DurgaTransparent <-  function(colour, alpha, relative = FALSE) {
   rgba.val <- grDevices::col2rgb(colour, TRUE)
   newAlpha <- (100 - alpha * 100) * 255 / 100
   if (relative)
-    newAlpha <- newAlpha * rgba.val[4]
+    newAlpha <- newAlpha * rgba.val[4] / 255
   # Ensure it is limited to between 0 and 255
   newAlpha <- min(255, max(0, newAlpha))
   grDevices::rgb(rgba.val[1, ], rgba.val[2, ], rgba.val[3, ],
