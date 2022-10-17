@@ -86,13 +86,57 @@ compareDiffs <- function(d1, d2, tolerance = 0.1) {
 ##########################################################################
 # Tests start here ####
 
+test_that("expand contrasts", {
+  .makeX <- function(g) matrix(g, nrow = 2)
+
+  expect_equal(expandContrasts("g1 - g2, g3 - g4", c("g1", "g2", "g3", "g4")), .makeX(c("g1", "g2", "g3", "g4")), ignore_attr = TRUE)
+  expect_error(expandContrasts("g1 - g2, g3 - g5", c("g1", "g2", "g3", "g4")))
+  expect_error(expandContrasts("g1 - g1", c("g1", "g2", "g3", "g4")))
+  expect_equal(expandContrasts(" g1-g2 ", c("g1", "g2")), .makeX(c("g1", "g2")), ignore_attr = TRUE)
+  expect_equal(expandContrasts(" g1    -g2 ", c("g2", "g1")), .makeX(c("g1", "g2")), ignore_attr = TRUE)
+  expect_equal(expandContrasts(" g2  - g1 ", c("g2", "g1")), .makeX(c("g2", "g1")), ignore_attr = TRUE)
+  expect_equal(expandContrasts("g1 - g2", c("g4", "g1", "g2")), .makeX(c("g1", "g2")), ignore_attr = TRUE)
+  expect_equal(expandContrasts("g1 - g2", c("g4", "g2", "g1")), .makeX(c("g1", "g2")), ignore_attr = TRUE)
+  expect_equal(expandContrasts(". - g1", c("g1", "g2", "g3")), .makeX(c("g2", "g1", "g3", "g1")), ignore_attr = TRUE)
+  expect_equal(expandContrasts(". - g2", c("g1", "g2", "g3")), .makeX(c("g1", "g2", "g3", "g2")), ignore_attr = TRUE)
+  expect_equal(expandContrasts("g3-.", c("g1", "g2", "g3")), .makeX(c("g3", "g1", "g3", "g2")), ignore_attr = TRUE)
+  expect_equal(expandContrasts("*", c("g1", "g2")), .makeX(c("g2", "g1")), ignore_attr = TRUE)
+  expect_equal(expandContrasts("*", c("g2", "g1")), .makeX(c("g1", "g2")), ignore_attr = TRUE)
+  expect_equal(expandContrasts("*", c("g1")), NULL, ignore_attr = TRUE)
+  expect_equal(expandContrasts(" g1 - g11 ", c("g1", "g11")), .makeX(c("g1", "g11")), ignore_attr = TRUE)
+  expect_equal(expandContrasts(" g1 - g11 ", c("g11", "g1")), .makeX(c("g1", "g11")), ignore_attr = TRUE)
+  expect_equal(expandContrasts(" g11 - g1 ", c("g1", "g11")), .makeX(c("g11", "g1")), ignore_attr = TRUE)
+  expect_equal(expandContrasts(" . - g1", c("g1", "g11")), .makeX(c("g11", "g1")), ignore_attr = TRUE)
+  expect_equal(expandContrasts(" . - g1", c("g1", "g11", "g111")), .makeX(c("g11", "g1", "g111", "g1")), ignore_attr = TRUE)
+  expect_equal(expandContrasts(" g1 - .", c("g1", "g11")), .makeX(c("g1", "g11")), ignore_attr = TRUE)
+  expect_equal(expandContrasts(" g1 - . ", c("g1", "g11", "g111")), .makeX(c("g1", "g11", "g1", "g111")), ignore_attr = TRUE)
+  expect_error(expandContrasts(" . - . ", c("g1", "g11")))
+
+  expect_equal(expandContrasts("g1 - g2", c("g1", "g2", "g3", "g4"), c("G1", "G2", "G3", "G4")), .makeX(c("g1", "g2")))
+  expect_equal(expandContrasts("G1 - G2", c("g1", "g2", "g3", "g4"), c("G1", "G2", "G3", "G4")), .makeX(c("g1", "g2")))
+  expect_equal(expandContrasts("g2 - g1", c("g1", "g2", "g3", "g4"), c("G1", "G2", "G3", "G4")), .makeX(c("g2", "g1")))
+  expect_equal(expandContrasts("G2 - G1", c("g1", "g2", "g3", "g4"), c("G1", "G2", "G3", "G4")), .makeX(c("g2", "g1")))
+  expect_equal(expandContrasts("G2 - g1", c("g1", "g2", "g3", "g4"), c("G1", "G2", "G3", "G4")), .makeX(c("g2", "g1")))
+  expect_equal(expandContrasts("g3 - g2", c("g1", "g2", "g3", "g4"), c("G1", "G2", "G3", "G4")), .makeX(c("g3", "g2")))
+  expect_equal(expandContrasts("G3 - G2", c("g1", "g2", "g3", "g4"), c("G1", "G2", "G3", "G4")), .makeX(c("g3", "g2")))
+  expect_equal(expandContrasts("g4 - g1", c("g1", "g2", "g3", "g4"), c("G1", "G2", "G3", "G4")), .makeX(c("g4", "g1")))
+  expect_equal(expandContrasts("G4 - G1, g3-G2", c("g1", "g2", "g3", "g4"), c("G1", "G2", "G3", "G4")), .makeX(c("g4", "g1", "g3", "g2")))
+  expect_equal(expandContrasts(c("G4 - G1", "g3-G2"), c("g1", "g2", "g3", "g4"), c("G1", "G2", "G3", "G4")), .makeX(c("g4", "g1", "g3", "g2")))
+  expect_equal(expandContrasts("g2 - g1", c("g1", "g2", "g3", "g4"), c("G1", "G2", "G3", "G4")), .makeX(c("g2", "g1")))
+})
+
 test_that("group names and contrasts", {
   data <- makeData()
   groups <- c(Ctrl = "ZControl1", `G 1` = "Group1", `G 2` = "Group2")
   d <- DurgaDiff(data, "Measurement", "Group", groups = groups)
 
-  expect_error(DurgaPlot(d, contrasts = "Group1 - ZControl1"), NA)
-  expect_error(DurgaPlot(d, contrasts = "Group1 - ZControl1, Group2 - ZControl1"), NA)
+  # Each pair of plots in a row should be identical. One uses group data value, the other uses group label
+  op <- par(mfrow = c(2, 2))
+  expect_error(DurgaPlot(d, contrasts = "Group1 - ZControl1", main = "1 contrast"), NA)
+  expect_error(DurgaPlot(d, contrasts = "G 1 - Ctrl", main = "1 contrast"), NA)
+  expect_error(DurgaPlot(d, contrasts = "Group1 - ZControl1, Group2 - ZControl1", main = "2 contrasts"), NA)
+  expect_error(DurgaPlot(d, contrasts = "G 1 - Ctrl, G 2 - Ctrl", main = "2 contrasts"), NA)
+  par(op)
 })
 
 
@@ -856,33 +900,6 @@ test_that("effect size position", {
   # Check missing contrast
   d <- DurgaDiff(df, data.col = 1, group.col = 2, contrasts = "Group2 - Group1")
   expect_error(DurgaPlot(d, contrasts = "Group3 - Group1"))
-})
-
-test_that("expand contrasts", {
-  .makeX <- function(g) matrix(g, nrow = 2)
-
-  expect_equal(expandContrasts("g1 - g2, g3 - g4", c("g1", "g2", "g3", "g4")), .makeX(c("g1", "g2", "g3", "g4")), ignore_attr = TRUE)
-  expect_error(expandContrasts("g1 - g2, g3 - g5", c("g1", "g2", "g3", "g4")))
-  expect_error(expandContrasts("g1 - g1", c("g1", "g2", "g3", "g4")))
-  expect_equal(expandContrasts(" g1-g2 ", c("g1", "g2")), .makeX(c("g1", "g2")), ignore_attr = TRUE)
-  expect_equal(expandContrasts(" g1    -g2 ", c("g2", "g1")), .makeX(c("g1", "g2")), ignore_attr = TRUE)
-  expect_equal(expandContrasts(" g2  - g1 ", c("g2", "g1")), .makeX(c("g2", "g1")), ignore_attr = TRUE)
-  expect_equal(expandContrasts("g1 - g2", c("g4", "g1", "g2")), .makeX(c("g1", "g2")), ignore_attr = TRUE)
-  expect_equal(expandContrasts("g1 - g2", c("g4", "g2", "g1")), .makeX(c("g1", "g2")), ignore_attr = TRUE)
-  expect_equal(expandContrasts(". - g1", c("g1", "g2", "g3")), .makeX(c("g2", "g1", "g3", "g1")), ignore_attr = TRUE)
-  expect_equal(expandContrasts(". - g2", c("g1", "g2", "g3")), .makeX(c("g1", "g2", "g3", "g2")), ignore_attr = TRUE)
-  expect_equal(expandContrasts("g3-.", c("g1", "g2", "g3")), .makeX(c("g3", "g1", "g3", "g2")), ignore_attr = TRUE)
-  expect_equal(expandContrasts("*", c("g1", "g2")), .makeX(c("g2", "g1")), ignore_attr = TRUE)
-  expect_equal(expandContrasts("*", c("g2", "g1")), .makeX(c("g1", "g2")), ignore_attr = TRUE)
-  expect_equal(expandContrasts("*", c("g1")), NULL, ignore_attr = TRUE)
-  expect_equal(expandContrasts(" g1 - g11 ", c("g1", "g11")), .makeX(c("g1", "g11")), ignore_attr = TRUE)
-  expect_equal(expandContrasts(" g1 - g11 ", c("g11", "g1")), .makeX(c("g1", "g11")), ignore_attr = TRUE)
-  expect_equal(expandContrasts(" g11 - g1 ", c("g1", "g11")), .makeX(c("g11", "g1")), ignore_attr = TRUE)
-  expect_equal(expandContrasts(" . - g1", c("g1", "g11")), .makeX(c("g11", "g1")), ignore_attr = TRUE)
-  expect_equal(expandContrasts(" . - g1", c("g1", "g11", "g111")), .makeX(c("g11", "g1", "g111", "g1")), ignore_attr = TRUE)
-  expect_equal(expandContrasts(" g1 - .", c("g1", "g11")), .makeX(c("g1", "g11")), ignore_attr = TRUE)
-  expect_equal(expandContrasts(" g1 - . ", c("g1", "g11", "g111")), .makeX(c("g1", "g11", "g1", "g111")), ignore_attr = TRUE)
-  expect_error(expandContrasts(" . - . ", c("g1", "g11")))
 })
 
 test_that("Grouped plot", {

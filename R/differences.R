@@ -440,7 +440,7 @@ DurgaDiff.default <- function(x,
   es$group.statistics <- df
 
   # Interpret the contrasts
-  contrasts <- expandContrasts(contrasts, groups)
+  contrasts <- expandContrasts(contrasts, groups, groupLabels)
   if (is.null(contrasts)) {
     es$group.differences <- NULL
   } else {

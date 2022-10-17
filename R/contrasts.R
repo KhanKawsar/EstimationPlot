@@ -25,11 +25,11 @@
   endsWith(remainder, "-")
 }
 
-# Returns 1 if group is the first group in the contrast, 2 if it's the 2nd, otherwise 0
-.findGroup <- function(group, contrast) {
-  if (.group1(group, contrast)) {
+# Returns 1 if group or label is the first group in the contrast, 2 if it's the 2nd, otherwise 0
+.findGroupOrLabel <- function(group, label, contrast) {
+  if (.group1(group, contrast) || .group1(label, contrast)) {
     1
-  } else if (.group2(group, contrast)) {
+  } else if (.group2(group, contrast) || .group2(label, contrast)) {
     2
   } else {
     0
@@ -37,7 +37,11 @@
 }
 
 # Takes contrasts as a string, vector of strings, or matrix and returns a matrix
-expandContrasts <- function(contrasts, groups) {
+#
+# @param groups Vector of groups
+# @param groupNames Vector of group display labels. If specified, contrasts can
+#   use either group value or label to identify a group.
+expandContrasts <- function(contrasts, groups, groupNames = NULL) {
 
   if (is.null(contrasts))
     return(NULL)
@@ -89,14 +93,22 @@ expandContrasts <- function(contrasts, groups) {
 
     contrastNames <- names(contrasts)
 
+    if (is.null(groupNames))
+      # Simplify later processing
+      groupNames <- rep("", length(groups))
+
     # Assume syntax "group - group"
     contrasts <- sapply(contrasts, function(contrast) {
       # For this contrast, which should look like "group1 - group2",
       # find the location of group names within the string
-      found <- sapply(unname(groups), function(group) .findGroup(group, contrast))
-      if (sum(found > 0) != 2)
-        stop(sprintf("Invalid contrast '%s'; must be 'group1 - group2, groups are %s",
-                     contrast, paste0(groups, collapse = ", ")))
+      found <- mapply(.findGroupOrLabel, groups, groupNames, MoreArgs = list(contrast))
+      if (sum(found > 0) != 2) {
+        extra <- ""
+        if (!is.null(groupNames))
+          extra <- sprintf(" (or %s)", paste(groupNames, collapse = ", "))
+        stop(sprintf("Invalid contrast '%s'; must be 'group1 - group2, groups are %s%s",
+                     contrast, paste(groups, collapse = ", "), extra))
+      }
       found <- found[found != 0]
       names(found)[order(found)]
     }, USE.NAMES = FALSE)
@@ -116,7 +128,7 @@ expandContrasts <- function(contrasts, groups) {
 # from es$group.differences, so must already have been calculated by
 # DurgaDiff
 buildPlotDiffs <- function(contrasts, es) {
-  pairs <- expandContrasts(contrasts, es$groups)
+  pairs <- expandContrasts(contrasts, es$groups, es$group.names)
   # For each specified contrast, find the corresponding group difference
   lapply(seq_len(ncol(pairs)), function(i) findDiff(pairs[, i], colnames(pairs)[i], es$group.differences))
 }
