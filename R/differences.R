@@ -98,7 +98,9 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
     }
     # Statistic functions operate on differences between paired values
     bootstrapData <- g1[[data.col]][g1Idx] - g2[[data.col]]
-    if (effect.type == "unstandardised") {
+    if (is.function(effect.type)) {
+      statistic <- .wrapPairedStatistic(effect.type)
+    } else if (effect.type == "unstandardised") {
       statistic <- .wrapPairedStatistic(mean)
     } else if (effect.type == "cohens") {
       statistic <- .wrapPairedStatistic(stCohensDz)
@@ -107,17 +109,15 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
     }
   } else {
     bootstrapData <- data
-    if (effect.type == "unstandardised") {
+    if (is.function(effect.type)) {
+      statistic <- .wrap2GroupStatistic(effect.type)
+    } else if (effect.type == "unstandardised") {
       statistic <- .wrap2GroupStatistic(stMeanDiff)
     } else if (effect.type == "cohens") {
       statistic <- .wrap2GroupStatistic(stCohensD)
     } else if (effect.type == "hedges") {
       statistic <- .wrap2GroupStatistic(stHedgesG)
     }
-  }
-  if (is.null(statistic)) {
-    # User supplied a bootstrap statistic function
-    statistic <- effect.type
   }
 
   # Bootstrap the statistic
@@ -234,6 +234,11 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #' repeated measures) Cohen's d, we apply equation 6 (Lakens 2013). For paired
 #' Hedges' g, we apply Hedges' correction to the paired Cohen's d.
 #'
+#' Alternative effect types can be estimated by passing a function for
+#' \code{effect.type}. For unpaired data, the function must accept two
+#' parameters: the values from the two groups to be compared. For paired data,
+#' the function must accept a single argument; group 1 values - group 2 values.
+#'
 #' Confidence intervals for the estimate are determined using bootstrap
 #' resampling, using the adjusted bootstrap percentile (BCa) method (see
 #' \code{\link[boot]{boot}} and \code{\link[boot]{boot.ci}}). Additional
@@ -251,16 +256,15 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #'   of ID column for repeated measures/paired data. Observations for the same
 #'   individual must have the same ID. For non-paired data, do not specify an
 #'   \code{id.col}, (or use \code{id.col = NA}).
-#' @param effect.type Type of difference
 #' @param groups Vector of group names. Defaults to all groups in \code{data} in
 #'   \emph{natural} order. If \code{groups} is a named vector, the names are
 #'   used as group labels for plotting or printing.
 #' @param contrasts Specify the pairs of groups to be compared. By default, all
 #'   pairwise differences are generated. May be a single string, a vector of
 #'   strings, or a matrix. See Details for more information.
-#' @param effect.type Type of group difference to be estimated Possible types
-#'   are: \code{unstandardised}, difference in group means; \code{cohens},
-#'   Cohen's d; \code{hedges}, Hedges' g.
+#' @param effect.type Type of group difference to be estimated. Possible types
+#'   are: \code{"unstandardised"}, difference in group means; \code{"cohens"},
+#'   Cohen's d; \code{"hedges"}, Hedges' g. See Details for further information.
 #' @param R The number of bootstrap replicates.
 #' @param boot.params Optional list of additional names parameters to pass to
 #'   the \code{\link[boot]{boot}} function.
@@ -319,6 +323,10 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #' @examples
 #'
 #' d <- DurgaDiff(insulin, "sugar", "treatment", "id")
+#' print(d)
+#'
+#' # calculate median group differences
+#' d <- DurgaDiff(insulin, "sugar", "treatment", "id", effect.type = median)
 #' print(d)
 #'
 #' @references
@@ -416,7 +424,7 @@ DurgaDiff.default <- function(x,
              groups = groups,
              group.names = groupLabels,
              effect.type = effect.type,
-             effect.name = effectNames[effect.type],
+             effect.name = ifelse(is.function(effect.type), "Custom effect type", effectNames[effect.type]),
              explicit.contrasts = !missing(contrasts))
   # Return value has type DurgaDiff
   class(es) <- c("DurgaDiff", class(es))

@@ -48,9 +48,9 @@ used as group labels for plotting or printing.}
 pairwise differences are generated. May be a single string, a vector of
 strings, or a matrix. See Details for more information.}
 
-\item{effect.type}{Type of group difference to be estimated Possible types
-are: \code{unstandardised}, difference in group means; \code{cohens},
-Cohen's d; \code{hedges}, Hedges' g.}
+\item{effect.type}{Type of group difference to be estimated. Possible types
+are: \code{"unstandardised"}, difference in group means; \code{"cohens"},
+Cohen's d; \code{"hedges"}, Hedges' g. See Details for further information.}
 
 \item{R}{The number of bootstrap replicates.}
 
@@ -134,6 +134,11 @@ of Cohen's d, and is more suitable for small sample sizes. For paired (i.e.
 repeated measures) Cohen's d, we apply equation 6 (Lakens 2013). For paired
 Hedges' g, we apply Hedges' correction to the paired Cohen's d.
 
+Alternative effect types can be estimated by passing a function for
+\code{effect.type}. For unpaired data, the function must accept two
+parameters: the values from the two groups to be compared. For paired data,
+the function must accept a single argument; group 1 values - group 2 values.
+
 Confidence intervals for the estimate are determined using bootstrap
 resampling, using the adjusted bootstrap percentile (BCa) method (see
 \code{\link[boot]{boot}} and \code{\link[boot]{boot.ci}}). Additional
@@ -144,6 +149,10 @@ argument \code{boot.params} (\code{boot.ci.params}).
 \examples{
 
 d <- DurgaDiff(insulin, "sugar", "treatment", "id")
+print(d)
+
+# calculate median group differences
+d <- DurgaDiff(insulin, "sugar", "treatment", "id", effect.type = median)
 print(d)
 
 }

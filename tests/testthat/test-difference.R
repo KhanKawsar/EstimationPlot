@@ -1135,3 +1135,41 @@ test_that("Formula", {
 
   expect_error(DurgaDiff(`Scapus lengh` ~ group, data = df))
 })
+
+test_that("custom stat", {
+  # Example from http://www.estimationstats.com/#/analyze/shared-control
+
+  ds <- "A1	A2	B1	B2	C1	C2	D1	D2
+8.885	10.135	8	-35	3.375	6.625	0.54	-0.54
+14.38	11.94	7	-30	-0.3	2.3	1.98	0.02
+8.015	6.025	17	-25	10.025	11.975	1.1	0.9
+5.835	3.045	15	-20	2.35	3.65	3.42	0.58
+5.47	1.87	12	-15	7.675	8.325	2.54	1.46
+12.06	12.64	5	-10	9	9	1.655	2.345
+11.72	9.66	6	-5	7.325	6.675	4.865	1.135
+10.315	9.265	19	0	6.65	5.35	3.98	2.02
+5.065	6.155	16	5	4.975	3.025	3.1	2.9
+8.235	10.785	11	10	3.3	0.7	2.215	3.785
+15.08	12.36	18	15	11.625	8.375	6.305	1.695
+13.485	10.175	9	20	17.765	8.235	5.42	2.58
+11.3	12.38	14	25	17.09	6.91	4.54	3.46
+9.82	9.66	13	30	19.41	8.59	3.655	4.345
+9.565	6.955	10	35	20.735	9.265	2.775	5.225"
+
+  dw <- read.delim(text = ds)
+  # Convert to long format
+  l <- lapply(colnames(dw), function(c) data.frame(value = as.numeric(dw[[c]]), group = c, id = seq_along(c)))
+  df <- do.call(rbind, l)
+  dd <- DurgaDiff(df, 1, 2, contrasts = ". - A1")
+  dc <- DurgaDiff(df, 1, 2, contrasts = ". - A1", effect.type = function(x1, x2) { median(x2) - median(x1) })
+
+  # Check that group details are the same, pairwise differences are different
+  od <- capture.output(print(dd))
+  oc <- capture.output(print(dc))
+  expect_equal(which(od == oc), 1:12)
+
+  op <- par(mfrow = c(2, 1))
+  expect_error(DurgaPlot(dd, main = "Defaults"), NA)
+  expect_error(DurgaPlot(dc, main = "Median differences"), NA)
+  par(op)
+})
