@@ -268,9 +268,9 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #' @param R The number of bootstrap replicates.
 #' @param boot.params Optional list of additional names parameters to pass to
 #'   the \code{\link[boot]{boot}} function.
-#' @param ci.conf Numeric confidence level of the required confidence interval.
-#'   Applies to both CI of differences between group means and CI of group
-#'   means.
+#' @param ci.conf Numeric confidence level of the required confidence interval,
+#'   e.g. \code{ci.conf = 0.95} specifies that 95\% confidence intervals should
+#'   be calculated. Applies to both CI of effect sizes and CI of group means.
 #' @param boot.ci.params Optional list of additional names parameters to pass to
 #'   the \code{\link[boot]{boot.ci}} function.
 #' @param na.rm a logical evaluating to TRUE or FALSE indicating whether NA

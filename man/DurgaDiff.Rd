@@ -57,9 +57,9 @@ Cohen's d; \code{"hedges"}, Hedges' g. See Details for further information.}
 \item{boot.params}{Optional list of additional names parameters to pass to
 the \code{\link[boot]{boot}} function.}
 
-\item{ci.conf}{Numeric confidence level of the required confidence interval.
-Applies to both CI of differences between group means and CI of group
-means.}
+\item{ci.conf}{Numeric confidence level of the required confidence interval,
+e.g. \code{ci.conf = 0.95} specifies that 95\% confidence intervals should
+be calculated. Applies to both CI of effect sizes and CI of group means.}
 
 \item{boot.ci.params}{Optional list of additional names parameters to pass to
 the \code{\link[boot]{boot.ci}} function.}
