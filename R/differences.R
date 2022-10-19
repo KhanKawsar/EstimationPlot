@@ -265,7 +265,10 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #' @param effect.type Type of group difference to be estimated. Possible types
 #'   are: \code{"unstandardised"}, difference in group means; \code{"cohens"},
 #'   Cohen's d; \code{"hedges"}, Hedges' g. See Details for further information.
-#' @param R The number of bootstrap replicates.
+#' @param R The number of bootstrap replicates. The default value of 1000 may
+#'   need to be increased for large sample sizes; if \code{R <= nrow(x)}, an
+#'   error such as "Error in bca.ci... estimated adjustment 'a' is NA" will be
+#'   thrown.
 #' @param boot.params Optional list of additional names parameters to pass to
 #'   the \code{\link[boot]{boot}} function.
 #' @param ci.conf Numeric confidence level of the required confidence interval,
