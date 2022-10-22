@@ -158,7 +158,8 @@ print(d)
 d <- DurgaDiff(insulin, "sugar", "treatment", "id", effect.type = median)
 print(d)
 
-# Change group order and displayed group labels, reverse the direction of one of the contrasts from the default
+# Change group order and displayed group labels, reverse the
+# direction of one of the contrasts from the default
 d <- DurgaDiff(petunia, 1, 2,
                groups = c("self-fertilised" = "self_fertilised",
                           "intercrossed" = "inter_cross",

@@ -123,12 +123,23 @@ test_that("expand contrasts", {
   expect_equal(expandContrasts("G4 - G1, g3-G2", c("g1", "g2", "g3", "g4"), c("G1", "G2", "G3", "G4")), .makeX(c("g4", "g1", "g3", "g2")))
   expect_equal(expandContrasts(c("G4 - G1", "g3-G2"), c("g1", "g2", "g3", "g4"), c("G1", "G2", "G3", "G4")), .makeX(c("g4", "g1", "g3", "g2")))
   expect_equal(expandContrasts("g2 - g1", c("g1", "g2", "g3", "g4"), c("G1", "G2", "G3", "G4")), .makeX(c("g2", "g1")))
+  expect_equal(expandContrasts("g2 - g1", c(G1 = "g1", G2 = "g2", G3 = "g3", G4 = "g4"), c("G1", "G2", "G3", "G4")), .makeX(c("g2", "g1")))
+  expect_equal(expandContrasts("G2 - G1", c(G1 = "g1", G2 = "g2", G3 = "g3", G4 = "g4"), c("G1", "G2", "G3", "G4")), .makeX(c("g2", "g1")))
+  expect_equal(expandContrasts(c("G2 - G1", "G3 - G1"), c(G1 = "g1", G2 = "g2", G3 = "g3", G4 = "g4"), c("G1", "G2", "G3", "G4")), .makeX(c("g2", "g1", "g3", "g1")))
 })
 
 test_that("group names and contrasts", {
   data <- makeData()
   groups <- c(Ctrl = "ZControl1", `G 1` = "Group1", `G 2` = "Group2")
   d <- DurgaDiff(data, "Measurement", "Group", groups = groups)
+
+  DurgaDiff(data, "Measurement", "Group", groups = groups, contrasts = "*")
+  # Contrasts with data values
+  DurgaDiff(data, "Measurement", "Group", groups = groups, contrasts = c("Group2 - Group1"))
+  # Contrasts with group labels
+  DurgaDiff(data, "Measurement", "Group", groups = groups, contrasts = c("G 2 - G 1"))
+  # Contrasts with micture
+  DurgaDiff(data, "Measurement", "Group", groups = groups, contrasts = c("G 2 - Group1"))
 
   # Each pair of plots in a row should be identical. One uses group data value, the other uses group label
   op <- par(mfrow = c(2, 2))
@@ -980,6 +991,13 @@ test_that("plot miscellanea", {
   DurgaPlot(d, box = T, xlim = c(0, 5), ylim = c(28, 40), main = "Explicit limits")
   expect_equal(1, 1)
 
+  expect_error(DurgaDiff(petunia, 1, 2,
+                         groups = c("self-fertilised" = "self_fertilised",
+                                    "intercrossed" = "inter_cross",
+                                    "Westerham-crossed" = "westerham_cross"),
+                         contrasts = c("Westerham-crossed - self-fertilised",
+                                       "Westerham-crossed - intercrossed",
+                                       "intercrossed - self-fertilised")), NA)
 })
 
 test_that("CI", {

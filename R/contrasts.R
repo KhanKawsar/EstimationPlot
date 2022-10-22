@@ -67,7 +67,7 @@ expandContrasts <- function(contrasts, groups, groupNames = NULL) {
 
     if (dotFirst || dotSecond) {
       # Found a dot, is there a group as well?
-      gotControl <- sapply(unname(groups), function(group) if (dotFirst) .group2(group, contrasts) else .group1(group, contrasts))
+      gotControl <- sapply(groups, function(group) if (dotFirst) .group2(group, contrasts) else .group1(group, contrasts))
       if (sum(gotControl) == 1) {
         # Now we have a dot and a group
         controlGroup <- groups[gotControl]
@@ -96,6 +96,9 @@ expandContrasts <- function(contrasts, groups, groupNames = NULL) {
     if (is.null(groupNames))
       # Simplify later processing
       groupNames <- rep("", length(groups))
+
+    # Groups might be a factor, so convert to character and unname
+    groups <- unname(as.character(groups))
 
     # Assume syntax "group - group"
     contrasts <- sapply(contrasts, function(contrast) {

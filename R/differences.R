@@ -49,7 +49,7 @@ stHedgesGz <- function(x) stCohensDz(x) * (1 - 3 / (4 * length(x) - 9))
 # Calculate the difference statistic for a pair of groups
 # @param data Values for the two groups
 # @param pair Vector with the two group names
-# @param paired Boolean, TRUE if data are paired
+# @param isPaired Boolean, TRUE if data are paired
 # @param pairIndices Indices within groups of the two groups (not used here,
 #   just added to the return structure)
 # @param data.col Name/index of the data column
@@ -61,7 +61,7 @@ stHedgesGz <- function(x) stCohensDz(x) * (1 - 3 / (4 * length(x) - 9))
 # @param ci.type Value passed to the `boot::boot.ci` `type` parameter
 # @param boot.params List of additional argument to pass to boot::boot
 # @param boot.ci.params List of additional argument to pass to boot::boot.ci
-calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, group.col, id.col,
+calcPairDiff <- function(data, pair, isPaired, pairNames, pairIndices, data.col, group.col, id.col,
                          effect.type, R, ci.conf, ci.type, boot.params, boot.ci.params) {
 
   # Functions to simplify writing bootstrap statistic functions
@@ -82,7 +82,7 @@ calcPairDiff <- function(data, pair, paired, pairNames, pairIndices, data.col, g
 
   # Decide how to calculate the statistic
   statistic <- NULL
-  if (paired) {
+  if (isPaired) {
     # Paired data
     g1 <- data[data[[group.col]] == pair[1], ]
     g2 <- data[data[[group.col]] == pair[2], ]
@@ -332,7 +332,8 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #' d <- DurgaDiff(insulin, "sugar", "treatment", "id", effect.type = median)
 #' print(d)
 #'
-#' # Change group order and displayed group labels, reverse the direction of one of the contrasts from the default
+#' # Change group order and displayed group labels, reverse the
+#' # direction of one of the contrasts from the default
 #' d <- DurgaDiff(petunia, 1, 2,
 #'                groups = c("self-fertilised" = "self_fertilised",
 #'                           "intercrossed" = "inter_cross",
