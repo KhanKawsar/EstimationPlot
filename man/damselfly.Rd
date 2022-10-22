@@ -7,18 +7,22 @@
 \format{
 A data frame with 77 observations and 3 variables.
 \describe{
-  \item{length}{Measured body length of damselflies}
-  \item{weight}{Measured weight of damselflies}
-  \item{group}{Male age groups; \code{adult} or \code{juvenile} used for body size and weight measurements}
+  \item{length}{Measured body length (mm) of damselflies}
+  \item{mass}{Measured body mass (mg) of damselflies}
+  \item{maturity}{Male age groups; \code{adult} or \code{juvenile} used for body size and weight measurements}
 }
 }
 \source{
-Khan, M. K., & Herberstein, M. E. (2021). Male-male interactions select for conspicuous male coloration in damselflies. Animal Behaviour, 176, 157-166.
+Khan, M. K., & Herberstein, M. E. (2021). Male-male interactions
+  select for conspicuous male coloration in damselflies. Animal Behaviour,
+  176, 157-166.
 }
 \usage{
 damselfly
 }
 \description{
-Data of the body size and weight difference between adult and juvenile males of \emph{Xanthagrion erythroneurum} damselflies.
+Measurements of the body size and mass for adult and juvenile males
+of \emph{Xanthagrion erythroneurum} damselflies. In this species, juvenile
+males are coloured yellow and change to red upon sexual maturity.
 }
 \keyword{datasets}

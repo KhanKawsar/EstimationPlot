@@ -46,12 +46,17 @@ In the damselfly data set, the groups are `juvenile` and `adult`. The example be
 # Position 2 plots side-by-side on the same row
 par(mfrow = c(1, 2))
 # There are missing values in the damselfly data set, so must specify na.rm = TRUE
-d <- DurgaDiff(damselfly, "weight", "group", na.rm = TRUE)
-DurgaPlot(d, main = "Default display", ef.size.label = "")
+d <- DurgaDiff(damselfly, "mass", "maturity", na.rm = TRUE)
+DurgaPlot(d, main = "Default display")
 
-d <- DurgaDiff(weight ~ group, damselfly, na.rm = TRUE,
-               groups = c("Immature" = "juvenile", "Mature" = "adult"))
-DurgaPlot(d, main = "Groups labelled and ordered", left.ylab = "", group.colour = "Set1")
+par(mar = c(5, 5, 4, 1) + 0.1)
+# Immature males are yellow, mature are red
+d <- DurgaDiff(mass ~ maturity, damselfly, na.rm = TRUE,
+               groups = c("Yellow" = "juvenile", "Red" = "adult"))
+DurgaPlot(d, main = "Groups labelled, ordered, coloured", 
+          left.ylab = "Body mass (mg)", 
+          group.colour = c("orange", "red"), 
+          box = TRUE, box.fill = FALSE)
 ```
 
 A `DurgaPlot` raw data visualisation is a combination of one or more visual components: data `points`; `violin` plots; `bar` charts; `box` plots; a mean or median indicator (`central.tendency`); and error bars (`error.bars`). Each component is controlled by a set of parameters. The names of the parameters indicate the component they apply to, so to adjust the violin plot component, read the documentation about all parameters starting with `violin`. Parameters have sensible default values, so for example, if you turn on bar charts, then violin plots and the central tendency indicator will be turned off. Obviously, you are able to override the defaults if you wish.
@@ -67,7 +72,7 @@ d <- DurgaDiff(iris, data.col = "Sepal.Length", group.col = "Species",
 DurgaPlot(d, 
         points = c(DurgaTransparent("coral", .6), DurgaTransparent("darkturquoise", .8)),
         violin = c("red", "blue"), violin.fill = c("#f8a8c840", "#a8c8f840"), 
-        main = "Two colours")
+        main = "Data subset; Two groups")
 
 par(mar = c(5, 4, 3, 1) + 0.1)
 d <- DurgaDiff(iris, data.col = "Sepal.Length", group.col = "Species")

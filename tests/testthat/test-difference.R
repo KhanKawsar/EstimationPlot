@@ -967,7 +967,7 @@ test_that("group labels etc", {
 })
 
 test_that("plot miscellanea", {
-  d <- DurgaDiff(damselfly, "length", "group",
+  d <- DurgaDiff(damselfly, "length", "maturity",
                      groups = c("Immature" = "juvenile", "Mature" = "adult"))
 
   # Axis text is smaller when there are multiple columns
