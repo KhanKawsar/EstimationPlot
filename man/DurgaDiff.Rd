@@ -103,8 +103,8 @@ A \code{DurgaDiff} object, which is a list containing:
   to estimate the difference. Particularly relevant members are:
 
   \item{\code{t0}}{The observed value of the statistic}
-  \item{\code{bac[4]}}{The lower endpoint of the confidence interval}
-  \item{\code{bac[5]}}{The upper endpoint of the confidence interval}
+  \item{\code{bca[4]}}{The lower endpoint of the confidence interval}
+  \item{\code{bca[5]}}{The upper endpoint of the confidence interval}
   \item{\code{groups}}{The difference is estimated on \code{groups[1]} -
   \code{groups[2]}}
 }
@@ -116,8 +116,8 @@ Estimates differences between groups in preparation for plotting by
 If \code{x} is a \code{data.frame} (or similar), it must be in \emph{long
 format}: one column (\code{data.col}) contains the measurement or value to be
 compared, and another column (\code{group.col}) the group identity. For
-repeated measures, a subject identity column (\code{id.col}) is also
-required. Alternatively, \code{x} may be a formula; see
+repeated measures/paired data, a subject identity column (\code{id.col}) is
+also required. Alternatively, \code{x} may be a formula; see
 \code{\link{DurgaDiff.formula}}.
 
 The pairs of groups to be compared are defined by the parameter
@@ -157,6 +157,15 @@ print(d)
 # calculate median group differences
 d <- DurgaDiff(insulin, "sugar", "treatment", "id", effect.type = median)
 print(d)
+
+# Change group order and displayed group labels, reverse the direction of one of the contrasts from the default
+d <- DurgaDiff(petunia, 1, 2,
+               groups = c("self-fertilised" = "self_fertilised",
+                          "intercrossed" = "inter_cross",
+                          "Westerham-crossed" = "westerham_cross"),
+               contrasts = c("Westerham-crossed - self-fertilised",
+                             "Westerham-crossed - intercrossed",
+                             "intercrossed - self-fertilised"))
 
 }
 \references{

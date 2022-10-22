@@ -79,8 +79,8 @@ A \code{DurgaDiff} object, which is a list containing:
   to estimate the difference. Particularly relevant members are:
 
   \item{\code{t0}}{The observed value of the statistic}
-  \item{\code{bac[4]}}{The lower endpoint of the confidence interval}
-  \item{\code{bac[5]}}{The upper endpoint of the confidence interval}
+  \item{\code{bca[4]}}{The lower endpoint of the confidence interval}
+  \item{\code{bca[5]}}{The upper endpoint of the confidence interval}
   \item{\code{groups}}{The difference is estimated on \code{groups[1]} -
   \code{groups[2]}}
 }
@@ -94,8 +94,8 @@ remaining arguments, to the function \code{\link{DurgaDiff.default}}.
 If \code{x} is a \code{data.frame} (or similar), it must be in \emph{long
 format}: one column (\code{data.col}) contains the measurement or value to be
 compared, and another column (\code{group.col}) the group identity. For
-repeated measures, a subject identity column (\code{id.col}) is also
-required. Alternatively, \code{x} may be a formula; see
+repeated measures/paired data, a subject identity column (\code{id.col}) is
+also required. Alternatively, \code{x} may be a formula; see
 \code{\link{DurgaDiff.formula}}.
 
 The pairs of groups to be compared are defined by the parameter

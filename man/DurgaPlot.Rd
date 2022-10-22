@@ -351,6 +351,18 @@ p <- DurgaPlot(d, ef.size = FALSE, group.colour = "Set1",
           ylim = c(12, 75))
 DurgaBrackets(p)
 
+# Adjust group names, contrasts
+d <- DurgaDiff(petunia, 1, 2,
+               groups = c("self-fertilised" = "self_fertilised",
+                          "intercrossed" = "inter_cross",
+                          "Westerham-crossed" = "westerham_cross"),
+               contrasts = c("Westerham-crossed - self-fertilised",
+                             "Westerham-crossed - intercrossed",
+                             "intercrossed - self-fertilised"))
+# Shift the 2nd effect size horizontally (Westerham-crossed - intercrossed)
+# so it doesn't overlap another
+DurgaPlot(d, ef.size.dx = c(0, -2, 0))
+
 }
 \references{
 Gardner, M. J., & Altman, D. G. (1986). Confidence intervals rather than P
