@@ -357,7 +357,7 @@ test_that("difference effect types", {
   expect_error(DurgaDiff(df, effect.type = "cohens", id.col = "id", data.col = 1, group.col = 2), NA)
   expect_error(DurgaDiff(df, effect.type = "hedges", id.col = "id", data.col = 1, group.col = 2), NA)
 
-  # Check unstandardised diff
+  # Check unstandardised diff (diff of means)
   d <- DurgaDiff(df, data.col = 1, group.col = 2, effect.type = "unstandardised")
   pwd <- d$group.difference[[1]]
   expect_equal(pwd$groups[1], "Group")
@@ -1191,3 +1191,23 @@ test_that("custom stat", {
   expect_error(DurgaPlot(dc, main = "Median differences"), NA)
   par(op)
 })
+
+# TODO if we introduce median diff
+# test_that("median diff", {
+#   n <- 100
+#   set.seed(1)
+#   g1v <- rnorm(n, mean = 10, sd = 10)
+#   g2v <- rexp(n, 0.05)
+#   df <- data.frame(val = c(g1v, g2v),
+#                    group = c(rep("Control", n), rep("Group", n)),
+#                    id = c(1:n, 1:n))
+#   d <- DurgaDiff(df, 1, 2, effect.type = "median")
+#   DurgaPlot(d, box = TRUE)
+#   expect_equal(length(d$group.differences), 1)
+#   expect_equal(d$group.differences[[1]]$t0, median(g2v) - median(g1v))
+#
+#   d <- DurgaDiff(df, 1, 2, effect.type = "mean")
+#   DurgaPlot(d, box = TRUE)
+#   expect_equal(length(d$group.differences), 1)
+#   expect_equal(d$group.differences[[1]]$t0, mean(g2v) - mean(g1v))
+# })

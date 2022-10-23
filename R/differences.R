@@ -21,6 +21,9 @@ CI <- function(x, alpha = 0.95){
 # Mean difference (group 2 - group 1)
 stMeanDiff <- function(x1, x2) { mean(x2) - mean(x1) }
 
+# Median difference (group 2 - group 1)
+stMedianDiff <- function(x1, x2) { median(x2) - median(x1) }
+
 # Cohens d (group 2 - group 1)
 stCohensD <- function(x1, x2){
   m1 <- mean(x1)
@@ -100,8 +103,10 @@ calcPairDiff <- function(data, pair, isPaired, pairNames, pairIndices, data.col,
     bootstrapData <- g1[[data.col]][g1Idx] - g2[[data.col]]
     if (is.function(effect.type)) {
       statistic <- .wrapPairedStatistic(effect.type)
-    } else if (effect.type == "unstandardised") {
+    } else if (effect.type == "unstandardised" || effect.type == "mean") {
       statistic <- .wrapPairedStatistic(mean)
+    } else if (effect.type == "median") {
+      statistic <- .wrapPairedStatistic(median)
     } else if (effect.type == "cohens") {
       statistic <- .wrapPairedStatistic(stCohensDz)
     } else if (effect.type == "hedges") {
@@ -111,8 +116,10 @@ calcPairDiff <- function(data, pair, isPaired, pairNames, pairIndices, data.col,
     bootstrapData <- data
     if (is.function(effect.type)) {
       statistic <- .wrap2GroupStatistic(effect.type)
-    } else if (effect.type == "unstandardised") {
+    } else if (effect.type == "unstandardised" || effect.type == "mean") {
       statistic <- .wrap2GroupStatistic(stMeanDiff)
+    } else if (effect.type == "median") {
+      statistic <- .wrap2GroupStatistic(stMedianDiff)
     } else if (effect.type == "cohens") {
       statistic <- .wrap2GroupStatistic(stCohensD)
     } else if (effect.type == "hedges") {
@@ -378,7 +385,7 @@ DurgaDiff.default <- function(x,
 
   pairedData <- !missing(id.col) && !is.null(id.col) && !is.na(id.col)
 
-  effectNames <- c(unstandardised = "Mean difference", cohens = "Cohen's d", hedges = "Hedges' g")
+  effectNames <- c(unstandardised = "Mean difference", cohens = "Cohen's d", hedges = "Hedges' g", mean = "Mean difference", median = "Median difference")
 
   if (!is.function(effect.type))
     effect.type <- match.arg(effect.type)

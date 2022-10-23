@@ -192,15 +192,16 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch,
                                  ef.size.dx, axisLabel, ticksAt, ef.size.las,
                                  groupX, ef.size.line.col, ef.size.line.lty, ef.size.line.lwd) {
 
-  # Get the means of the 2 groups
+  # Get the means (or medians) of the 2 groups
+  stat <- ifelse(es$effect.type == "median", 2, 1) # 1 is mean, 2 is median
   gid1 <- pwes$groupIndices[1]
   gid2 <- pwes$groupIndices[2]
-  y <- es$group.statistics[gid1, 1]
-  y2 <- es$group.statistics[gid2, 1]
+  y <- es$group.statistics[gid1, stat]
+  y2 <- es$group.statistics[gid2, stat]
 
   x <- length(es$groups) + 1 + ef.size.dx
 
-  if (es$effect.type == "unstandardised") {
+  if (es$effect.type %in% c("unstandardised", "mean", "median")) {
     esRange <- range(c(0, pwes$t))
     plotEffectSize(pwes, x, y,
                    showViolin, violinCol, violin.fill, violin.width, violin.shape, violin.trunc,
