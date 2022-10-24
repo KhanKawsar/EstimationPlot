@@ -39,8 +39,9 @@ DurgaDiff(sugar ~ treatment, insulin, id.col = "id")
 ```
 
 ## Plotting
-
-Default
+```{r} 
+DurgaPlot(d)
+```
 
 ### Changing plot type
 
