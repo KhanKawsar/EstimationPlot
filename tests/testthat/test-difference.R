@@ -1195,7 +1195,7 @@ test_that("custom stat", {
 
   op <- par(mfrow = c(2, 1))
   expect_error(DurgaPlot(dd, main = "Defaults"), NA)
-  expect_error(DurgaPlot(dc, main = "Median differences"), NA)
+  expect_error(DurgaPlot(dc, main = "Custom median differences"), NA)
   par(op)
 })
 
