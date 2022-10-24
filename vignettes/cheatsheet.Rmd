@@ -1,8 +1,8 @@
 ---
-title: "Durga Cheat Sheet"
+title: "Durga Tutorial"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Durga Cheat Sheet}
+  %\VignetteIndexEntry{Durga Tutorial}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 
@@ -17,6 +17,8 @@ library(datasets)
 `Durga` is an R package that aims to simplify the estimation and visualisation of one type of effect size: differences in means. It provides a function, `DurgaDiff`, to estimate raw or standardised mean differences. Most importantly, it provides a function, `DurgaPlot`, that will create a plot for visualising both the original data and the effect size, and provides a diverse range of display options. The function `DurgaBrackets` can add _confidence brackets_ to an existing Durga plot. Since `Durga` is implemented in base R, Durga plots can be positioned using the standard R plotting layout tools: `par(mfrow = c(...))`, `layout()` and `split.screen()`.
 
 This vignette shows some example Durga plots. Each plot is preceded by the code used to generate it, which can be used to learn how to create the plot. 
+
+## Effect size estimation
 
 Before plotting your data, you must estimate the differences in group means by calling `DurgaDiff`. Your raw data should be in a data frame (or similar), with one observation per row - this is known as _long format_ data. The data frame must contain a column for the measurement or value being analysed, and another for the group or treatment. In addition, paired or repeated measures data requires an ID column to match measurements for the same specimen/individual. For example, within the `insulin` data set, the value being measured - blood sugar level - is recorded in the column `sugar` (`data.col = "sugar"`); treatments are `before` and `after` in the `treatment` column (`group.col = "treatment"`); and the identity of the individual (rabbit) being tested is given in the `id` column (`id.col = "id"`). The blood sugar level of each rabbit was tested before and after treatment with insulin, so for each rabbit, there is a row with the `before` sugar level, and another with the `after` sugar level.
 
@@ -35,6 +37,18 @@ You may alternatively specify your data with a formula. Formulae provide a littl
 # Alternatively, use a formula to define the model
 DurgaDiff(sugar ~ treatment, insulin, id.col = "id")
 ```
+
+## Plotting
+
+Default
+
+### Changing plot type
+
+### Combining plot types
+
+### Layout
+
+### Examples
 
 When plotted, groups are displayed in their natural order, i.e. alphabetical order for character data, and numeric order for factors. You can, however, specify the display order with the `groups` parameter to either `DurgaDiff` or `DurgaPlot`. Not all groups in the data need be included in the analysis or plot. To assign display labels to the groups, use a named vector to list the groups. The names will be used to label the groups on the plot. 
 
@@ -99,7 +113,7 @@ DurgaPlot(d, error.bars.type = "CI", central.tendency = rainbow(3),
         left.ylab = "", ef.size.label = "")
 ```
 
-When there are too many group comparisons to be displayed underneath, you can choose to display confidence brackets above the plot. Confidence brackets communicate less information than the standard effect size visualisation, but may be a reasonable compromise for many group comparisons. You must manually ensure there is sufficient space for the brackets in the plot (see `DurgaBrackets` for details). An alternative approach would be to plot the effect sizes below, and use `ef.size.dx` to shift one or more effect sizes horizontally so they don't overlap.   
+When there are too many group comparisons to be displayed underneath, you can choose to display confidence brackets above the plot. Confidence brackets communicate less information than the standard effect size visualisation, but may be a reasonable compromise for many group comparisons. You must manually ensure there is sufficient space for the brackets in the plot (see `DurgaBrackets` for details). An alternative approach for showing many effect sizes without using confidence brackets would be to plot the effect sizes below, and use `ef.size.dx` to shift one or more effect sizes horizontally so they don't overlap.   
 
 ```{r fig.height=4, fig.width=7}
 d <- DurgaDiff(petunia, 1, 2)
