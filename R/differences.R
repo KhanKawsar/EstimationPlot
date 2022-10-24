@@ -501,7 +501,10 @@ print.DurgaDiff <- function(x, ...) {
   cat(sprintf("  %s\n", fs))
   cat("Groups:\n")
   print(x$group.statistics)
-  cat(sprintf("%s %s:\n", ifelse(x$paired.data, "Paired", "Unpaired"), x$effect.name))
+  cat(sprintf("%s %s (R = %d, bootstrap CI method = %s):\n",
+              ifelse(x$paired.data, "Paired", "Unpaired"), x$effect.name,
+              # Note R and ci.type should be the same for all comparisons
+              x$group.differences[[1]]$R, x$group.differences[[1]]$ci.type))
   for (i in seq_len(length(x$group.differences))) {
     print(x$group.differences[[i]])
   }
@@ -509,8 +512,8 @@ print.DurgaDiff <- function(x, ...) {
 
 #' @export
 print.DurgaGroupDiff <- function(x, ...) {
-  cat(sprintf("  %s - %s: %g, %g%% CI (%s) [%g, %g]\n",
+  cat(sprintf("  %s - %s: %g, %g%% CI [%g, %g]\n",
               x$groupLabels[1], x$groupLabels[2],
-              x$t0, x$bca[1] * 100, x$ci.type, x$bca[4], x$bca[5]))
+              x$t0, x$bca[1] * 100, x$bca[4], x$bca[5]))
 }
 

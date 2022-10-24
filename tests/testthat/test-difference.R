@@ -253,15 +253,22 @@ test_that("group stats", {
 
 test_that("print", {
   d <- makeES1()
+  # This is a regex
   expected <- paste0("Bootstrapped effect size\\n",
               "  Measurement ~ Group\\n",
               "Groups:\\n",
               "              mean   median       sd       se  CI\\.lower CI\\.upper  n\\n",
               "Group1    122\\.9210 118\\.8367 21\\.31850 3\\.370750 116\\.10300 129\\.7390 40\\n",
               "ZControl1 102\\.3007 103\\.2276 22\\.16668 3\\.504859  95\\.21141 109\\.3899 40\\n",
-              "Unpaired Mean difference:\\n",
-              "  ZControl1 - Group1: -20\\.6203, 95% CI \\(bca\\) \\[-30\\.[0-9]+, -10\\.[0-9]+\\]")
+              "Unpaired Mean difference \\(R = 1000, bootstrap CI method = bca\\):\\n",
+              "  ZControl1 - Group1: -20\\.6203, 95% CI \\[-30\\.[0-9]+, -10\\.[0-9]+\\]")
   expect_output(print(d), expected)
+  # Print mismatched lines
+  # got <- capture.output(print(d))
+  # expLines <- gsub("\\\\", "", strsplit(expected, "\\\\n")[[1]])
+  # matched <- got == expLines
+  # print(got[!matched])
+  # print(expLines[!matched])
 
   checkSummaryMatches <- function(d1, d2) {
     d1s <- capture.output(print(d1))
