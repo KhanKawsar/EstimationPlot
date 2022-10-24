@@ -29,7 +29,7 @@ used as group labels for plotting or printing.}
 pairwise differences are generated. May be a single string, a vector of
 strings, or a matrix. See Details for more information.}
     \item{\code{effect.type}}{Type of group difference to be estimated. Possible types
-are: \code{"unstandardised"}, difference in group means; \code{"cohens"},
+are: \code{"mean"}, difference in unstandardised group means; \code{"cohens"},
 Cohen's d; \code{"hedges"}, Hedges' g. See Details for further information.}
     \item{\code{R}}{The number of bootstrap replicates. The default value of 1000 may
 need to be increased for large sample sizes; if \code{R <= nrow(x)}, an

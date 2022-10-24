@@ -22,7 +22,7 @@ CI <- function(x, alpha = 0.95){
 stMeanDiff <- function(x1, x2) { mean(x2) - mean(x1) }
 
 # Median difference (group 2 - group 1)
-stMedianDiff <- function(x1, x2) { median(x2) - median(x1) }
+stMedianDiff <- function(x1, x2) { stats::median(x2) - stats::median(x1) }
 
 # Cohens d (group 2 - group 1)
 stCohensD <- function(x1, x2){
@@ -103,10 +103,10 @@ calcPairDiff <- function(data, pair, isPaired, pairNames, pairIndices, data.col,
     bootstrapData <- g1[[data.col]][g1Idx] - g2[[data.col]]
     if (is.function(effect.type)) {
       statistic <- .wrapPairedStatistic(effect.type)
-    } else if (effect.type == "unstandardised" || effect.type == "mean") {
+    } else if (effect.type == "mean") {
       statistic <- .wrapPairedStatistic(mean)
     } else if (effect.type == "median") {
-      statistic <- .wrapPairedStatistic(median)
+      statistic <- .wrapPairedStatistic(stats::median)
     } else if (effect.type == "cohens") {
       statistic <- .wrapPairedStatistic(stCohensDz)
     } else if (effect.type == "hedges") {
@@ -116,7 +116,7 @@ calcPairDiff <- function(data, pair, isPaired, pairNames, pairIndices, data.col,
     bootstrapData <- data
     if (is.function(effect.type)) {
       statistic <- .wrap2GroupStatistic(effect.type)
-    } else if (effect.type == "unstandardised" || effect.type == "mean") {
+    } else if (effect.type == "mean") {
       statistic <- .wrap2GroupStatistic(stMeanDiff)
     } else if (effect.type == "median") {
       statistic <- .wrap2GroupStatistic(stMedianDiff)
@@ -270,7 +270,7 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #'   pairwise differences are generated. May be a single string, a vector of
 #'   strings, or a matrix. See Details for more information.
 #' @param effect.type Type of group difference to be estimated. Possible types
-#'   are: \code{"unstandardised"}, difference in group means; \code{"cohens"},
+#'   are: \code{"mean"}, difference in unstandardised group means; \code{"cohens"},
 #'   Cohen's d; \code{"hedges"}, Hedges' g. See Details for further information.
 #' @param R The number of bootstrap replicates. The default value of 1000 may
 #'   need to be increased for large sample sizes; if \code{R <= nrow(x)}, an
@@ -335,10 +335,6 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #' d <- DurgaDiff(insulin, "sugar", "treatment", "id")
 #' print(d)
 #'
-#' # calculate median group differences
-#' d <- DurgaDiff(insulin, "sugar", "treatment", "id", effect.type = median)
-#' print(d)
-#'
 #' # Change group order and displayed group labels, reverse the
 #' # direction of one of the contrasts from the default
 #' d <- DurgaDiff(petunia, 1, 2,
@@ -361,7 +357,7 @@ DurgaDiff.default <- function(x,
                       id.col,
                       groups = sort(unique(x[[group.col]])),
                       contrasts = "*",
-                      effect.type = c("unstandardised", "cohens", "hedges"),
+                      effect.type = c("mean", "cohens", "hedges"),
                       R = 1000,
                       boot.params = list(),
                       ci.conf = 0.95,
@@ -385,7 +381,7 @@ DurgaDiff.default <- function(x,
 
   pairedData <- !missing(id.col) && !is.null(id.col) && !is.na(id.col)
 
-  effectNames <- c(unstandardised = "Mean difference", cohens = "Cohen's d", hedges = "Hedges' g", mean = "Mean difference", median = "Median difference")
+  effectNames <- c(mean = "Mean difference", cohens = "Cohen's d", hedges = "Hedges' g", median = "Median difference")
 
   if (!is.function(effect.type))
     effect.type <- match.arg(effect.type)

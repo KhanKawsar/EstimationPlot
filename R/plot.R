@@ -201,7 +201,7 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch,
 
   x <- length(es$groups) + 1 + ef.size.dx
 
-  if (es$effect.type %in% c("unstandardised", "mean", "median")) {
+  if (es$effect.type %in% c("mean", "median")) {
     esRange <- range(c(0, pwes$t))
     plotEffectSize(pwes, x, y,
                    showViolin, violinCol, violin.fill, violin.width, violin.shape, violin.trunc,

@@ -14,7 +14,7 @@ DurgaDiff(x, ...)
   id.col,
   groups = sort(unique(x[[group.col]])),
   contrasts = "*",
-  effect.type = c("unstandardised", "cohens", "hedges"),
+  effect.type = c("mean", "cohens", "hedges"),
   R = 1000,
   boot.params = list(),
   ci.conf = 0.95,
@@ -49,7 +49,7 @@ pairwise differences are generated. May be a single string, a vector of
 strings, or a matrix. See Details for more information.}
 
 \item{effect.type}{Type of group difference to be estimated. Possible types
-are: \code{"unstandardised"}, difference in group means; \code{"cohens"},
+are: \code{"mean"}, difference in unstandardised group means; \code{"cohens"},
 Cohen's d; \code{"hedges"}, Hedges' g. See Details for further information.}
 
 \item{R}{The number of bootstrap replicates. The default value of 1000 may
@@ -152,10 +152,6 @@ argument \code{boot.params} (\code{boot.ci.params}).
 \examples{
 
 d <- DurgaDiff(insulin, "sugar", "treatment", "id")
-print(d)
-
-# calculate median group differences
-d <- DurgaDiff(insulin, "sugar", "treatment", "id", effect.type = median)
 print(d)
 
 # Change group order and displayed group labels, reverse the

@@ -357,15 +357,15 @@ test_that("difference effect types", {
 
   # Check all effect types
   expect_error(DurgaDiff(df, effect.type = "wrong", data.col = 1, group.col = 2)) # Should throw an error
-  expect_error(DurgaDiff(df, effect.type = "unstandardised", data.col = 1, group.col = 2), NA)
+  expect_error(DurgaDiff(df, effect.type = "mean", data.col = 1, group.col = 2), NA)
   expect_error(DurgaDiff(df, effect.type = "cohens", data.col = 1, group.col = 2), NA)
   expect_error(DurgaDiff(df, effect.type = "hedges", data.col = 1, group.col = 2), NA)
-  expect_error(DurgaDiff(df, effect.type = "unstandardised", id.col = "id", data.col = 1, group.col = 2), NA)
+  expect_error(DurgaDiff(df, effect.type = "mean", id.col = "id", data.col = 1, group.col = 2), NA)
   expect_error(DurgaDiff(df, effect.type = "cohens", id.col = "id", data.col = 1, group.col = 2), NA)
   expect_error(DurgaDiff(df, effect.type = "hedges", id.col = "id", data.col = 1, group.col = 2), NA)
 
   # Check unstandardised diff (diff of means)
-  d <- DurgaDiff(df, data.col = 1, group.col = 2, effect.type = "unstandardised")
+  d <- DurgaDiff(df, data.col = 1, group.col = 2, effect.type = "mean")
   pwd <- d$group.difference[[1]]
   expect_equal(pwd$groups[1], "Group")
   expect_equal(pwd$groups[2], "Control")
@@ -415,7 +415,7 @@ test_that("difference effect types", {
 
   ### Paired effect sizes ###
   # Check unstandardised diff
-  d <- DurgaDiff(df, data.col = 1, group.col = 2, id.col = 3, effect.type = "unstandardised")
+  d <- DurgaDiff(df, data.col = 1, group.col = 2, id.col = 3, effect.type = "mean")
   pwd <- d$group.difference[[1]]
   expect_equal(pwd$groups[1], "Group")
   expect_equal(pwd$groups[2], "Control")
@@ -451,14 +451,14 @@ test_that("group factors", {
                    group = factor(c(rep("Control", n), rep("Treatment", n))),
                    id = c(1:n, 1:n))
 
-  d <- DurgaDiff(df, effect.type = "unstandardised", data.col = 1, group.col = 2)
+  d <- DurgaDiff(df, effect.type = "mean", data.col = 1, group.col = 2)
   pwd <- d$group.difference[[1]]
   expect_equal(d$group.names, c("Control", "Treatment"))
   expect_equal(pwd$groups[1], "Treatment")
   expect_equal(pwd$groups[2], "Control")
 
   # Check all effect types
-  expect_error(DurgaDiff(df, effect.type = "unstandardised", data.col = 1, group.col = 2), NA)
+  expect_error(DurgaDiff(df, effect.type = "mean", data.col = 1, group.col = 2), NA)
   expect_error(DurgaDiff(df, effect.type = "cohens", data.col = 1, group.col = 2), NA)
   expect_error(DurgaDiff(df, effect.type = "hedges", data.col = 1, group.col = 2), NA)
   expect_error(DurgaDiff(df, id.col = "id", data.col = 1, group.col = 2), NA)
