@@ -21,9 +21,6 @@ CI <- function(x, alpha = 0.95){
 # Mean difference (group 2 - group 1)
 stMeanDiff <- function(x1, x2) { mean(x2) - mean(x1) }
 
-# Median difference (group 2 - group 1)
-stMedianDiff <- function(x1, x2) { stats::median(x2) - stats::median(x1) }
-
 # Cohens d (group 2 - group 1)
 stCohensD <- function(x1, x2){
   m1 <- mean(x1)
@@ -105,8 +102,6 @@ calcPairDiff <- function(data, pair, isPaired, pairNames, pairIndices, data.col,
       statistic <- .wrapPairedStatistic(effect.type)
     } else if (effect.type == "mean") {
       statistic <- .wrapPairedStatistic(mean)
-    } else if (effect.type == "median") {
-      statistic <- .wrapPairedStatistic(stats::median)
     } else if (effect.type == "cohens") {
       statistic <- .wrapPairedStatistic(stCohensDz)
     } else if (effect.type == "hedges") {
@@ -118,8 +113,6 @@ calcPairDiff <- function(data, pair, isPaired, pairNames, pairIndices, data.col,
       statistic <- .wrap2GroupStatistic(effect.type)
     } else if (effect.type == "mean") {
       statistic <- .wrap2GroupStatistic(stMeanDiff)
-    } else if (effect.type == "median") {
-      statistic <- .wrap2GroupStatistic(stMedianDiff)
     } else if (effect.type == "cohens") {
       statistic <- .wrap2GroupStatistic(stCohensD)
     } else if (effect.type == "hedges") {

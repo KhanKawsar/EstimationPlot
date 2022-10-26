@@ -1185,6 +1185,12 @@ test_that("custom stat", {
   # Convert to long format
   l <- lapply(colnames(dw), function(c) data.frame(value = as.numeric(dw[[c]]), group = c, id = seq_along(c)))
   df <- do.call(rbind, l)
+
+  # Single difference
+  dd1 <- DurgaDiff(df, 1, 2, groups = c("A1", "A2"))
+  dc1 <- DurgaDiff(df, 1, 2, groups = c("A1", "A2"), effect.type = function(x1, x2) { median(x2) - median(x1) })
+
+  # Many groups
   dd <- DurgaDiff(df, 1, 2, contrasts = ". - A1")
   dc <- DurgaDiff(df, 1, 2, contrasts = ". - A1", effect.type = function(x1, x2) { median(x2) - median(x1) })
 
@@ -1193,28 +1199,17 @@ test_that("custom stat", {
   oc <- capture.output(print(dc))
   expect_equal(which(od == oc), 1:12)
 
+  # Check it can be plotted
+  # One contrast
+  op <- par(mfrow = c(1, 2))
+  expect_error(DurgaPlot(dd1, main = "Defaults"), NA)
+  expect_error(DurgaPlot(dc1, main = "Custom median differences"), NA)
+  par(op)
+
+  # Many contrasts
   op <- par(mfrow = c(2, 1))
   expect_error(DurgaPlot(dd, main = "Defaults"), NA)
   expect_error(DurgaPlot(dc, main = "Custom median differences"), NA)
   par(op)
-})
 
-# TODO if we introduce median diff
-# test_that("median diff", {
-#   n <- 100
-#   set.seed(1)
-#   g1v <- rnorm(n, mean = 10, sd = 10)
-#   g2v <- rexp(n, 0.05)
-#   df <- data.frame(val = c(g1v, g2v),
-#                    group = c(rep("Control", n), rep("Group", n)),
-#                    id = c(1:n, 1:n))
-#   d <- DurgaDiff(df, 1, 2, effect.type = "median")
-#   DurgaPlot(d, box = TRUE)
-#   expect_equal(length(d$group.differences), 1)
-#   expect_equal(d$group.differences[[1]]$t0, median(g2v) - median(g1v))
-#
-#   d <- DurgaDiff(df, 1, 2, effect.type = "mean")
-#   DurgaPlot(d, box = TRUE)
-#   expect_equal(length(d$group.differences), 1)
-#   expect_equal(d$group.differences[[1]]$t0, mean(g2v) - mean(g1v))
-# })
+})
