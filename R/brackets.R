@@ -184,10 +184,10 @@ fitBrackets <- function(plotExtents, diffs, text, shorten, dataGap, verticalGap,
 }
 
 labelFns <- list(
-  CI = function(diff) sprintf("[%g, %g]", signif(diff$bca[4], 3), signif(diff$bca[5], 2)),
+  CI = function(diff) sprintf("[%g, %g]", signif(diff$bca[4], 2), signif(diff$bca[5], 2)),
   diff = function(diff) as.character(round(diff$t0, 1)),
-  `diff CI` = function(diff) sprintf("%g [%g, %g]", signif(diff$t0, 3), signif(diff$bca[4], 3), signif(diff$bca[5], 2)),
-  `level CI` = function(diff) sprintf("%g%% CI [%g, %g]", diff$bca[1] * 100, signif(diff$bca[4], 3), signif(diff$bca[5], 2))
+  `diff CI` = function(diff) sprintf("%g [%g, %g]", signif(diff$t0, 2), signif(diff$bca[4], 2), signif(diff$bca[5], 2)),
+  `level CI` = function(diff) sprintf("%g%% CI [%g, %g]", diff$bca[1] * 100, signif(diff$bca[4], 2), signif(diff$bca[5], 2))
 )
 
 # Returns an annotation function. Implemented to return a function in case I
