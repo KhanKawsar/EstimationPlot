@@ -1,45 +1,18 @@
 #_____________________________________________________________#
 #### Private functions ####
 
-# Returns the negation of the specified group difference (type DurgaGroupDiff,
-# usually a member of es$group.differences). I.e. changes "group1 - group2" to
-# "group2 - group1"
-negatePairwiseDiff <- function(pwd) {
-  pwd$groups <- rev(pwd$groups)
-  pwd$groupLabels <- rev(pwd$groupLabels)
-  pwd$groupIndices <- rev(pwd$groupIndices)
-  pwd$t0 <- -pwd$t0
-  pwd$t <- -pwd$t
-  pwd$bca[4] <- -pwd$bca[4]
-  pwd$bca[5] <- -pwd$bca[5]
-  pwd
-}
-
-# Given a pair of groups, finds (in diffs) the comparison for pair[1] - pair[2].
-# If the comparison pair[2] - pair[1] is found, it is negated and returned.
-findDiff <- function(pair, label, diffs) {
-  # For each existing comparison...
-  for (diff in diffs) {
-    # Is this the requested comparison?
-    if (diff$groups[1] == pair[1] && diff$groups[2] == pair[2]) {
-      attr(diff, "label") <- label
-      return(diff)
-
-      # Is this the negation of the requested comparison?
-    } else if (diff$groupLabels[1] == pair[2] && diff$groupLabels[2] == pair[1]) {
-      attr(diff, "label") <- label
-      return(negatePairwiseDiff(diff))
-    }
-  }
-  stop(sprintf("Contrast '%s - %s' has not been estimated, check the contrasts argument in your call to DurgaDiff",
-               pair[1], pair[2]))
-}
-
 # Returns the label to be used to represent the specified diff
 getDiffLabel <- function(pwes) {
   label <- attr(pwes, "label")
-  if (is.null(label) || label == "")
-    label <- sprintf("%s\nminus\n%s", pwes$groupLabels[1], pwes$groupLabels[2])
+  if (is.null(label) || (is.character(label) && label == "")) {
+    # Allow users to specify a label by setting the label.plot property on the Diff object
+    if (!is.null(pwes$label.plot)) {
+      label <- pwes$label.plot
+    } else {
+      # Construct default label
+      label <- sprintf("%s\nminus\n%s", pwes$groupLabels[1], pwes$groupLabels[2])
+    }
+  }
   label
 }
 
@@ -259,7 +232,17 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
   groups <- es$groups
 
   # What will we plot?
-  ylim <- range(c(0, sapply(plotDiffs, function(pwes) if (is.null(pwes)) NA else range(pwes$t, na.rm = TRUE))), na.rm = TRUE)
+  rangeOfDiff <- function(pwes) {
+    if (is.null(pwes)) {
+      NA
+    } else if (violin.trunc) {
+      range(pwes$bca[4:5])
+    } else {
+      range(pwes$t, na.rm = TRUE)
+    }
+  }
+
+  ylim <- range(c(0, sapply(plotDiffs, rangeOfDiff), na.rm = TRUE))
   ylim <- grDevices::extendrange(ylim)
 
   ### Work out how to map the effect size pseudo region onto user coordinates
@@ -287,6 +270,9 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
   # Plot the "Difference = 0" line, i.e. no effect
   graphics::lines(usr[1:2], c(mapY(0), mapY(0)), col = ef.size.line.col, lty = ef.size.line.lty, lwd = ef.size.line.lwd, xpd = TRUE)
 
+  # Recycle parameters
+  ef.size.col <- rep_len(ef.size.col, length(plotDiffs))
+  ef.size.pch <- rep_len(ef.size.pch, length(plotDiffs))
   # Plot all diffs
   for (i in seq_along(plotDiffs)) {
     pwes <- plotDiffs[[i]]
@@ -294,7 +280,8 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
       gid1 <- which(groups == pwes$groups[1])
       # Add default group dx for the displayed group to effect size dx for the contrast
       x <- gid1 + group.dx[gid1] + ef.size.dx[i]
-      plotEffectSize(pwes, x, pwes$t0, showViolin, violinCol, violin.fill, violin.width, violin.shape, violin.trunc, ef.size.col, ef.size.pch, mapY, xpd = TRUE)
+      plotEffectSize(pwes, x, pwes$t0, showViolin, violinCol, violin.fill, violin.width, violin.shape, violin.trunc,
+                     ef.size.col[i], ef.size.pch[i], mapY, xpd = TRUE)
       # Label this difference
       graphics::text(x, mapY(ylim[1]), getDiffLabel(pwes), xpd = TRUE, pos = 1)
     }
@@ -375,10 +362,12 @@ DurgaTransparent <-  function(colour, alpha, relative = FALSE) {
 #' primary group. See \code{\link{DurgaBrackets}} for a way to display multiple
 #' effect sizes that would overlap if displayed as normal effect sizes.
 #'
-#' Custom labels for effects can be specified as part of the \code{contrasts}
-#' parameter. If \code{contrasts} is a named vector, the names are used as
-#' contrast labels, e.g. \code{contrasts = c("Adult change" = "adult - control",
-#' "Juvenile change" = "juvenile - control")}.
+#' Custom labels for individual effects can be specified as part of the
+#' \code{contrasts} parameter. If \code{contrasts} is a named vector, the names
+#' are used as contrast labels, e.g. \code{contrasts = c("Adult change" = "adult
+#' - control", "Juvenile change" = "juvenile - control")}. A more flexible
+#' (although more advanced) method is to assign the \code{label.plot} member of
+#' a \code{DurgaDiff} object within \code{x}, see Examples for usage.
 #'
 #' The \code{contrasts} parameter may be a single string, a vector of strings,
 #' or a matrix. A single string has a format such as \code{"group1 - group2,
@@ -416,8 +405,8 @@ DurgaTransparent <-  function(colour, alpha, relative = FALSE) {
 #'   \code{"overplot"} to overplot points and \code{"jitter"} to add random
 #'   noise to each x-value. See \code{\link[vipor]{offsetX}} for remaining
 #'   methods.
-#' @param points.spread Adjusts the points scatter method points horizontally (ignored if
-#'   \code{points.method = "overplot"}).
+#' @param points.spread Adjusts the points scatter method points horizontally
+#'   (ignored if \code{points.method = "overplot"}).
 #' @param points.dx Horizontal shift to be applied to points in each group.
 #' @param points.params List of named parameters to pass on to
 #'   \code{\link[graphics]{points}}, e.g. \code{DurgaPlot(es, points = "black",
@@ -526,7 +515,7 @@ DurgaTransparent <-  function(colour, alpha, relative = FALSE) {
 #'   room to display the effect size or axis annotations. The margins are
 #'   restored before control returns from \code{DurgaPlot}.
 #'
-#' @param x.axis if TRUE, display the x-axis.
+#' @param x.axis if TRUE, display the x-axis ticks and labels.
 #' @param x.axis.dx Horizontal shifts to be applied to each x-axis tick and
 #'   label.
 #' @param xlab X axis label.
@@ -581,6 +570,12 @@ DurgaTransparent <-  function(colour, alpha, relative = FALSE) {
 #' # Shift the 2nd effect size horizontally (Westerham-crossed - intercrossed)
 #' # so it doesn't overlap another
 #' DurgaPlot(d, ef.size.dx = c(0, -2, 0))
+#'
+#' # Custom difference labels with italics
+#' d <- DurgaDiff(petunia, 1, 2)
+#' d$group.differences[[3]]$label.plot <- expression(italic("sp. 2")~"-"~italic("sp. 1"))
+#' d$group.differences[[2]]$label.plot <- expression(italic("sp. 3")~"-"~italic("sp. 1"))
+#' DurgaPlot(d)
 #'
 #' @references
 #'
@@ -1016,7 +1011,7 @@ DurgaPlot <- function(es,
     }
   }
 
-  # Effect size. Handle default colour
+  # Effect size
   if (.show(ef.size)) {
     # Handle default colours
     ef.size.col <- .boolToDef(ef.size, "black")

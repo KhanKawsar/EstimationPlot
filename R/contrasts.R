@@ -126,6 +126,40 @@ expandContrasts <- function(contrasts, groups, groupNames = NULL) {
   contrasts
 }
 
+# Returns the negation of the specified group difference (type DurgaGroupDiff,
+# usually a member of es$group.differences). I.e. changes "group1 - group2" to
+# "group2 - group1"
+negatePairwiseDiff <- function(pwd) {
+  pwd$groups <- rev(pwd$groups)
+  pwd$groupLabels <- rev(pwd$groupLabels)
+  pwd$groupIndices <- rev(pwd$groupIndices)
+  pwd$t0 <- -pwd$t0
+  pwd$t <- -pwd$t
+  pwd$bca[4] <- -pwd$bca[4]
+  pwd$bca[5] <- -pwd$bca[5]
+  pwd
+}
+
+# Given a pair of groups, finds (in diffs) the comparison for pair[1] - pair[2].
+# If the comparison pair[2] - pair[1] is found, it is negated and returned.
+findDiff <- function(pair, label, diffs) {
+  # For each existing comparison...
+  for (diff in diffs) {
+    # Is this the requested comparison?
+    if (diff$groups[1] == pair[1] && diff$groups[2] == pair[2]) {
+      attr(diff, "label") <- label
+      return(diff)
+
+      # Is this the negation of the requested comparison?
+    } else if (diff$groupLabels[1] == pair[2] && diff$groupLabels[2] == pair[1]) {
+      attr(diff, "label") <- label
+      return(negatePairwiseDiff(diff))
+    }
+  }
+  stop(sprintf("Contrast '%s - %s' has not been estimated, check the contrasts argument in your call to DurgaDiff",
+               pair[1], pair[2]))
+}
+
 # Given a string representation of the required contrasts, returns a list of
 # DurgaGroupDiff objects, one for each contrast. The DurgaGroupDiff objects are extracted
 # from es$group.differences, so must already have been calculated by

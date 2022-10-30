@@ -1211,5 +1211,14 @@ test_that("custom stat", {
   expect_error(DurgaPlot(dd, main = "Defaults"), NA)
   expect_error(DurgaPlot(dc, main = "Custom median differences"), NA)
   par(op)
+})
 
+test_that("custom labels", {
+  data <- makeData()
+  d <- DurgaDiff(data, 1, 2, groups = c("ZControl1", "Group1", "Group2"))
+
+  # Override effect size label
+  d$group.differences[[2]]$label.plot <- expression(italic("Sp. 1") ~ "-" ~ italic("Sp. 2"))
+  # Override effect name label
+  expect_error(DurgaPlot(d, ef.size.label = expression(bold("Bold name")), x.axis = F), NA)
 })

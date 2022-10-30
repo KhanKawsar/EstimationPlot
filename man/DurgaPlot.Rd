@@ -100,8 +100,8 @@ should be a vector of colours with a value for each data point.}
 noise to each x-value. See \code{\link[vipor]{offsetX}} for remaining
 methods.}
 
-\item{points.spread}{Adjusts the points scatter method points horizontally (ignored if
-\code{points.method = "overplot"}).}
+\item{points.spread}{Adjusts the points scatter method points horizontally
+(ignored if \code{points.method = "overplot"}).}
 
 \item{points.dx}{Horizontal shift to be applied to points in each group.}
 
@@ -252,7 +252,7 @@ the mean (\code{"CI"}), standard deviation (\code{"SD"}) or standard error
 \item{error.bars.cross.width}{Length (in inches) of the horizontal crossbars
 at the ends of the error bars. If 0, no crossbar is drawn.}
 
-\item{x.axis}{if TRUE, display the x-axis.}
+\item{x.axis}{if TRUE, display the x-axis ticks and labels.}
 
 \item{x.axis.dx}{Horizontal shifts to be applied to each x-axis tick and
 label.}
@@ -316,10 +316,12 @@ be below the main plot. If below, an effect size is drawn underneath its
 primary group. See \code{\link{DurgaBrackets}} for a way to display multiple
 effect sizes that would overlap if displayed as normal effect sizes.
 
-Custom labels for effects can be specified as part of the \code{contrasts}
-parameter. If \code{contrasts} is a named vector, the names are used as
-contrast labels, e.g. \code{contrasts = c("Adult change" = "adult - control",
-"Juvenile change" = "juvenile - control")}.
+Custom labels for individual effects can be specified as part of the
+\code{contrasts} parameter. If \code{contrasts} is a named vector, the names
+are used as contrast labels, e.g. \code{contrasts = c("Adult change" = "adult
+- control", "Juvenile change" = "juvenile - control")}. A more flexible
+(although more advanced) method is to assign the \code{label.plot} member of
+a \code{DurgaDiff} object within \code{x}, see Examples for usage.
 
 The \code{contrasts} parameter may be a single string, a vector of strings,
 or a matrix. A single string has a format such as \code{"group1 - group2,
@@ -362,6 +364,12 @@ d <- DurgaDiff(petunia, 1, 2,
 # Shift the 2nd effect size horizontally (Westerham-crossed - intercrossed)
 # so it doesn't overlap another
 DurgaPlot(d, ef.size.dx = c(0, -2, 0))
+
+# Custom difference labels with italics
+d <- DurgaDiff(petunia, 1, 2)
+d$group.differences[[3]]$label.plot <- expression(italic("sp. 2")~"-"~italic("sp. 1"))
+d$group.differences[[2]]$label.plot <- expression(italic("sp. 3")~"-"~italic("sp. 1"))
+DurgaPlot(d)
 
 }
 \references{

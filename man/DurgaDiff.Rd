@@ -49,8 +49,9 @@ pairwise differences are generated. May be a single string, a vector of
 strings, or a matrix. See Details for more information.}
 
 \item{effect.type}{Type of group difference to be estimated. Possible types
-are: \code{"mean"}, difference in unstandardised group means; \code{"cohens"},
-Cohen's d; \code{"hedges"}, Hedges' g. See Details for further information.}
+are: \code{"mean"}, difference in unstandardised group means;
+\code{"cohens"}, Cohen's d; \code{"hedges"}, Hedges' g. See Details for
+further information.}
 
 \item{R}{The number of bootstrap replicates. The default value of 1000 may
 need to be increased for large sample sizes; if \code{R <= nrow(x)}, an
@@ -139,8 +140,9 @@ Hedges' g, we apply Hedges' correction to the paired Cohen's d.
 
 Alternative effect types can be estimated by passing a function for
 \code{effect.type}. For unpaired data, the function must accept two
-parameters: the values from the two groups to be compared. For paired data,
-the function must accept a single argument; group 1 values - group 2 values.
+parameters: the values from the two groups to be compared (group 1 and group
+2). For paired data, the function must accept a single argument; a vector of
+group 1 values - group 2 values.
 
 Confidence intervals for the estimate are determined using bootstrap
 resampling, using the adjusted bootstrap percentile (BCa) method (see
