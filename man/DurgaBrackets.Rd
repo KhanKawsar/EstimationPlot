@@ -20,6 +20,7 @@ DurgaBrackets(
   dataGap = 2.5,
   verticalGap = 1.3,
   textPad = 1.5,
+  roundFn = function(x) signif(x, 2),
   ...
 )
 }
@@ -63,6 +64,11 @@ of bracket}
 \item{verticalGap}{Vertical distance (mm) between overlapping brackets}
 
 \item{textPad}{Gap (mm) between bracket and text}
+
+\item{roundFn}{By default, numbers displayed as text are printed to 2
+significant figures. To change this behaviour, set \code{roundFn} to a
+function with one argument that converts its argument to the value to be
+displayed.}
 
 \item{...}{Additional arguments passed to \code{\link[graphics]{text}}}
 }

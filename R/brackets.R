@@ -183,17 +183,17 @@ fitBrackets <- function(plotExtents, diffs, text, shorten, dataGap, verticalGap,
   ys[order(ord)]
 }
 
-labelFns <- list(
-  CI = function(diff) sprintf("[%g, %g]", signif(diff$bca[4], 2), signif(diff$bca[5], 2)),
-  diff = function(diff) as.character(round(diff$t0, 1)),
-  `diff CI` = function(diff) sprintf("%g [%g, %g]", signif(diff$t0, 2), signif(diff$bca[4], 2), signif(diff$bca[5], 2)),
-  `level CI` = function(diff) sprintf("%g%% CI [%g, %g]", diff$bca[1] * 100, signif(diff$bca[4], 2), signif(diff$bca[5], 2))
-)
-
 # Returns an annotation function. Implemented to return a function in case I
 # change DurgaPlot to accept a general purpose annotation argument
 BracketsAnnot <- function(labels, shorten, dataGap, verticalGap, textPad, tipLength, snapTo,
-                          br.lwd, br.col, br.lty, lb.cex, lb.col, lb.font, ...) {
+                          br.lwd, br.col, br.lty, lb.cex, lb.col, lb.font, roundFn, ...) {
+
+  labelFns <- list(
+    CI = function(diff) sprintf("[%g, %g]", roundFn(diff$bca[4]), roundFn(diff$bca[5])),
+    diff = function(diff) as.character(round(diff$t0, 1)),
+    `diff CI` = function(diff) sprintf("%g [%g, %g]", roundFn(diff$t0), roundFn(diff$bca[4]), roundFn(diff$bca[5])),
+    `level CI` = function(diff) sprintf("%g%% CI [%g, %g]", diff$bca[1] * 100, roundFn(diff$bca[4]), roundFn(diff$bca[5]))
+  )
 
   function(plotStats, diffs) {
     ng <- length(diffs)
@@ -279,6 +279,10 @@ isRightToLeft <- function(diff) {
 #'   of bracket
 #' @param verticalGap Vertical distance (mm) between overlapping brackets
 #' @param textPad Gap (mm) between bracket and text
+#' @param roundFn By default, numbers displayed as text are printed to 2
+#'   significant figures. To change this behaviour, set \code{roundFn} to a
+#'   function with one argument that converts its argument to the value to be
+#'   displayed.
 #' @param ... Additional arguments passed to \code{\link[graphics]{text}}
 #'
 #' @examples
@@ -299,6 +303,7 @@ DurgaBrackets <- function(plotStats,
                           snapTo = 1,
                           shorten = 1.5, tipLength = 2,
                           dataGap = 2.5, verticalGap = 1.3, textPad = 1.5,
+                          roundFn = function(x) signif(x, 2),
                           ...) {
   if (!is.list(plotStats) || !"extents" %in% names(plotStats))
     stop("plotStats must be an object returned by DurgaPlot")
@@ -313,6 +318,6 @@ DurgaBrackets <- function(plotStats,
   ann <- BracketsAnnot(labels = labels,
                        shorten = shorten, dataGap = dataGap, verticalGap = verticalGap, tipLength = tipLength,
                        textPad = textPad, snapTo = snapTo, br.lwd = br.lwd, br.col = br.col, br.lty = br.lty,
-                       lb.cex = lb.cex, lb.col = lb.col, lb.font = lb.font, ...)
+                       lb.cex = lb.cex, lb.col = lb.col, lb.font = lb.font, roundFn = roundFn, ...)
   ann(plotStats, diffs)
 }

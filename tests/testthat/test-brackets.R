@@ -108,3 +108,10 @@ test_that("contrasts", {
   DurgaBrackets(p, contrasts = "adult - juvenile", dataGap = 10)
   DurgaBrackets(p, contrasts = "juvenile - adult", dataGap = 17)
 })
+
+test_that("roundFn", {
+  d <- DurgaDiff(damselfly, 1, 3)
+  p <- DurgaPlot(d, main = "Rounding of numbers", ef.size = FALSE, ylim = c(29.5, 36.5))
+  DurgaBrackets(p)
+  expect_error(DurgaBrackets(p, dataGap = 10, roundFn = round), NA)
+})
