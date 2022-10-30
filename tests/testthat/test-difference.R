@@ -1221,4 +1221,9 @@ test_that("custom labels", {
   d$group.differences[[2]]$label.plot <- expression(italic("Sp. 1") ~ "-" ~ italic("Sp. 2"))
   # Override effect name label
   expect_error(DurgaPlot(d, ef.size.label = expression(bold("Bold name")), x.axis = F), NA)
+
+  # Override print label
+  d$group.differences[[2]]$label.print <- "Sp. 1 : Sp. 2"
+  s <- capture.output(print(d))
+  expect_match(s[10], "^ *Sp. 1 : Sp. 2:")
 })

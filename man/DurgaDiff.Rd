@@ -140,8 +140,8 @@ Hedges' g, we apply Hedges' correction to the paired Cohen's d.
 
 Alternative effect types can be estimated by passing a function for
 \code{effect.type}. For unpaired data, the function must accept two
-parameters: the values from the two groups to be compared (group 1 and group
-2). For paired data, the function must accept a single argument; a vector of
+parameters: the values from the two groups to be compared (group 2 and group
+1). For paired data, the function must accept a single argument; a vector of
 group 1 values - group 2 values.
 
 Confidence intervals for the estimate are determined using bootstrap

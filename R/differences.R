@@ -69,9 +69,9 @@ calcPairDiff <- function(data, pair, isPaired, pairNames, pairIndices, data.col,
     function(data, indices) {
       measurement <- data[indices, data.col]
       group <- data[indices, group.col]
-      x1 <- measurement[group == pair[2]]
-      x2 <- measurement[group == pair[1]]
-      statisticFn(x1, x2)
+      x2 <- measurement[group == pair[2]]
+      x1 <- measurement[group == pair[1]]
+      statisticFn(x2, x1)
     }
   }
   .wrapPairedStatistic <- function(statisticFn) {
@@ -236,8 +236,8 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #'
 #' Alternative effect types can be estimated by passing a function for
 #' \code{effect.type}. For unpaired data, the function must accept two
-#' parameters: the values from the two groups to be compared (group 1 and group
-#' 2). For paired data, the function must accept a single argument; a vector of
+#' parameters: the values from the two groups to be compared (group 2 and group
+#' 1). For paired data, the function must accept a single argument; a vector of
 #' group 1 values - group 2 values.
 #'
 #' Confidence intervals for the estimate are determined using bootstrap
@@ -503,8 +503,12 @@ print.DurgaDiff <- function(x, ...) {
 
 #' @export
 print.DurgaGroupDiff <- function(x, ...) {
-  cat(sprintf("  %s - %s: %g, %g%% CI [%g, %g]\n",
-              x$groupLabels[1], x$groupLabels[2],
+  if (!is.null(x$label.print))
+    label <- x$label.print
+  else
+    label <- sprintf("%s - %s", x$groupLabels[1], x$groupLabels[2])
+  cat(sprintf("  %s: %g, %g%% CI [%g, %g]\n",
+              label,
               x$t0, x$bca[1] * 100, x$bca[4], x$bca[5]))
 }
 
