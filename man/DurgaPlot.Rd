@@ -89,11 +89,12 @@ can be shifted independently using the appropriate \code{*.dx} parameters.}
 \code{\link{RColorBrewer}} palette name or a vector of colours.}
 
 \item{points}{If not FALSE, points are plotted. If \code{TRUE}, points are
-displayed with a default colour. You may specify a vector of colours; if
-length 1, all points are drawn with the specified colour. If length is less
-than the number of data points, points in each group are drawn with the
-appropriate colour (extra colours are ignored). Otherwise, \code{points}
-should be a vector of colours with a value for each data point.}
+displayed with a default colour (which is the group colour with 40%
+transparency). You may specify a vector of colours; if length 1, all points
+are drawn with the specified colour. If length is less than the number of
+data points, points in each group are drawn with the appropriate colour
+(extra colours are ignored). Otherwise, \code{points} should be a vector of
+colours with a value for each data point.}
 
 \item{points.method}{Method used to avoid overplotting points. Use
 \code{"overplot"} to overplot points and \code{"jitter"} to add random
