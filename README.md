@@ -2,7 +2,7 @@
 
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/KhanKawsar/EstimationPlot/workflows/R-CMD-check/badge.svg)](https://github.com/KhanKawsar/EstimationPlot/actions)
+[![R-CMD-check](https://github.com/KhanKawsar/EstimationPlot/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/KhanKawsar/EstimationPlot/actions/workflows/R-CMD-check.yaml)
 [![Codecov test coverage](https://codecov.io/gh/KhanKawsar/EstimationPlot/branch/main/graph/badge.svg)](https://app.codecov.io/gh/KhanKawsar/EstimationPlot?branch=main)
 <!-- badges: end -->
 
