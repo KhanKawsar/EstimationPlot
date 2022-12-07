@@ -242,7 +242,7 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
     }
   }
 
-  ylim <- range(c(0, sapply(plotDiffs, rangeOfDiff), na.rm = TRUE))
+  ylim <- range(c(0, sapply(plotDiffs, rangeOfDiff)), na.rm = TRUE)
   ylim <- grDevices::extendrange(ylim)
 
   ### Work out how to map the effect size pseudo region onto user coordinates

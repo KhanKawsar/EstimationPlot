@@ -1227,3 +1227,17 @@ test_that("custom labels", {
   s <- capture.output(print(d))
   expect_match(s[10], "^ *Sp. 1 : Sp. 2:")
 })
+
+test_that("ef range plot bug", {
+  n <- c(20, 30, 50, 30)
+  seasons <- c("Spring", "Summer", "Autumn", "Winter")
+  df <- data.frame(proportion = c(
+    rnorm(n[1], mean = 0.1, sd = 0.01),
+    rnorm(n[2], mean = 0.15, sd = 0.015),
+    rnorm(n[3], mean = 0.25, sd = 0.02),
+    rnorm(n[4], mean = 0.6, sd = 0.03)
+  ), season = rep(seasons, n)
+  )
+  d <- DurgaDiff(df, 1, 2, contrasts = ". - Winter", groups = seasons)
+  expect_error(DurgaPlot(d, main = "Effect size ylim correct"), NA)
+})
