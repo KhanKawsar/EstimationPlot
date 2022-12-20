@@ -531,12 +531,14 @@ DurgaTransparent <-  function(colour, alpha, relative = FALSE) {
 #' @param ... Additional arguments are passed on to the
 #'   \code{\link[graphics]{plot}} function.
 #'
-#' @return A list (returned invisibly) with 3 elements:
+#' @return A list (returned invisibly) with 4 elements:
 #'
 #'   \item{\code{es}}{Value of the \code{es} parameter.}
 #'   \item{\code{extents}}{Matrix with the x-axis locations and y-axis extents
-#'   of each displayed group.} \item{\code{plot.differences}}{A list of the
+#'   of each displayed group.}
+#'   \item{\code{plot.differences}}{A list of the
 #'   displayed differences, as \code{DurgaGroupDiff} objects.}
+#'   \item{\code{palette}}{Vector of colours used by default for each group.}
 #'
 #' @seealso \code{\link{DurgaDiff}}, \code{\link{DurgaBrackets}},
 #'   \code{\link[vipor]{offsetX}}, \code{\link[graphics]{boxplot}},
@@ -1038,5 +1040,5 @@ DurgaPlot <- function(es,
   extents <- cbind(groupAt, do.call(rbind, groupRange))
   colnames(extents) <- c("x", "y.min", "y.max")
   rownames(extents) <- es$group.names
-  invisible(list(es = es, extents = extents, plot.differences = plotDiffs))
+  invisible(list(es = es, extents = extents, plot.differences = plotDiffs, palette = defBorderPalette))
 }

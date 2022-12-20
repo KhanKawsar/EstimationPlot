@@ -274,12 +274,14 @@ FALSE, a new plot is created.}
 \code{\link[graphics]{plot}} function.}
 }
 \value{
-A list (returned invisibly) with 3 elements:
+A list (returned invisibly) with 4 elements:
 
   \item{\code{es}}{Value of the \code{es} parameter.}
   \item{\code{extents}}{Matrix with the x-axis locations and y-axis extents
-  of each displayed group.} \item{\code{plot.differences}}{A list of the
+  of each displayed group.}
+  \item{\code{plot.differences}}{A list of the
   displayed differences, as \code{DurgaGroupDiff} objects.}
+  \item{\code{palette}}{Vector of colours used by default for each group.}
 }
 \description{
 Plot grouped data and effect size in base R, with control over a large range
