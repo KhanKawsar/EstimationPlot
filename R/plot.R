@@ -213,7 +213,7 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch,
   ef.size.line.lty <- rep_len(ef.size.line.lty, 2)
   ef.size.line.lwd <- rep_len(ef.size.line.lwd, 2)
   graphics::segments(groupX[gid1], y, x + 2, y, col = ef.size.line.col[1], lty = ef.size.line.lty[1], lwd = ef.size.line.lwd[1])
-  graphics::segments(groupX[gid2], y2, x + 2, y2, col = ef.size.line.col[1], lty = ef.size.line.lty[1], lwd = ef.size.line.lwd[1])
+  graphics::segments(groupX[gid2], y2, x + 2, y2, col = ef.size.line.col[2], lty = ef.size.line.lty[2], lwd = ef.size.line.lwd[2])
 
   # Add x-axis label and tick mark for effect size
   labelXAxis(at = x, labels = getDiffLabel(pwes), tick = TRUE)
@@ -406,8 +406,8 @@ DurgaTransparent <-  function(colour, alpha, relative = FALSE) {
 #'   \code{"overplot"} to overplot points and \code{"jitter"} to add random
 #'   noise to each x-value. See \code{\link[vipor]{offsetX}} for remaining
 #'   methods.
-#' @param points.spread Adjusts the points scatter method points horizontally
-#'   (ignored if \code{points.method = "overplot"}).
+#' @param points.spread Numeric value used to adjust the points scatter method
+#'   points horizontally (ignored if \code{points.method = "overplot"}).
 #' @param points.dx Horizontal shift to be applied to points in each group.
 #' @param points.params List of named parameters to pass on to
 #'   \code{\link[graphics]{points}}, e.g. \code{DurgaPlot(es, points = "black",
