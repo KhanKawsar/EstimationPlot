@@ -101,8 +101,8 @@ colours with a value for each data point.}
 noise to each x-value. See \code{\link[vipor]{offsetX}} for remaining
 methods.}
 
-\item{points.spread}{Adjusts the points scatter method points horizontally
-(ignored if \code{points.method = "overplot"}).}
+\item{points.spread}{Numeric value used to adjust the points scatter method
+points horizontally (ignored if \code{points.method = "overplot"}).}
 
 \item{points.dx}{Horizontal shift to be applied to points in each group.}
 
