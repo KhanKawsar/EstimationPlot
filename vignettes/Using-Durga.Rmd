@@ -1,0 +1,361 @@
+---
+title: "Introduction to Durga"
+output: 
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 4
+vignette: >
+  %\VignetteIndexEntry{Introduction to Durga}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(Durga)
+library(datasets)
+```
+
+`Durga` is an R package that aims to simplify the estimation and visualisation of one type of effect size: differences in group means. The package consists of two main functions and several auxiliary functions. The `DurgaDiff` function estimates raw or standardised mean differences, while `DurgaPlot` will create a plot for visualising both the original data and the effect size, and provides an extensive range of display options. The function `DurgaBrackets` can add _confidence brackets_ to an existing Durga plot. Since `Durga` is implemented in base R, Durga plots can be positioned using the standard R plotting layout tools: `par(mfrow = c(...))`, `layout()` and `split.screen()`.
+
+This vignette shows some example Durga plots. Each plot is preceded by the code used to generate it, which can be used to learn how to create the plot. 
+
+## Effect size estimation
+
+Before plotting your data, you must estimate the differences in group means by calling `DurgaDiff`. Your raw data should be in a data frame (or similar), with one observation per row - this is known as _long format_ data. The data frame must contain a column for the measurement or value being analysed, and another for the group or treatment. In addition, paired or repeated measures data requires an ID column to match measurements for the same specimen/individual. For example, within the `insulin` data set, the value being measured - blood sugar level - is recorded in the column `sugar` (specified in the `DurgaDiff` call by passing the argument `data.col = "sugar"`); treatments are `"before"` and `"after"` in the `treatment` column (`group.col = "treatment"`); and the identity of the individual (rabbit) being tested is given in the `id` column (`id.col = "id"`). The blood sugar level of each rabbit was tested before and after treatment with insulin, so for each rabbit, there is a row with the `before` sugar level, and another with the `after` sugar level.
+
+```{r} 
+# Inspect the insulin data set
+head(insulin[insulin$id < 4, ])
+
+# Calculate differences in group means
+d <- DurgaDiff(insulin, data.col = "sugar", group.col = "treatment", id.col = "id")
+d
+```
+
+You may alternatively specify your data with a formula. Formulae allow a little more flexibility when specifying your model, but the end results are equivalent. The formula must be specified as `<data variable> ~ <group variable>`. For paired data, you must specify the `id` column using the `id.col` argument.
+
+```{r} 
+# Use a formula to define the model
+DurgaDiff(sugar ~ treatment, insulin, id.col = "id")
+```
+
+## Plotting
+
+The simplest plot to create simply uses all default values. This plot shows raw data points displayed as individual data points, the distribution of data points within each group shown as half violins, and _effect size_ to the right (for a single group comparison) or beneath the group data (for multiple comparisons).
+
+The _effect size_ is an estimate of the difference in means between two groups (or a similar statistic). It is shown with a symbol (a triangle by default) at the estimated value, and a thick line showing the confidence interval of the estimate. A filled half-violin shows the distribution of bootstrapped effect sizes, truncated at the top and bottom so it does not extend past the confidence interval.
+
+If the data are paired (aka repeated measures; `id.col` was specified in the `DurgaDiff` call), then pair lines are drawn to connect measurements for the same individual/specimen. 
+
+```{r fig.height=4, fig.width=4} 
+DurgaPlot(d)
+```
+
+### Contrasts
+
+The default behaviour of `DurgaDiff` is to calculate differences between all pairs of groups. Due to the difficulty of laying out multiple effect sizes, `DurgaPlot` treats the first group as a control, and shows the differences between all subsequent groups and the control.  The first example plot below demonstrates the problems caused by drawing all effect sizes; two effect sizes appear at the same x-location and their labels are overwritten. To change the default behaviour, specify the `contrasts` argument to either `DurgaDiff` or `DurgaPlot` (or see [Confidence brackets](#confidence-brackets) for an alternative technique for displaying multiple effect sizes). Contrasts are specified as "group - group, group - group", so in order to show two of the three possible effect sizes from the `iris` data set, you could specify `contrasts = c("virginica - setosa", "versicolor - setosa")`, as shown below.
+
+Effect sizes are plotted directly below the first group in the contrast, so another possible method for showing all effect sizes with three groups is to display one effect size under each group. For the `iris` data set, this could be achieved with `contrasts = c("virginica - setosa", "setosa - versicolor", "versicolor - virginica")`. Each effect size is clearly visible, however, it is necessary to read the labels underneath an effect size to know the groups to which it applies.
+
+```{r fig.height=4, fig.width=8}
+par(mfrow = c(1, 2))
+
+di <- DurgaDiff(iris, "Sepal.Length", "Species")
+DurgaPlot(di, contrasts = "*", main = "All effect sizes")
+
+DurgaPlot(di, contrasts = c("virginica - setosa", "versicolor - setosa"), main = "Selected effect sizes")
+```
+
+### Plot components
+
+A `DurgaPlot` data visualisation is a combination of one or more visual components: data `points`; `violin` plots; `bar` charts; `box` plots; repeated measure `paired` lines; a mean or median indicator (`central.tendency`); and error bars (`error.bars`). Each component is controlled by a set of parameters to the `DurgaPlot` function. The names of the parameters indicate the component they apply to, so to adjust the violin plot component, read the documentation about all parameters with prefix `violin`. Effect size display is controlled by parameters with prefix `ef.size`. Parameters have sensible default values, so for example, if you display bar charts (`bar = TRUE`),  violin plots and the central tendency indicator will be turned off. Obviously, you are able to override the defaults if you wish. Refer to help for the `DurgaPlot` function for full details on all arguments.
+
+```{r fig.height=4, fig.width=8}
+par(mfrow = c(1, 2))
+
+DurgaPlot(d, 
+          # Display box plots
+          box = TRUE, 
+          # Don't display data points
+          points = FALSE, 
+          # Don't display paired-value lines
+          paired = FALSE, 
+          main = "Box plot")
+
+DurgaPlot(d, 
+          # Display bar charts
+          bar = TRUE, 
+          # Position effect size below
+          ef.size.position = "below",
+          # No paired-value lines
+          paired = FALSE, 
+          main = "Bar chart")
+```
+
+### Layout
+
+Each graphical group component (points, violin plot, box plot, bar chart, central tendency indicator, error bar and axis label) is positioned or centred horizontally on x-axis locations from 1 to _n_, where _n_ is the number of groups. Group horizontal locations can be shifted with the `group.dx` parameter. For example, `group.dx = 0.1` would shift all groups to the right by 1/10th of the distance between groups. Values are repeated as necessary, so `group.dx = c(0.1, -0.1)` will move each pair of groups closer together.
+
+`group.dx` shifts all components equally, however, each component can be shifted independently. For example, to shift all _violins_ left and all _points_ right, specify `violin.dx = -0.12, points.dx = 0.1`. 
+
+```{r fig.height=4, fig.width=8}
+par(mfrow = c(1, 2), mar = c(3, 4, 3, 1) + 0.1)
+
+# Construct some data with multiple groups
+set.seed(1) # Ensure we always get the exact same data set
+multiGroupData <- data.frame(Measurement = unlist(lapply(c(10, 12, 8, 8.5, 9, 9.1),
+                                                         function(m) rnorm(40, m))),
+                             Group = rep(paste0("g", 1:6), each = 40),
+                             Id = rep(1:6, 40))
+d <- DurgaDiff(multiGroupData, 1, 2)
+
+DurgaPlot(d, 
+          # Visually group each pair
+          group.dx = c(0.18, -0.18), 
+          # Show box plots
+          box = TRUE, 
+          # Make the boxes narrow 
+          box.pars = list(boxwex = 0.4), 
+          # Don't display effect size or data points
+          ef.size = FALSE, points = FALSE, 
+          xlim = c(0.8, 6.2), # Reduce white space on plot left and right
+          main = "Grouped into pairs")
+
+DurgaPlot(d,
+          # Shift violins left
+          violin.dx = -0.12,
+          # Shift points right
+          points.dx = 0.1,
+          # Make points small and jittered
+          points.params = list(cex = 0.5), points.method = "jitter",
+          # No central tendency indicator
+          central.tendency = FALSE,
+          ef.size = FALSE, main = "Component shifts")
+```
+
+
+### Group order and labels
+
+When plotted, the default display order for groups is their natural order, i.e. alphabetical order for character data, and numeric order for factors. You can, however, specify the display order with the `groups` parameter to either `DurgaDiff` or `DurgaPlot`. Not all groups in the data need be included in the analysis or plot; missing groups will be excluded from the analysis and/or plot. To assign display labels to the groups, use a named vector to list the groups. The names will be used to label the groups on the plot. 
+
+In the damselfly data set, the groups are `juvenile` and `adult`. The example below demonstrates how to change the displayed group names as well as the display order of the groups.
+
+
+
+```{r fig.height=4, fig.width=5}
+# No title on this plot, so reduce the top margin size
+par(mar = c(5, 4, 1, 1) + 0.1)
+
+# Immature males are yellow, mature are red. Display juveniles first, and label
+# with colour rather than developmental stage
+d <- DurgaDiff(mass ~ maturity, damselfly, na.rm = TRUE,
+               groups = c("Yellow" = "juvenile", "Red" = "adult"))
+DurgaPlot(d, 
+          # Custom y-axis label
+          left.ylab = "Body mass (mg)", 
+          # Specify the colours to (approximately) match the data
+          group.colour = c("orange", "red"), 
+          box = TRUE, box.fill = FALSE)
+```
+
+
+### Colours
+
+Colours can be specified for each group (`group.colour`; demonstrated above), or separately for individual components. The _master_ argument for each component type controls whether the component is displayed and optionally its colour. So, to display blue violins, specify `violin = "blue"`. Colours can be specified as the name of an [RColorBrewer](https://r-graph-gallery.com/38-rcolorbrewers-palettes.html) palette (e.g. `group.colour = "Dark2"`), or as one or more R colours. 
+
+Colours for data points receive special treatment; points can be coloured individually or by group. If there are as many colours as data points, the points are coloured individually. Otherwise, colours are applied to groups (excess colours are ignored). The default point symbol (`pch`) is 19.
+
+The convenience function `DurgaTransparent` adds transparency to a colour, so `DurgaTransparent("blue", 0.8)` is a nearly-transparent blue colour.
+
+```{r fig.height=5, fig.width=8.5}
+par(mfrow = c(1, 2), mar = c(11, 4, 3, 6) + 0.1)
+# Only show 2 groups even though there are 3 in the data
+d <- DurgaDiff(iris, data.col = "Sepal.Length", group.col = "Species",
+                   groups = c("versicolor", "setosa"))
+DurgaPlot(d, 
+          # Custom colours for points - the points are partially transparent
+          points = c(DurgaTransparent("coral", .6), DurgaTransparent("darkturquoise", .8)),
+          # Different colurs for violin (border) and violin fill
+          violin = c("red", "blue"), violin.fill = c("#f8a8c840", "#a8c8f840"), 
+          main = "Data subset; Two groups")
+
+par(mar = c(5, 4, 3, 1) + 0.1)
+d <- DurgaDiff(iris, data.col = "Sepal.Length", group.col = "Species")
+# Define colours for the 3 species
+bgCols <- c(DurgaTransparent("red", 0.5), 
+            DurgaTransparent("blue", 0.5), 
+            DurgaTransparent("green", 0.5))
+DurgaPlot(d, 
+          # Make all boxes the same colour
+          box = "grey50", box.fill = "grey90",
+          # Black for border/outline colour of points
+          points = "black", 
+          # Additional data point parameters: small squares filled with colour for species
+          points.params = list(pch = 22, cex = 0.8, bg = bgCols[iris$Species]),
+          main = "Coloured point fill")
+```
+
+### Central tendency and error bars
+
+The central tendency indicator displays either the mean or median of each group (controlled by the `central.tendency.type` argument), and is shown by default when neither boxes nor bars are shown.
+
+Error bars on each group may show: 95% confidence intervals of the mean; standard deviation; or standard error (specified by setting the `error.bars.type` parameter), and may be plotted regardless of what other components are shown.
+ 
+```{r fig.height=6, fig.width=9}
+par(mfrow = c(1, 2))
+d <- DurgaDiff(iris, data.col = "Sepal.Length", group.col = "Species")
+
+# Only show error bars (95% CI) and central tendency
+DurgaPlot(d, error.bars.type = "CI", 
+          # Custom colour for central tendency
+          central.tendency = rainbow(3), 
+          points = FALSE, violin = FALSE, main = "Mean and 95% CI")
+
+par(mar = c(5, 2.4, 4, 2) + 0.1)
+DurgaPlot(d, bar = TRUE, error.bars.type = "SD", points = FALSE,  
+          left.ylab = "", ef.size.label = "",
+          main = "Bar chart with std. deviation")
+```
+
+### Confidence brackets
+
+When there are too many group comparisons for the effect sizes to be clearly displayed, you can choose to display confidence brackets above the plot by calling `DurgaBrackets` after calling `DurgaPlot`. Confidence brackets communicate less information than the standard effect size visualisation, but may be a reasonable compromise for many group comparisons. An alternative to confidence brackets for showing many effect sizes could be to plot the effect sizes below, and use `ef.size.dx` to shift one or more effect sizes horizontally so they don't overlap.
+
+You must manually ensure there is sufficient space for the brackets in the plot (see `DurgaBrackets` for details). In the example below, to create space above the plot, we increase the top margin size and prevent the frame from being drawn around the plot (`frame.plot = FALSE`).
+
+The default symbology for the brackets are light grey if the confidence interval includes 0. If the confidence interval does not include zero, text is black by default, and the default bracket line colour is the colour of the group with the higher central tendency. Arguments to `DurgaBrackets` can be used to override the defaults.
+
+```{r fig.height=4, fig.width=7}
+d <- DurgaDiff(petunia, 1, 2)
+# Use the top margin for brackets
+op <- par(mar = c(2, 4, 4, 1) + 0.1)
+on.exit(par(op))
+
+# Save return value from DurgaPlot
+p <- DurgaPlot(d,
+               # Don't draw effect size because we will draw brackets
+               ef.size = FALSE, 
+               # Don't draw frame because brackets will appear in the upper margin
+               frame.plot = FALSE, 
+               # Custom groups colours
+               group.colour = rainbow(3))
+# Draw the brackets
+DurgaBrackets(p, labels = "diff CI")
+```
+
+
+
+## Advanced techniques
+
+### Labelling effect sizes
+
+By default, effect sizes are "mean" (aka unstandardised), which means they are in the same units as the data. However, `DurgaDiff` can estimate standardised effect sizes - either Cohen's d or Hedges' g - which allow comparisons of effect sizes across data in different units.
+
+You can override the y-axis labels to aid interpretation of effect sizes. `DurgaPlot` does not provide text labels for standardised effect sixes by default because effect size interpretation depends on context.
+
+```{r fig.height=6, fig.width=8}
+par(mar = c(5, 9, 3, 1) + 0.1)
+effectSizes <- c("No effect" = 0, "Large positive effect" = 0.8, "Huge positive effect" = 2)
+groups <- c("Self" = "self_fertilised", "Westerham" = "westerham_cross", "Inter" = "inter_cross")
+d <- DurgaDiff(petunia, 1, 2, effect.type = "cohens", groups = groups)
+DurgaPlot(d, violin = F, main = "Cohen's d, labelled effect size", 
+          points.method = "jitter", 
+          ef.size.ticks = effectSizes, ef.size.label = "", ef.size.las = 1)
+```
+
+### Custom statistics
+
+Durga provides a fixed set of effect type statistics that can be used, however sometimes a different statistic is required. For example, we may wish to compare measurements of some organ or structure to know whether they have increased or decreased in size, in which case we may decide to use log~2~ ratio as our statistic. log~2~ ratio has a straightforward interpretation: 0 means no difference, 1 means double the size, 2 means four-times the size, -1 means half the size, and so on.
+
+```{R fig.height=4.5, fig.width=6}
+# Define a function that calculates the statistic for two vectors
+log2Ratio <- function(x1, x2) log2(mean(x2) / mean(x1))
+
+# Some random data
+set.seed(1)
+data <- data.frame(species = rep(c("Sp1", "Sp2"), each = 10),
+                   volume = c(rnorm(10, mean = 5, sd = 2), rnorm(10, mean = 10, sd = 2)))
+
+# Apply log2Ratio as the effect type
+d <- DurgaDiff(data, "volume", "species", effect.type = log2Ratio)
+# Apply custom labels to describe the effect type, since it is not Sp2 - Sp1
+d$group.differences[[1]]$label.plot <- expression("log"[2] ~ italic("Sp 2") * ":" * italic("Sp 1"))
+# Plot, and set the y-axis label for effect size
+DurgaPlot(d, ef.size.label = expression("log"[2]~"ratio"))
+
+# It is also possible to set the label to be used for printing to the console
+d$group.differences[[1]]$label.print <- "log2 Sp 2:Sp 1"
+d
+
+```
+
+
+## Examples
+
+This example shows the use of custom group order and display names, contrasts between relevent pairs of groups rather than between all combinations of groups, and various custom plotting options.
+
+```{r fig.height=5, fig.width=7}
+par(mar = c(5, 4, 3, 1) + 0.1)
+
+# Define display order and display pretty group names
+groups = c("Control 1" = "g1", "Treatment 1" = "g2", 
+           "Control 2" = "g3", "Treatment 2" = "g4", 
+           "Control 3" = "g5", "Treatment 3" = "g6")
+d <- DurgaDiff(multiGroupData, 1, 2, 3, groups = groups, 
+                   contrasts = "g2 - g1, g4 - g3, g6 - g5")
+# Reduce text size
+par(cex = 0.7)
+DurgaPlot(d, box = TRUE, group.dx = c(0.15, -0.15), paired = FALSE, points = FALSE, xlim = c(1, 6), 
+          # Hide the boxplot median line and make the boxes narrow 
+          #   (box.pars = list(medcol = NA, boxwex = 0.4))
+          box.pars = list(medcol = NA, boxwex = 0.4), 
+          # Display mean and error bar
+          central.tendency = "#8060b0a0",      # Display and colour central tendency
+          central.tendency.symbol = "segment", 
+          central.tendency.width = 0.07,
+          error.bars = "#8060b0a0",            # Same colour for error bars
+          # Don't display the effect size violin
+          ef.size.violin = FALSE, 
+          main = "Group offsets"
+        )
+```
+
+Any unknown parameters to `DurgaPlot` are passed on to the plot function, which allows some control over additional aspects of the plot. The labels underneath effect sizes can be controlled by passing a named vector for the `DurgaPlot` `contrasts` parameter.
+
+```{r fig.height=5, fig.width=7}
+# Add in some fake sex data to the insulin data set
+data <- cbind(insulin, Sex = sample(c("Male", "Female"), nrow(insulin), replace = TRUE))
+# Thin the data so that individual symbols are visible.
+# Obviously these data manipulations are for plot demonstration purposes only
+data <- data[data$id %in% 1:15, ]
+
+d <- DurgaDiff(data, "sugar", "treatment", "id", 
+                   groups = c("Before insulin" = "before", "After insulin" = "after"), na.rm = TRUE)
+par(mar = c(2, 4, 4, 1))
+DurgaPlot(d, 
+          # Don't draw containing box
+          frame.plot = FALSE,
+          # Relabel the contrasts
+          contrasts = c("Blood sugar change" = "after - before"),
+          left.ylab = "Blood sugar level",
+          # Customise the violins
+          violin.shape = c("left", "right"), violin.dx = c(-0.055, 0.055), violin.width = 0.3, 
+          # Customise the points to display sex
+          points = "black",
+          points.params = list(bg = ifelse(data$Sex == "Female", "red", "blue"), 
+                               pch = ifelse(data$Sex == "Female", 21, 24)), 
+          # Customise the effect size
+          ef.size.pch = 19,
+          ef.size.violin = "blue",
+          ef.size.violin.shape = "full",
+          # Make mean lines match group colour
+          ef.size.line.col = RColorBrewer::brewer.pal(3, "Set2")[2:1],
+          ef.size.line.lty = 3,
+          central.tendency = FALSE,
+          main = "Effects of insulin on blood sugar")
+# Add a legend
+legend("topright", c("Female", "Male"), pch = c(21, 24), pt.bg = c("red", "blue"))
+```
+

@@ -24,14 +24,14 @@ To install the development version (which is the only version available as yet):
 
 ## Usage
 
-Once Durga is installed, you can read the vignette named `cheatsheet` for a range of examples of possible plots, together with the code used to produce them.
+Once Durga is installed, you can read the vignette named `Using Durga` for a range of examples of possible plots, together with the code used to produce them.
 
 ```R
 # Display the vignette in a browser
-RShowDoc("cheatsheet", package = "Durga")
+RShowDoc("Introduction-to-Durga", package = "Durga")
 
 # Display the vignette in the help window pane
-vignette("cheatsheet", package = "Durga")
+vignette("Introduction-to-Durga", package = "Durga")
 ```
 
 A minimal example using constructed data:
