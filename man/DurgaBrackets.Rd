@@ -7,13 +7,13 @@
 DurgaBrackets(
   plotStats,
   contrasts,
-  labels = "CI",
-  br.lwd = 1,
-  br.col = 1,
+  labels = "level CI",
+  br.lwd = NULL,
+  br.col = NULL,
   br.lty = 1,
+  lb.col = NULL,
+  lb.font = NULL,
   lb.cex = 1,
-  lb.col = 1,
-  lb.font = 1,
   snapTo = 1,
   shorten = 1.5,
   tipLength = 2,
@@ -36,18 +36,22 @@ are specified in \code{contrasts}, i.e. \code{contrasts = "G1 - G2"} will
 appear the same as \code{contrasts = "G2 - G1"}.}
 
 \item{labels}{Text to display above each bracket. May be NULL, otherwise one
-of: \code{"diff"}, \code{"CI"}, \code{"level CI"} or \code{"diff CI"}; a
-vector of texts to display for each element of \code{diffs}, or a function
-called with one argument; a \code{DurgaGroupDiff} object}
+of: \code{"diff"} (displayed text is "\code{<difference in means>}"),
+\code{"CI"} ("\code{[<lower>, <upper>]}"), \code{"level CI"} ("\code{<level>\% CI [<lower>,
+<upper>]}") or \code{"diff CI"} ("\code{<difference in means> [<lower>,
+<upper>]}"); a vector of texts to display for each element of \code{diffs},
+or a function called with one argument; a \code{DurgaGroupDiff} object,
+which should return the label to be displayed.}
 
 \item{br.col, br.lwd, br.lty}{Graphical parameters (colour, line weight and
 style) that control the bracket appearance - passed to
 \code{\link[graphics]{segments}}. May be a single value or a vector with
-one value per bracket.}
+one value per bracket. Refer to \code{Details} for default values.}
 
 \item{lb.col, lb.cex, lb.font}{Graphical parameters (colour, scale and font)
 that control the label appearance - passed to \code{\link[graphics]{text}}.
-May be a single value or a vector with one value per bracket.}
+May be a single value or a vector with one value per bracket. Refer to
+\code{Details} for default values.}
 
 \item{snapTo}{Snaps the base of the lowest brackets onto horizontal grid
 lines separated by \code{snapTo} mm. Used to improve aesthetics of vertical
@@ -80,6 +84,13 @@ large top margin (\code{par(mar = c(...))}) and the turn off the plot frame
 (\code{DurgaPlot(..., frame.plot = FALSE)}). In either case, experiment with
 the values until the result is visually pleasing. The annotation can be drawn
 into the margin as it will not be cropped.
+}
+\details{
+Default values for \code{br.lwd}, \code{br.col}, \code{lb.col} and
+\code{lb.font} depend on the confidence intervals (CI) being plotted. If the
+CI covers 0, brackets and text are grey. If the CI does not cover 0, text is
+dark grey and bold, and brackets are drawn with a line width of 2 and the
+colour of the higher-valued group.
 }
 \examples{
 

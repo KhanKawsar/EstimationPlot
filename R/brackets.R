@@ -249,6 +249,12 @@ isRightToLeft <- function(diff) {
 #' the values until the result is visually pleasing. The annotation can be drawn
 #' into the margin as it will not be cropped.
 #'
+#' Default values for \code{br.lwd}, \code{br.col}, \code{lb.col} and
+#' \code{lb.font} depend on the confidence intervals (CI) being plotted. If the
+#' CI covers 0, brackets and text are grey. If the CI does not cover 0, text is
+#' dark grey and bold, and brackets are drawn with a line width of 2 and the
+#' colour of the higher-valued group.
+#'
 #' @param plotStats Object returned by the call to \code{\link{DurgaPlot}}
 #' @param contrasts Set of contrasts (i.e. group comparisons) to be displayed as
 #'   brackets. Defaults to contrasts passed to \code{\link{DurgaDiff}}. Can be
@@ -259,16 +265,20 @@ isRightToLeft <- function(diff) {
 #'   appear the same as \code{contrasts = "G2 - G1"}.
 #'
 #' @param labels Text to display above each bracket. May be NULL, otherwise one
-#'   of: \code{"diff"}, \code{"CI"}, \code{"level CI"} or \code{"diff CI"}; a
-#'   vector of texts to display for each element of \code{diffs}, or a function
-#'   called with one argument; a \code{DurgaGroupDiff} object
+#'   of: \code{"diff"} (displayed text is "\code{<difference in means>}"),
+#'   \code{"CI"} ("\code{[<lower>, <upper>]}"), \code{"level CI"} ("\code{<level>\% CI [<lower>,
+#'   <upper>]}") or \code{"diff CI"} ("\code{<difference in means> [<lower>,
+#'   <upper>]}"); a vector of texts to display for each element of \code{diffs},
+#'   or a function called with one argument; a \code{DurgaGroupDiff} object,
+#'   which should return the label to be displayed.
 #' @param br.col,br.lwd,br.lty Graphical parameters (colour, line weight and
 #'   style) that control the bracket appearance - passed to
 #'   \code{\link[graphics]{segments}}. May be a single value or a vector with
-#'   one value per bracket.
+#'   one value per bracket. Refer to \code{Details} for default values.
 #' @param lb.col,lb.cex,lb.font Graphical parameters (colour, scale and font)
 #'   that control the label appearance - passed to \code{\link[graphics]{text}}.
-#'   May be a single value or a vector with one value per bracket.
+#'   May be a single value or a vector with one value per bracket. Refer to
+#'   \code{Details} for default values.
 #' @param snapTo Snaps the base of the lowest brackets onto horizontal grid
 #'   lines separated by \code{snapTo} mm. Used to improve aesthetics of vertical
 #'   alignment.
@@ -297,9 +307,9 @@ isRightToLeft <- function(diff) {
 #' @export
 DurgaBrackets <- function(plotStats,
                           contrasts,
-                          labels = "CI",
-                          br.lwd = 1, br.col = 1, br.lty = 1,
-                          lb.cex = 1, lb.col = 1, lb.font = 1,
+                          labels = "level CI",
+                          br.lwd = NULL, br.col = NULL, br.lty = 1,
+                          lb.col = NULL, lb.font = NULL, lb.cex = 1,
                           snapTo = 1,
                           shorten = 1.5, tipLength = 2,
                           dataGap = 2.5, verticalGap = 1.3, textPad = 1.5,
@@ -313,7 +323,23 @@ DurgaBrackets <- function(plotStats,
   diffs <- plotDiffsFromContrasts(contrasts, missing(contrasts), plotStats$es, "DurgaBrackets", defaultToAll = TRUE)
 
   # Display all differences as (right-hand-group) - (left-hand-group)
-  diffs <- lapply(diffs, function(diff) if(isRightToLeft(diff)) { diff } else { negatePairwiseDiff(diff) })
+  diffs <- lapply(diffs, function(diff) if (isRightToLeft(diff)) { diff } else { negatePairwiseDiff(diff) })
+
+  #-- Symbology defaults
+  # For each difference, record whether it overlaps 0, is negative or positive
+  sign <- sapply(diffs, function(diff) ifelse(diff$bca[5] < 0, -1,
+                                              ifelse(diff$bca[4] > 0, 1, 0)))
+  if (is.null(br.lwd)) br.lwd <- ifelse(sign == 0, 1, 2)
+  if (is.null(br.col)) {
+    # Extract indices of group 1 and 2 from each diff
+    group1 <- sapply(diffs, function(diff) diff$groupIndices[1])
+    group2 <- sapply(diffs, function(diff) diff$groupIndices[2])
+    pal <- plotStats$palette
+    br.col <- ifelse(sign == 0, "grey60", ifelse(sign > 0, pal[group1], pal[group2]))
+  }
+  if (is.null(lb.font)) lb.font <- ifelse(sign == 0, 1, 2)
+  if (is.null(lb.col)) lb.col <- ifelse(sign == 0, "grey60", "grey20")
+  #-- End symbology defaults
 
   ann <- BracketsAnnot(labels = labels,
                        shorten = shorten, dataGap = dataGap, verticalGap = verticalGap, tipLength = tipLength,
