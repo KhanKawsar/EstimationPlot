@@ -507,7 +507,7 @@ DurgaTransparent <-  function(colour, alpha, relative = FALSE) {
 #'   left end) of the group mean horizontal lines when effect size is on the
 #'   right.
 #' @param ef.size.line.col Colour of horizontal effect-size lines that depict
-#'   group means if effect size is on the right, otherwise y = 0.
+#'   group means if effect size is on the right, otherwise colour of line at y = 0.
 #' @param ef.size.line.lty Line style of horizontal effect-size lines.
 #' @param ef.size.line.lwd Line width of horizontal effect-size lines.
 #' @param ef.size.label Label to display on y-axis for effect size.
