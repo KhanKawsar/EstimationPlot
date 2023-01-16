@@ -875,17 +875,6 @@ DurgaPlot <- function(es,
 
   ### Add the various components to the plot ###
 
-  # Box plot
-  if (.show(box)) {
-    box <- .boolToDef(box, defBorderPalette)
-    box.fill <- .boolToDef(box.fill, defFillPalette)
-    # !!! NOTE if this is changed, it may also be necessary to change the call above that determines ylim
-    graphics::boxplot(f, data = data, at = seq_len(nGroups) + box.dx,
-                      add = TRUE, axes = FALSE, notch = box.notch,
-                      outline = box.outline,
-                      col = .colour(box.fill), border = .colour(box), pars = box.params)
-  }
-
   # bar chart
   if (.show(bar)) {
     bar <- .boolToDef(bar, defBorderPalette)
@@ -914,6 +903,17 @@ DurgaPlot <- function(es,
       border <- borders[i]
       plotViolin(violin.shape[i], i + dx[i], d, col = col, border = border)
     }
+  }
+
+  # Box plot
+  if (.show(box)) {
+    box <- .boolToDef(box, defBorderPalette)
+    box.fill <- .boolToDef(box.fill, defFillPalette)
+    # !!! NOTE if this is changed, it may also be necessary to change the call above that determines ylim
+    graphics::boxplot(f, data = data, at = seq_len(nGroups) + box.dx,
+                      add = TRUE, axes = FALSE, notch = box.notch,
+                      outline = box.outline,
+                      col = .colour(box.fill), border = .colour(box), pars = box.params)
   }
 
   # Scatter plot of data points
