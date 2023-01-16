@@ -26,7 +26,7 @@ DurgaPlot(
   box.fill = TRUE,
   box.outline = TRUE,
   box.notch = FALSE,
-  box.pars = list(boxwex = 0.8, staplewex = 0.5, outwex = 0.5),
+  box.params = list(boxwex = 0.8, staplewex = 0.5, outwex = 0.5),
   box.dx = group.dx,
   bar = FALSE,
   bar.fill = TRUE,
@@ -142,7 +142,7 @@ If FALSE or NA, bodies are not filled.}
 \item{box.notch}{If TRUE, draws notches in the sides of the boxes. See
 \code{\link[grDevices]{boxplot.stats}} for the calculations used.}
 
-\item{box.pars}{List with additional graphical parameters to control the box
+\item{box.params}{List with additional graphical parameters to control the box
 plot. See \code{\link[graphics]{bxp}} graphical parameters for a complete
 list.}
 
@@ -206,7 +206,7 @@ left end) of the group mean horizontal lines when effect size is on the
 right.}
 
 \item{ef.size.line.col}{Colour of horizontal effect-size lines that depict
-group means if effect size is on the right, otherwise y = 0.}
+group means if effect size is on the right, otherwise colour of line at y = 0.}
 
 \item{ef.size.line.lty}{Line style of horizontal effect-size lines.}
 

@@ -435,7 +435,7 @@ DurgaTransparent <-  function(colour, alpha, relative = FALSE) {
 #' @param box.outline If FALSE, don't draw outliers with the box plot.
 #' @param box.notch If TRUE, draws notches in the sides of the boxes. See
 #'   \code{\link[grDevices]{boxplot.stats}} for the calculations used.
-#' @param box.pars List with additional graphical parameters to control the box
+#' @param box.params List with additional graphical parameters to control the box
 #'   plot. See \code{\link[graphics]{bxp}} graphical parameters for a complete
 #'   list.
 #' @param box.dx Horizontal shift to be applied to each box.
@@ -617,7 +617,7 @@ DurgaPlot <- function(es,
                     box.fill = TRUE,
                     box.outline = TRUE,
                     box.notch = FALSE,
-                    box.pars = list(boxwex = 0.8, staplewex = 0.5, outwex = 0.5),
+                    box.params = list(boxwex = 0.8, staplewex = 0.5, outwex = 0.5),
                     box.dx = group.dx,
 
                     bar = FALSE,
@@ -795,7 +795,7 @@ DurgaPlot <- function(es,
     bp <- graphics::boxplot(f, data = data, at = seq_len(nGroups) + box.dx,
                             plot = FALSE, axes = FALSE, notch = box.notch,
                             outline = box.outline,
-                            col = .colour(box.fill), border = .colour(box), pars = box.pars)
+                            col = .colour(box.fill), border = .colour(box), pars = box.params)
   }
 
   # Get vertical range of each group
@@ -883,7 +883,7 @@ DurgaPlot <- function(es,
     graphics::boxplot(f, data = data, at = seq_len(nGroups) + box.dx,
                       add = TRUE, axes = FALSE, notch = box.notch,
                       outline = box.outline,
-                      col = .colour(box.fill), border = .colour(box), pars = box.pars)
+                      col = .colour(box.fill), border = .colour(box), pars = box.params)
   }
 
   # bar chart
