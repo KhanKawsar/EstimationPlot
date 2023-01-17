@@ -252,8 +252,7 @@ isRightToLeft <- function(diff) {
 #' Default values for \code{br.lwd}, \code{br.col}, \code{lb.col} and
 #' \code{lb.font} depend on the confidence intervals (CI) being plotted. If the
 #' CI covers 0, brackets and text are grey. If the CI does not cover 0, text is
-#' dark grey and bold, and brackets are drawn with a line width of 2 and the
-#' colour of the higher-valued group.
+#' dark grey and bold, and brackets are dark grey with a line width of 2.
 #'
 #' @param plotStats Object returned by the call to \code{\link{DurgaPlot}}
 #' @param contrasts Set of contrasts (i.e. group comparisons) to be displayed as
@@ -300,9 +299,8 @@ isRightToLeft <- function(diff) {
 #' d <- DurgaDiff(petunia, 1, 2)
 #' # Don't draw frame because brackets will appear in the upper margin
 #' p <- DurgaPlot(d, ef.size = FALSE, frame.plot = FALSE)
-#' # Find which intervals don't cover 0
-#' nzero <- sapply(d$group.differences, function(diff) diff$bca[4] > 0 || diff$bca[5] < 0)
-#' DurgaBrackets(p, lb.cex = 0.8, br.lwd = ifelse(nzero, 2, 1), lb.font = ifelse(nzero, 2, 1))
+#' # Add the brackets to the plot
+#' DurgaBrackets(p, lb.cex = 0.8)
 #'
 #' @export
 DurgaBrackets <- function(plotStats,
@@ -330,13 +328,7 @@ DurgaBrackets <- function(plotStats,
   sign <- sapply(diffs, function(diff) ifelse(diff$bca[5] < 0, -1,
                                               ifelse(diff$bca[4] > 0, 1, 0)))
   if (is.null(br.lwd)) br.lwd <- ifelse(sign == 0, 1, 2)
-  if (is.null(br.col)) {
-    # Extract indices of group 1 and 2 from each diff
-    group1 <- sapply(diffs, function(diff) diff$groupIndices[1])
-    group2 <- sapply(diffs, function(diff) diff$groupIndices[2])
-    pal <- plotStats$palette
-    br.col <- ifelse(sign == 0, "grey60", ifelse(sign > 0, pal[group1], pal[group2]))
-  }
+  if (is.null(br.col)) br.col <- ifelse(sign == 0, "grey60", "grey20")
   if (is.null(lb.font)) lb.font <- ifelse(sign == 0, 1, 2)
   if (is.null(lb.col)) lb.col <- ifelse(sign == 0, "grey60", "grey20")
   #-- End symbology defaults

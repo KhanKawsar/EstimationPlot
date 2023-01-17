@@ -89,16 +89,14 @@ into the margin as it will not be cropped.
 Default values for \code{br.lwd}, \code{br.col}, \code{lb.col} and
 \code{lb.font} depend on the confidence intervals (CI) being plotted. If the
 CI covers 0, brackets and text are grey. If the CI does not cover 0, text is
-dark grey and bold, and brackets are drawn with a line width of 2 and the
-colour of the higher-valued group.
+dark grey and bold, and brackets are dark grey with a line width of 2.
 }
 \examples{
 
 d <- DurgaDiff(petunia, 1, 2)
 # Don't draw frame because brackets will appear in the upper margin
 p <- DurgaPlot(d, ef.size = FALSE, frame.plot = FALSE)
-# Find which intervals don't cover 0
-nzero <- sapply(d$group.differences, function(diff) diff$bca[4] > 0 || diff$bca[5] < 0)
-DurgaBrackets(p, lb.cex = 0.8, br.lwd = ifelse(nzero, 2, 1), lb.font = ifelse(nzero, 2, 1))
+# Add the brackets to the plot
+DurgaBrackets(p, lb.cex = 0.8)
 
 }
