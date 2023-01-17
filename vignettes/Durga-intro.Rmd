@@ -53,37 +53,6 @@ If the data are paired (aka repeated measures; `id.col` was specified in the `Du
 DurgaPlot(d)
 ```
 
-### Multiple effect sizes
-
-The default behaviour of `DurgaDiff` is to calculate differences between all pairs of groups; each difference is a _contrast_ and has an estimated effect size with confidence interval. When plotted, each of multiple effect sizes is positioned below the first group in the contrast. This can cause layout problems when one group participates in multiple contrasts. For example, the iris dataset (available within standard R) contains three species: `setosa`, `versicolor` and `virginica`, hence three possible contrasts: `virginica - versicolor`, `virginica - setosa` and `versicolor - setosa`. If all three effect sizes are plotted, two of them (`virginica - versicolor` and `virginica - setosa`) will be positioned at the same horizontal location, resulting in superimposed text and an illegible graph (panel <span style="color:brown">__a)__</span> below)!
-
-There are several ways around this problem: 
-
-1. display a subset of possible contrasts; 
-2. swap the order of groups in a contrast so there is at most one effect size underneath each group; 
-3. manually adjust effect size horizontal positions (achieved using the parameter `ef.size.dx`; exactly how to do this is left as an exercise for the reader); 
-4. use _confidence brackets_ to depict effect sizes (described [below](#confidence-brackets)).
-
-There is no single best solution to this problem. The appropriate method depends on your data and the information that you wish to communicate.
-
-To avoid this problem in default plots, the default behaviour of `DurgaPlot` is to assume that the first group is a control, and then show the differences between all subsequent groups and the control (method __1.__). This behaviour prevents effect sizes from overwriting each other, but may exclude pertinant data from the plot (panel <span style="color:brown">__b)__</span> below).
-
-To change the default contrast selection, specify the `contrasts` argument to either `DurgaDiff` or `DurgaPlot`. Contrasts are specified as `"<group> - <group>, <group> - <group>"`, so to apply method __2.__ to the `iris` dataset, you could specify `contrasts = c("virginica - setosa", "versicolor - setosa", "setosa - versicolor")`. This differs from the default behaviour by also plotting the contrast `"setosa - versicolor"`. Note that if the contrast `"versicolor - setosa"` were specified rather than `"setosa - versicolor"`, the effect size would be shown at the same location as the `"versicolor - setosa"` effect size, hence failing to solve the problem.
-
-
-```{r fig.height=4, fig.width=8}
-par(mfrow = c(1, 2))
-
-di <- DurgaDiff(iris, "Sepal.Length", "Species")
-
-DurgaPlot(di, contrasts = "*", main = "Problematic effect sizes")
-mtext("a)", cex = 1.5, col = "brown", font = 2, adj = -0.3, line = 1.4)
-
-DurgaPlot(di, main = "Default effect sizes (subset)")
-mtext("b)", cex = 1.5, col = "brown", font = 2, adj = -0.3, line = 1.4)
-```
-
-
 ### Plot components
 
 A `DurgaPlot` data visualisation is a combination of one or more visual components: data `points`; `violin` plots; `bar` charts; `box` plots; repeated measure `paired` lines; a mean or median indicator (`central.tendency`); and error bars (`error.bars`). Each component is controlled by a set of parameters to the `DurgaPlot` function. The names of the parameters indicate the component they apply to, so to adjust the violin plot component, read the documentation about all parameters with prefix `violin`. Effect size display is controlled by parameters with prefix `ef.size`. Parameters have sensible default values, so for example, if you display bar charts (`bar = TRUE`),  violin plots and the central tendency indicator will be turned off. Obviously, you are able to override the defaults if you wish. Refer to help for the `DurgaPlot` function for full details on all arguments.
@@ -110,54 +79,12 @@ DurgaPlot(d,
           main = "Bar chart")
 ```
 
-### Layout
-
-Each graphical group component (points, violin plot, box plot, bar chart, central tendency indicator, error bar and axis label) is positioned or centred horizontally on x-axis locations from 1 to _n_, where _n_ is the number of groups. Group horizontal locations can be shifted with the `group.dx` parameter. For example, `group.dx = 0.1` would shift all groups to the right by 1/10th of the distance between groups. Values are repeated as necessary, so `group.dx = c(0.1, -0.1)` will move each pair of groups closer together.
-
-`group.dx` shifts all components equally, however, to provide fine-grained control, each component can be shifted independently. For example, to shift all _violins_ left and all _points_ right, specify `violin.dx = -0.12, points.dx = 0.1`. 
-
-```{r fig.height=4, fig.width=8}
-par(mfrow = c(1, 2), mar = c(3, 4, 3, 1) + 0.1)
-
-# Construct some data with multiple groups
-set.seed(1) # Ensure we always get the exact same data set
-multiGroupData <- data.frame(Measurement = unlist(lapply(c(10, 12, 8, 8.5, 9, 9.1),
-                                                         function(m) rnorm(40, m))),
-                             Group = rep(paste0("g", 1:6), each = 40),
-                             Id = rep(1:6, 40))
-d <- DurgaDiff(multiGroupData, 1, 2)
-
-DurgaPlot(d, 
-          # Visually group each pair
-          group.dx = c(0.18, -0.18), 
-          # Show box plots
-          box = TRUE, 
-          # Make the boxes narrow 
-          box.params = list(boxwex = 0.4), 
-          # Don't display effect size or data points
-          ef.size = FALSE, points = FALSE, 
-          xlim = c(0.8, 6.2), # Reduce white space on plot left and right
-          main = "Grouped into pairs")
-
-DurgaPlot(d,
-          # Shift violins left
-          violin.dx = -0.12,
-          # Shift points right
-          points.dx = 0.1,
-          # Make points small and jittered
-          points.params = list(cex = 0.5), points.method = "jitter",
-          # No central tendency indicator
-          central.tendency = FALSE,
-          ef.size = FALSE, main = "Component shifts")
-```
-
 
 ### Group order and labels
 
 When plotted, the default display order for groups is their natural order, i.e. alphabetical order for character data, and numeric order for factors. You can, however, specify the display order with the `groups` parameter to either `DurgaDiff` or `DurgaPlot`. Not all groups in the data need be included in the analysis or plot; missing groups will be excluded from the analysis and/or plot. To assign display labels to the groups, use a named vector to list the groups. The names will be used to label the groups on the plot. 
 
 In the damselfly data set, the groups are `juvenile` and `adult`. The example below demonstrates how to change the displayed group names as well as the display order of the groups.
-
 
 
 ```{r fig.height=4, fig.width=5}
@@ -213,6 +140,7 @@ DurgaPlot(d,
           main = "Coloured point fill")
 ```
 
+
 ### Central tendency and error bars
 
 The central tendency indicator displays either the mean or median of each group (controlled by the `central.tendency.type` argument), and is shown by default when neither boxes nor bars are shown.
@@ -234,6 +162,38 @@ DurgaPlot(d, bar = TRUE, error.bars.type = "SD", points = FALSE,
           left.ylab = "", ef.size.label = "",
           main = "Bar chart with std. deviation")
 ```
+
+
+### Multiple effect sizes
+
+The default behaviour of `DurgaDiff` is to calculate differences between all pairs of groups; each difference is a _contrast_ and has an estimated effect size with confidence interval. When plotted, each of multiple effect sizes is positioned below the first group in the contrast. This can cause layout problems when one group participates in multiple contrasts. For example, the iris dataset (available within standard R) contains three species: `setosa`, `versicolor` and `virginica`, hence three possible contrasts: `virginica - versicolor`, `virginica - setosa` and `versicolor - setosa`. If all three effect sizes are plotted, two of them (`virginica - versicolor` and `virginica - setosa`) will be positioned at the same horizontal location, resulting in superimposed text and an illegible graph (panel <span style="color:brown">__a)__</span> below)!
+
+There are several ways around this problem: 
+
+1. display a subset of possible contrasts; 
+2. swap the order of groups in a contrast so there is at most one effect size underneath each group; 
+3. manually adjust effect size horizontal positions (achieved using the parameter `ef.size.dx`; exactly how to do this is left as an exercise for the reader); 
+4. use _confidence brackets_ to depict effect sizes (described [below](#confidence-brackets)).
+
+There is no single best solution to this problem. The appropriate method depends on your data and the information that you wish to communicate.
+
+To avoid this problem in default plots, the default behaviour of `DurgaPlot` is to assume that the first group is a control, and then show the differences between all subsequent groups and the control (method __1.__). This behaviour prevents effect sizes from overwriting each other, but may exclude pertinant data from the plot (panel <span style="color:brown">__b)__</span> below).
+
+To change the default contrast selection, specify the `contrasts` argument to either `DurgaDiff` or `DurgaPlot`. Contrasts are specified as `"<group> - <group>, <group> - <group>"`, so to apply method __2.__ to the `iris` dataset, you could specify `contrasts = c("virginica - setosa", "versicolor - setosa", "setosa - versicolor")`. This differs from the default behaviour by also plotting the contrast `"setosa - versicolor"`. Note that if the contrast `"versicolor - setosa"` were specified rather than `"setosa - versicolor"`, the effect size would be shown at the same location as the `"versicolor - setosa"` effect size, hence failing to solve the problem.
+
+
+```{r fig.height=4, fig.width=8}
+par(mfrow = c(1, 2))
+
+di <- DurgaDiff(iris, "Sepal.Length", "Species")
+
+DurgaPlot(di, contrasts = "*", main = "Problematic effect sizes")
+mtext("a)", cex = 1.5, col = "brown", font = 2, adj = -0.3, line = 1.4)
+
+DurgaPlot(di, main = "Default effect sizes (subset)")
+mtext("b)", cex = 1.5, col = "brown", font = 2, adj = -0.3, line = 1.4)
+```
+
 
 ### Confidence brackets
 
@@ -259,6 +219,48 @@ p <- DurgaPlot(d,
 # Draw the brackets
 DurgaBrackets(p, labels = "level CI")
 ```
+
+### Layout
+
+Each graphical group component (points, violin plot, box plot, bar chart, central tendency indicator, error bar and axis label) is positioned or centred horizontally on x-axis locations from 1 to _n_, where _n_ is the number of groups. Group horizontal locations can be shifted with the `group.dx` parameter. For example, `group.dx = 0.1` would shift all groups to the right by 1/10th of the distance between groups. Values are repeated as necessary, so `group.dx = c(0.1, -0.1)` will move each pair of groups closer together.
+
+`group.dx` shifts all components equally, however, to provide fine-grained control, each component can be shifted independently. For example, to shift all _violins_ left and all _points_ right, specify `violin.dx = -0.12, points.dx = 0.1`. 
+
+```{r fig.height=4, fig.width=8}
+par(mfrow = c(1, 2), mar = c(3, 4, 3, 1) + 0.1)
+
+# Construct some data with multiple groups
+set.seed(1) # Ensure we always get the exact same data set
+multiGroupData <- data.frame(Measurement = unlist(lapply(c(10, 12, 8, 8.5, 9, 9.1),
+                                                         function(m) rnorm(40, m))),
+                             Group = rep(paste0("g", 1:6), each = 40),
+                             Id = rep(1:6, 40))
+d <- DurgaDiff(multiGroupData, 1, 2)
+
+DurgaPlot(d, 
+          # Visually group each pair
+          group.dx = c(0.18, -0.18), 
+          # Show box plots
+          box = TRUE, 
+          # Make the boxes narrow 
+          box.params = list(boxwex = 0.4), 
+          # Don't display effect size or data points
+          ef.size = FALSE, points = FALSE, 
+          xlim = c(0.8, 6.2), # Reduce white space on plot left and right
+          main = "Grouped into pairs")
+
+DurgaPlot(d,
+          # Shift violins left
+          violin.dx = -0.12,
+          # Shift points right
+          points.dx = 0.1,
+          # Make points small and jittered
+          points.params = list(cex = 0.5), points.method = "jitter",
+          # No central tendency indicator
+          central.tendency = FALSE,
+          ef.size = FALSE, main = "Component shifts")
+```
+
 
 
 
@@ -437,7 +439,7 @@ DurgaPlot(d, paired = FALSE,
           # Move effect size left to near where 2nd group would have been
           ef.size.dx = -1.2,
           left.ylab = "Blood sugar",
-          main = "Rain cloud plot"
+          main = "Rain cloud with effect size"
 )
 
 legend("topright", c("Before insulin", "After insulin"), col = cols, fill = colsTr, bty = "n")
