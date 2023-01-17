@@ -44,6 +44,8 @@ DurgaPlot(
   ef.size.label = es$effect.name,
   ef.size.dx = 0,
   ef.size.adj.margin = TRUE,
+  ef.size.top.pad = 2.5,
+  ef.size.height = 0.35,
   ef.size.mean.line.dx = group.dx,
   ef.size.line.col = "grey50",
   ef.size.line.lty = ifelse(ef.size.position == "below", 3, 1),
@@ -142,7 +144,8 @@ If FALSE or NA, bodies are not filled.}
 \item{box.notch}{If TRUE, draws notches in the sides of the boxes. See
 \code{\link[grDevices]{boxplot.stats}} for the calculations used.}
 
-\item{box.params}{List with additional graphical parameters to control the box
+\item{box.params}{List with additional graphical parameters to control the
+box
 plot. See \code{\link[graphics]{bxp}} graphical parameters for a complete
 list.}
 
@@ -200,6 +203,9 @@ contrast rather than group. When effect size is below the plot, the
 right) or bottom margin (if ES is below) is automatically adjusted to make
 room to display the effect size or axis annotations. The margins are
 restored before control returns from \code{DurgaPlot}.}
+
+\item{ef.size.height}{Height of the effect size plot region as a proportion
+of the main plot region. Only applies when effect size is positioned below.}
 
 \item{ef.size.mean.line.dx}{Horizontal shift to be applied to the start (i.e.
 left end) of the group mean horizontal lines when effect size is on the
@@ -272,6 +278,10 @@ FALSE, a new plot is created.}
 
 \item{...}{Additional arguments are passed on to the
 \code{\link[graphics]{plot}} function.}
+
+\item{ef.size.pad.top}{Gap (in multiples of scaled character height) between
+the bottom of the main plot region and the top of the effect size plot
+region. Only applies when effect size is positioned below.}
 }
 \value{
 A list (returned invisibly) with 4 elements:

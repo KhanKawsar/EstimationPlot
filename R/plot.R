@@ -224,11 +224,17 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch,
 
 # Plot effect size below the main plot. Assumes that bottom margin is large
 # enough to accommodate the effect size plot
+#
+# @param paddingTop Gap (in multiples of scaled character height) between the
+#   bottom of the main plot region and the top of the effect size plot region.
+# @param plotProportion Height of the effect size plot region as a proportion of
+#   the main plot region.
 plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
                                  showViolin, violinCol, violin.fill, violin.width, violin.shape, violin.trunc,
                                  xlim, ef.size.dx, ef.size.label, ticksAt, ef.size.las,
                                  ef.size.line.col, ef.size.line.lty, ef.size.line.lwd,
-                                 group.dx) {
+                                 group.dx,
+                                 paddingTop, plotProportion) {
   groups <- es$groups
 
   # What will we plot?
@@ -242,16 +248,32 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
     }
   }
 
-  ylim <- range(c(0, sapply(plotDiffs, rangeOfDiff)), na.rm = TRUE)
+  # Range of effect size
+  ylim <- range(sapply(plotDiffs, rangeOfDiff), na.rm = TRUE)
+  # Ensure ylim includes 0
+  ylim <- range(c(0, ylim), na.rm = TRUE)
+  # Extend range the same way a normal plot does
   ylim <- grDevices::extendrange(ylim)
+
+
+  # Vertical layout. The effect size is plotted into the bottom margin. Layout
+  # calculations are performed as follows:
+
+  # -
+  # main plot
+  # -
+  # m| pseudo margin - paddingTop x character height
+  # m| effect size plot - plotProportion x plot height
+  # m| effect size x axis - remaining space
 
   ### Work out how to map the effect size pseudo region onto user coordinates
   usr <- graphics::par("usr")
-  # Height (inches) of margin between effect size and main plot as a proportion character height
-  pseudoMargin <- graphics::par("cxy")[2] * 3
+  # Height (inches) of margin between effect size and main plot as a function of character height, ie. paddingTop lines
+  pseudoMargin <- paddingTop * graphics::par("cxy")[2] * graphics::par("cex")
+  # (uy0, uy1) is the vertical extent of the effect size region in user coordinates
   uy1 <- usr[3] - pseudoMargin
-  # Height of margin between effect size and main plot as a proportion of plot size
-  pseudoHeight <- 0.35
+  # Height of effect size region as a proportion of plot size
+  pseudoHeight <- plotProportion
   uy0 <- uy1 - (usr[4] - usr[3]) * pseudoHeight
   # Function to map ylim to c(uy0, uy1)
   mapY <- function(y) {
@@ -265,7 +287,7 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
     labels <- ticksAt
   }
   graphics::axis(2, at = mapY(ticksAt), labels = labels, xpd = TRUE, las = ef.size.las)
-  graphics::mtext(ef.size.label, side = 2, at = mapY(mean(ylim)), line = 3, cex = graphics::par("cex"))
+  graphics::mtext(ef.size.label, side = 2, at = mapY(mean(ylim)), line = graphics::par("mgp")[1], cex = graphics::par("cex"))
 
   # Plot the "Difference = 0" line, i.e. no effect
   graphics::lines(usr[1:2], c(mapY(0), mapY(0)), col = ef.size.line.col, lty = ef.size.line.lty, lwd = ef.size.line.lwd, xpd = TRUE)
@@ -435,7 +457,8 @@ DurgaTransparent <-  function(colour, alpha, relative = FALSE) {
 #' @param box.outline If FALSE, don't draw outliers with the box plot.
 #' @param box.notch If TRUE, draws notches in the sides of the boxes. See
 #'   \code{\link[grDevices]{boxplot.stats}} for the calculations used.
-#' @param box.params List with additional graphical parameters to control the box
+#' @param box.params List with additional graphical parameters to control the
+#'   box
 #'   plot. See \code{\link[graphics]{bxp}} graphical parameters for a complete
 #'   list.
 #' @param box.dx Horizontal shift to be applied to each box.
@@ -503,6 +526,11 @@ DurgaTransparent <-  function(colour, alpha, relative = FALSE) {
 #'   positive effect" = 0.8)}
 #' @param ef.size.las Orientation of tick labels on the effect size axis (0 =
 #'   parallel to axis, 1 = horizontal).
+#' @param ef.size.pad.top Gap (in multiples of scaled character height) between
+#'   the bottom of the main plot region and the top of the effect size plot
+#'   region. Only applies when effect size is positioned below.
+#' @param ef.size.height Height of the effect size plot region as a proportion
+#'   of the main plot region. Only applies when effect size is positioned below.
 #' @param ef.size.mean.line.dx Horizontal shift to be applied to the start (i.e.
 #'   left end) of the group mean horizontal lines when effect size is on the
 #'   right.
@@ -637,6 +665,8 @@ DurgaPlot <- function(es,
                     ef.size.label = es$effect.name,
                     ef.size.dx = 0,
                     ef.size.adj.margin = TRUE,
+                    ef.size.top.pad = 2.5,
+                    ef.size.height = 0.35,
 
                     ef.size.mean.line.dx = group.dx,
                     ef.size.line.col = "grey50",
@@ -1032,7 +1062,8 @@ DurgaPlot <- function(es,
       plotEffectSizesBelow(es, plotDiffs, ef.size.col, ef.size.pch,
                            .show(ef.size.violin), violinCol, violinFill, violin.width, ef.size.violin.shape, ef.size.violin.trunc,
                            xlim, ef.size.dx, ef.size.label, ef.size.ticks, ef.size.las,
-                           ef.size.line.col, ef.size.line.lty, ef.size.line.lwd, group.dx)
+                           ef.size.line.col, ef.size.line.lty, ef.size.line.lwd, group.dx,
+                           ef.size.top.pad, ef.size.height)
     }
   }
 
