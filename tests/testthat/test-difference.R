@@ -1241,3 +1241,11 @@ test_that("ef range plot bug", {
   d <- DurgaDiff(df, 1, 2, contrasts = ". - Winter", groups = seasons)
   expect_error(DurgaPlot(d, main = "Effect size ylim correct"), NA)
 })
+
+test_that("ef below layout", {
+  data <- makeData()
+  d <- DurgaDiff(data, 1, 2, groups = c("ZControl1", "Group1", "Group2"))
+  par(mfrow = c(1, 2), cex = 0.7)
+  expect_error(DurgaPlot(d, main = "Default EF layout"), NA)
+  expect_error(DurgaPlot(d, ef.size.top.pad = 1.5, ef.size.height = 0.6, main = "Smaller gap, larger height"), NA)
+})
