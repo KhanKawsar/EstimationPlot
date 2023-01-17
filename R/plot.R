@@ -565,7 +565,8 @@ DurgaTransparent <-  function(colour, alpha, relative = FALSE) {
 #'   \item{\code{extents}}{Matrix with the x-axis locations and y-axis extents
 #'   of each displayed group.}
 #'   \item{\code{plot.differences}}{A list of the
-#'   displayed differences, as \code{DurgaGroupDiff} objects.}
+#'   displayed differences, as \code{DurgaGroupDiff} objects. Will be an empty
+#'   list if no effect sizes are shown.}
 #'   \item{\code{palette}}{Vector of colours used by default for each group.}
 #'
 #' @seealso \code{\link{DurgaDiff}}, \code{\link{DurgaBrackets}},

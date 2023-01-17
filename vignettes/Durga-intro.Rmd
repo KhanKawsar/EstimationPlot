@@ -208,16 +208,27 @@ d <- DurgaDiff(petunia, 1, 2)
 # Use the top margin for brackets
 op <- par(mar = c(2, 4, 4, 1) + 0.1)
 
+# Custom group colours
+cols = rainbow(3)
+
 # Save return value from DurgaPlot
 p <- DurgaPlot(d,
                # Don't draw effect size because we will draw brackets
                ef.size = FALSE, 
                # Don't draw frame because brackets will appear in the upper margin
                frame.plot = FALSE, 
-               # Custom groups colours
-               group.colour = rainbow(3))
+               # Custom group colours
+               group.colour = cols)
+
+# Customise colours by drawing brackets with the colour of the taller group.
+# Get the taller group from each difference
+tallerIdx <- sapply(d$group.differences, function(diff) {
+  # If the group difference > 0, the first group is taller
+  ifelse(diff$t0 > 0, diff$groupIndices[1], diff$groupIndices[2])
+  })
+
 # Draw the brackets
-DurgaBrackets(p, labels = "level CI")
+DurgaBrackets(p, labels = "level CI", br.col = cols[tallerIdx])
 ```
 
 ### Layout
@@ -413,18 +424,17 @@ cols <- RColorBrewer::brewer.pal(3, "Set2")
 colsTr <- DurgaTransparent(cols, 0.7)
 DurgaPlot(d, paired = FALSE,
           # Move 2nd group to be at the same position as 1st
-          group.dx = c(0, -1),
+          group.dx = c(0.2, -0.8),
           # X-axis ticks are meaningless since both groups are at the same location
           x.axis = FALSE,
           # Adjust plot width and spacing
           xlim = c(0.7, 2.1),
           violin = TRUE, violin.shape = "right", violin.fill = colsTr, 
-          # Violin positions
-          violin.dx = c(0.2, -0.8),
+          # No need to specify violin position because violin.dx defaults to group.dx
           # Bumpy violins
           violin.adj = 1,
           # Box plots are black outlines
-          box = "black", box.dx = c(0.05, -0.9), box.fill = colsTr, 
+          box = "black", box.dx = c(0.06, -0.895), box.fill = colsTr, 
           # Don't show outliers
           box.outline = FALSE,
           # Thin boxes, solid thick lines
