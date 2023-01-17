@@ -526,7 +526,7 @@ DurgaTransparent <-  function(colour, alpha, relative = FALSE) {
 #'   positive effect" = 0.8)}
 #' @param ef.size.las Orientation of tick labels on the effect size axis (0 =
 #'   parallel to axis, 1 = horizontal).
-#' @param ef.size.pad.top Gap (in multiples of scaled character height) between
+#' @param ef.size.top.pad Gap (in multiples of scaled character height) between
 #'   the bottom of the main plot region and the top of the effect size plot
 #'   region. Only applies when effect size is positioned below.
 #' @param ef.size.height Height of the effect size plot region as a proportion

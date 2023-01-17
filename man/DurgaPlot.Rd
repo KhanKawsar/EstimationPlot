@@ -204,6 +204,10 @@ right) or bottom margin (if ES is below) is automatically adjusted to make
 room to display the effect size or axis annotations. The margins are
 restored before control returns from \code{DurgaPlot}.}
 
+\item{ef.size.top.pad}{Gap (in multiples of scaled character height) between
+the bottom of the main plot region and the top of the effect size plot
+region. Only applies when effect size is positioned below.}
+
 \item{ef.size.height}{Height of the effect size plot region as a proportion
 of the main plot region. Only applies when effect size is positioned below.}
 
@@ -278,10 +282,6 @@ FALSE, a new plot is created.}
 
 \item{...}{Additional arguments are passed on to the
 \code{\link[graphics]{plot}} function.}
-
-\item{ef.size.pad.top}{Gap (in multiples of scaled character height) between
-the bottom of the main plot region and the top of the effect size plot
-region. Only applies when effect size is positioned below.}
 }
 \value{
 A list (returned invisibly) with 4 elements:
