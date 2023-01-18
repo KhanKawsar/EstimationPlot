@@ -5,7 +5,7 @@
 \title{Annotate a \code{DurgaPlot} with confidence brackets}
 \usage{
 DurgaBrackets(
-  plotStats,
+  plot.stats,
   contrasts,
   labels = "level CI",
   br.lwd = NULL,
@@ -14,18 +14,18 @@ DurgaBrackets(
   lb.col = NULL,
   lb.font = NULL,
   lb.cex = 1,
-  snapTo = 1,
+  snap.to = 1,
   shorten = 1.5,
-  tipLength = 2,
-  dataGap = 2.5,
-  verticalGap = 1.3,
-  textPad = 1.5,
-  roundFn = function(x) signif(x, 2),
+  tip.length = 2,
+  data.gap = 2.5,
+  vertical.gap = 1.3,
+  text.pad = 1.5,
+  round.fn = function(x) signif(x, 2),
   ...
 )
 }
 \arguments{
-\item{plotStats}{Object returned by the call to \code{\link{DurgaPlot}}}
+\item{plot.stats}{Object returned by the call to \code{\link{DurgaPlot}}}
 
 \item{contrasts}{Set of contrasts (i.e. group comparisons) to be displayed as
 brackets. Defaults to contrasts passed to \code{\link{DurgaDiff}}. Can be
@@ -53,24 +53,24 @@ that control the label appearance - passed to \code{\link[graphics]{text}}.
 May be a single value or a vector with one value per bracket. Refer to
 \code{Details} for default values.}
 
-\item{snapTo}{Snaps the base of the lowest brackets onto horizontal grid
-lines separated by \code{snapTo} mm. Used to improve aesthetics of vertical
+\item{snap.to}{Snaps the base of the lowest brackets onto horizontal grid
+lines separated by \code{snap.to} mm. Used to improve aesthetics of vertical
 alignment.}
 
 \item{shorten}{Amount (mm) to shrink brackets at each end}
 
-\item{tipLength}{Length of bracket tips (mm). May be a vector with length 2;
+\item{tip.length}{Length of bracket tips (mm). May be a vector with length 2;
 length of tip at groups 1 and 2 respectively}
 
-\item{dataGap}{Vertical distance (mm) between top-most data point and bottom
+\item{data.gap}{Vertical distance (mm) between top-most data point and bottom
 of bracket}
 
-\item{verticalGap}{Vertical distance (mm) between overlapping brackets}
+\item{vertical.gap}{Vertical distance (mm) between overlapping brackets}
 
-\item{textPad}{Gap (mm) between bracket and text}
+\item{text.pad}{Gap (mm) between bracket and text}
 
-\item{roundFn}{By default, numbers displayed as text are printed to 2
-significant figures. To change this behaviour, set \code{roundFn} to a
+\item{round.fn}{By default, numbers displayed as text are printed to 2
+significant figures. To change this behaviour, set \code{round.fn} to a
 function with one argument that converts its argument to the value to be
 displayed.}
 

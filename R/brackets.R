@@ -4,7 +4,7 @@
 #### Private functions ####
 
 
-# For debugging snapTo
+# For debugging snap.to
 # DBG_SNAP_TO <- FALSE
 
 # Converts mm to screen user coordinates
@@ -26,21 +26,21 @@ mmToUser <- function(mm, horizontal) {
 # Draw a single confidence bracket across the top of two groups
 #
 # @param diff Object of class \code{DurgaGroupDiff}
-# @param plotStats Object returned by the call to \code{\link{DurgaPlot}}
+# @param plot.stats Object returned by the call to \code{\link{DurgaPlot}}
 # @param y Y value of bracket
 # @param text Text to display above the bracket
 # @param text Text to display above bracket
 # @param plot If FALSE, doesn't draw anything, just calculates and returns
 #   bounding box
-# @param tipLength Length of crossbar tips (mm). May be a vector with
+# @param tip.length Length of crossbar tips (mm). May be a vector with
 #   length 2; length of tip at groups 1 and 2 respectively
 # @param above If \code{TRUE}, tip point downwards and text is above, otherwise
 #   tips point upwards and text is below
 # @param shorten
 #
 # @return Bounding box as c(x0, x1, y0, y1)
-DrawBracket <- function(diff, plotExtents, y, text, textPad, plot = TRUE,
-                        tipLength, above = TRUE, shorten,
+DrawBracket <- function(diff, plotExtents, y, text, text.pad, plot = TRUE,
+                        tip.length, above = TRUE, shorten,
                         br.lwd, br.col, br.lty,
                         lb.cex, lb.col, lb.font,
                         xpd = NA, ...) {
@@ -62,7 +62,7 @@ DrawBracket <- function(diff, plotExtents, y, text, textPad, plot = TRUE,
   }
 
   # Calculate mm to user coordinates vertically
-  dy <- mmToUser(tipLength, FALSE) * ifelse(above, 1, -1)
+  dy <- mmToUser(tip.length, FALSE) * ifelse(above, 1, -1)
   # Recycle tip length so that both tips can have different lengths
   dy <- rep_len(dy, 2)
   if (plot) {
@@ -79,7 +79,7 @@ DrawBracket <- function(diff, plotExtents, y, text, textPad, plot = TRUE,
   if (text != "") {
     tx <- mean(c(x1, x2))
     posFactor <- ifelse(above, 1, -1)
-    yinc <- mmToUser(textPad, FALSE) * posFactor
+    yinc <- mmToUser(text.pad, FALSE) * posFactor
     if (plot) {
       graphics::text(tx, y + yinc, text, adj = c(0.5, ifelse(above, 0, 1)), xpd = xpd,
                      cex = lb.cex, col = lb.col, font = lb.font, ...)
@@ -110,7 +110,7 @@ shiftRect <- function(r, dx, dy) r + rep(c(dx, dy), each = 2)
 # @param diffs List of \code{DurgaGroupDiff} objects
 # @param plotExtents Extents object from object returned by the call to \code{\link{DurgaPlot}}
 #
-fitBrackets <- function(plotExtents, diffs, text, shorten, dataGap, verticalGap, snapTo, ...) {
+fitBrackets <- function(plotExtents, diffs, text, shorten, data.gap, vertical.gap, snap.to, ...) {
   # Sort shortest brackets first
   xPos <- plotExtents[, 1]
   lengths <- sapply(diffs, function(diff) xPos[diff$groupIndices[1]] - xPos[diff$groupIndices[2]])
@@ -126,29 +126,29 @@ fitBrackets <- function(plotExtents, diffs, text, shorten, dataGap, verticalGap,
 
   text <- rep_len(text, length(diffs))
 
-  dataGapU <- mmToUser(dataGap, FALSE)
-  verticalGapU <- mmToUser(verticalGap, FALSE)
-  snapToU <- mmToUser(snapTo, FALSE)
+  data.gapU <- mmToUser(data.gap, FALSE)
+  vertical.gapU <- mmToUser(vertical.gap, FALSE)
+  snap.toU <- mmToUser(snap.to, FALSE)
 
   # Make the grid pass through the bracket position above the highest group
-  gridO <- max(plotExtents[, 2:3]) + dataGapU
+  gridO <- max(plotExtents[, 2:3]) + data.gapU
   # if (DBG_SNAP_TO) {
-  #   abline(h = gridO + -100:100 * snapToU, col = "grey80", xpd = NA)
+  #   abline(h = gridO + -100:100 * snap.toU, col = "grey80", xpd = NA)
   # }
 
   ys <- sapply(seq_along(ord), function(i) {
     diff <- diffs[[ord[i]]]
     # Step 1, fit above data
-    testy <- maxValInGroups(diff$groupIndices) + dataGapU
+    testy <- maxValInGroups(diff$groupIndices) + data.gapU
     # Snap upwards to "grid"
-    if (snapToU != 0) {
+    if (snap.toU != 0) {
       # Snap to the lowest grid level that is not below the starting point (testy)
-      # x * snapTo + gridO >= testy
-      # Solve for x: x >= (testy - gridO) / snapTo
+      # x * snap.to + gridO >= testy
+      # Solve for x: x >= (testy - gridO) / snap.to
       # then the lowest integral value that satisfies the expression is
       # ceiling(x) , then put that back into the original expression
 
-      testy <- ceiling((testy - gridO) / snapToU) * snapToU + gridO
+      testy <- ceiling((testy - gridO) / snap.toU) * snap.toU + gridO
     }
 
     bb <- DrawBracket(diff, plotExtents, testy, text = text[ord[i]], plot = FALSE, shorten = shorten, ...)
@@ -157,7 +157,7 @@ fitBrackets <- function(plotExtents, diffs, text, shorten, dataGap, verticalGap,
     testy <- testy + dy
 
     # Add a gap above this bracket that we want to keep clear
-    bb[4] <- bb[4] + verticalGapU
+    bb[4] <- bb[4] + vertical.gapU
 
     # Now check if it overlaps any previous bracket
     if (i > 1) {
@@ -185,17 +185,17 @@ fitBrackets <- function(plotExtents, diffs, text, shorten, dataGap, verticalGap,
 
 # Returns an annotation function. Implemented to return a function in case I
 # change DurgaPlot to accept a general purpose annotation argument
-BracketsAnnot <- function(labels, shorten, dataGap, verticalGap, textPad, tipLength, snapTo,
-                          br.lwd, br.col, br.lty, lb.cex, lb.col, lb.font, roundFn, ...) {
+BracketsAnnot <- function(labels, shorten, data.gap, vertical.gap, text.pad, tip.length, snap.to,
+                          br.lwd, br.col, br.lty, lb.cex, lb.col, lb.font, round.fn, ...) {
 
   labelFns <- list(
-    CI = function(diff) sprintf("[%g, %g]", roundFn(diff$bca[4]), roundFn(diff$bca[5])),
+    CI = function(diff) sprintf("[%g, %g]", round.fn(diff$bca[4]), round.fn(diff$bca[5])),
     diff = function(diff) as.character(round(diff$t0, 1)),
-    `diff CI` = function(diff) sprintf("%g [%g, %g]", roundFn(diff$t0), roundFn(diff$bca[4]), roundFn(diff$bca[5])),
-    `level CI` = function(diff) sprintf("%g%% CI [%g, %g]", diff$bca[1] * 100, roundFn(diff$bca[4]), roundFn(diff$bca[5]))
+    `diff CI` = function(diff) sprintf("%g [%g, %g]", round.fn(diff$t0), round.fn(diff$bca[4]), round.fn(diff$bca[5])),
+    `level CI` = function(diff) sprintf("%g%% CI [%g, %g]", diff$bca[1] * 100, round.fn(diff$bca[4]), round.fn(diff$bca[5]))
   )
 
-  function(plotStats, diffs) {
+  function(plot.stats, diffs) {
     ng <- length(diffs)
     br.lwd <- rep_len(br.lwd, ng)
     br.col <- rep_len(br.col, ng)
@@ -216,15 +216,15 @@ BracketsAnnot <- function(labels, shorten, dataGap, verticalGap, textPad, tipLen
       labels <- rep_len(as.character(labels), ng)
     }
 
-    ys <- fitBrackets(plotStats$extents, diffs, shorten = shorten, text = labels,
-                      tipLength = tipLength, dataGap = dataGap, verticalGap = verticalGap, textPad = textPad,
-                      snapTo = snapTo,
+    ys <- fitBrackets(plot.stats$extents, diffs, shorten = shorten, text = labels,
+                      tip.length = tip.length, data.gap = data.gap, vertical.gap = vertical.gap, text.pad = text.pad,
+                      snap.to = snap.to,
                       br.lwd = br.lwd, br.col = br.col, br.lty = br.lty,
                       lb.cex = lb.cex, lb.col = lb.col, lb.font = lb.font, ...)
 
     for (i in seq_along(diffs)) {
       pwes <- diffs[[i]]
-      DrawBracket(pwes, plotStats$extents, ys[i], labels[i], shorten = shorten, tipLength = tipLength, textPad = textPad,
+      DrawBracket(pwes, plot.stats$extents, ys[i], labels[i], shorten = shorten, tip.length = tip.length, text.pad = text.pad,
                   br.lwd = br.lwd[i], br.col = br.col[i], br.lty = br.lty[i],
                   lb.cex = lb.cex[i], lb.col = lb.col[i], lb.font = lb.font[i], ...)
     }
@@ -254,7 +254,7 @@ isRightToLeft <- function(diff) {
 #' CI covers 0, brackets and text are grey. If the CI does not cover 0, text is
 #' dark grey and bold, and brackets are dark grey with a line width of 2.
 #'
-#' @param plotStats Object returned by the call to \code{\link{DurgaPlot}}
+#' @param plot.stats Object returned by the call to \code{\link{DurgaPlot}}
 #' @param contrasts Set of contrasts (i.e. group comparisons) to be displayed as
 #'   brackets. Defaults to contrasts passed to \code{\link{DurgaDiff}}. Can be
 #'   specified as a character string (\code{"group 1 - group 2"}) or a list of
@@ -278,18 +278,18 @@ isRightToLeft <- function(diff) {
 #'   that control the label appearance - passed to \code{\link[graphics]{text}}.
 #'   May be a single value or a vector with one value per bracket. Refer to
 #'   \code{Details} for default values.
-#' @param snapTo Snaps the base of the lowest brackets onto horizontal grid
-#'   lines separated by \code{snapTo} mm. Used to improve aesthetics of vertical
+#' @param snap.to Snaps the base of the lowest brackets onto horizontal grid
+#'   lines separated by \code{snap.to} mm. Used to improve aesthetics of vertical
 #'   alignment.
 #' @param shorten Amount (mm) to shrink brackets at each end
-#' @param tipLength Length of bracket tips (mm). May be a vector with length 2;
+#' @param tip.length Length of bracket tips (mm). May be a vector with length 2;
 #'   length of tip at groups 1 and 2 respectively
-#' @param dataGap Vertical distance (mm) between top-most data point and bottom
+#' @param data.gap Vertical distance (mm) between top-most data point and bottom
 #'   of bracket
-#' @param verticalGap Vertical distance (mm) between overlapping brackets
-#' @param textPad Gap (mm) between bracket and text
-#' @param roundFn By default, numbers displayed as text are printed to 2
-#'   significant figures. To change this behaviour, set \code{roundFn} to a
+#' @param vertical.gap Vertical distance (mm) between overlapping brackets
+#' @param text.pad Gap (mm) between bracket and text
+#' @param round.fn By default, numbers displayed as text are printed to 2
+#'   significant figures. To change this behaviour, set \code{round.fn} to a
 #'   function with one argument that converts its argument to the value to be
 #'   displayed.
 #' @param ... Additional arguments passed to \code{\link[graphics]{text}}
@@ -303,22 +303,22 @@ isRightToLeft <- function(diff) {
 #' DurgaBrackets(p, lb.cex = 0.8)
 #'
 #' @export
-DurgaBrackets <- function(plotStats,
+DurgaBrackets <- function(plot.stats,
                           contrasts,
                           labels = "level CI",
                           br.lwd = NULL, br.col = NULL, br.lty = 1,
                           lb.col = NULL, lb.font = NULL, lb.cex = 1,
-                          snapTo = 1,
-                          shorten = 1.5, tipLength = 2,
-                          dataGap = 2.5, verticalGap = 1.3, textPad = 1.5,
-                          roundFn = function(x) signif(x, 2),
+                          snap.to = 1,
+                          shorten = 1.5, tip.length = 2,
+                          data.gap = 2.5, vertical.gap = 1.3, text.pad = 1.5,
+                          round.fn = function(x) signif(x, 2),
                           ...) {
-  if (!is.list(plotStats) || !"extents" %in% names(plotStats))
-    stop("plotStats must be an object returned by DurgaPlot")
-  if (snapTo < 0)
-    plot("snapTo must be zero or positive")
+  if (!is.list(plot.stats) || !"extents" %in% names(plot.stats))
+    stop("plot.stats must be an object returned by DurgaPlot")
+  if (snap.to < 0)
+    plot("snap.to must be zero or positive")
 
-  diffs <- plotDiffsFromContrasts(contrasts, missing(contrasts), plotStats$es, "DurgaBrackets", defaultToAll = TRUE)
+  diffs <- plotDiffsFromContrasts(contrasts, missing(contrasts), plot.stats$es, "DurgaBrackets", defaultToAll = TRUE)
 
   # Display all differences as (right-hand-group) - (left-hand-group)
   diffs <- lapply(diffs, function(diff) if (isRightToLeft(diff)) { diff } else { negatePairwiseDiff(diff) })
@@ -334,8 +334,8 @@ DurgaBrackets <- function(plotStats,
   #-- End symbology defaults
 
   ann <- BracketsAnnot(labels = labels,
-                       shorten = shorten, dataGap = dataGap, verticalGap = verticalGap, tipLength = tipLength,
-                       textPad = textPad, snapTo = snapTo, br.lwd = br.lwd, br.col = br.col, br.lty = br.lty,
-                       lb.cex = lb.cex, lb.col = lb.col, lb.font = lb.font, roundFn = roundFn, ...)
-  ann(plotStats, diffs)
+                       shorten = shorten, data.gap = data.gap, vertical.gap = vertical.gap, tip.length = tip.length,
+                       text.pad = text.pad, snap.to = snap.to, br.lwd = br.lwd, br.col = br.col, br.lty = br.lty,
+                       lb.cex = lb.cex, lb.col = lb.col, lb.font = lb.font, round.fn = round.fn, ...)
+  ann(plot.stats, diffs)
 }

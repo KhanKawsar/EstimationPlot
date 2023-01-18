@@ -32,7 +32,7 @@ test_that("Brackets", {
   d <- DurgaDiff(petunia, 1, 2)
   # Don't draw frame because brackets will appear in the upper margin
   ps <- DurgaPlot(d, ef.size = FALSE, frame.plot = FALSE)
-  expect_error(DurgaBrackets(ps, lb.cex = 0.8, snapTo = 2), NA)
+  expect_error(DurgaBrackets(ps, lb.cex = 0.8, snap.to = 2), NA)
 })
 
 test_that("many bars", {
@@ -47,13 +47,13 @@ test_that("many bars", {
   on.exit(par(op))
 
   ps <- DurgaPlot(d, box = T, box.outline = F, points = T, ylim = c(-20, 340), frame.plot = F, ef.size = F,
-                  main = "Differences, snapTo 2")
+                  main = "Differences, snap.to 2")
   expect_error(DurgaBrackets(ps, diffs, labels = "diff"), NA)
   ps <- DurgaPlot(d, contrasts = diffs, box = T, box.outline = F, points = T, ylim = c(-20, 340), frame.plot = F, ef.size = F,
-                  main = "CI, no snapTo")
+                  main = "CI, no snap.to")
   expect_error(DurgaBrackets(ps, diffs, labels = "CI",
                              lb.cex = 0.6, lb.font = 1,
-                             snapTo = 0,
+                             snap.to = 0,
                              br.lwd = 2, br.col = col), NA)
 
 
@@ -84,7 +84,7 @@ test_that("labels", {
   on.exit(par(op))
   p <- DurgaPlot(d, ef.size = FALSE, ylim = c(-10, 290))
   labels <- sapply(d$group.differences, function(d) sprintf("%s - %s", d$groups[1], d$groups[2]))
-  DurgaBrackets(p, labels = labels, lb.cex = 0.6, textPad = 1, verticalGap = 0.5, tipLength = 1, snapTo = 4, br.col = "blue", lb.col = "purple")
+  DurgaBrackets(p, labels = labels, lb.cex = 0.6, text.pad = 1, vertical.gap = 0.5, tip.length = 1, snap.to = 4, br.col = "blue", lb.col = "purple")
   expect_equal(1, 1)
 })
 
@@ -101,13 +101,13 @@ test_that("contrasts", {
   d <- DurgaDiff(damselfly, 1, 3)
   p <- expect_error(DurgaPlot(d, main = "Bracket sign consistent", ef.size = FALSE, ylim = c(29.5, 36.5)), NA)
   DurgaBrackets(p)
-  DurgaBrackets(p, contrasts = "adult - juvenile", dataGap = 10)
-  DurgaBrackets(p, contrasts = "juvenile - adult", dataGap = 17)
+  DurgaBrackets(p, contrasts = "adult - juvenile", data.gap = 10)
+  DurgaBrackets(p, contrasts = "juvenile - adult", data.gap = 17)
 })
 
-test_that("roundFn", {
+test_that("round.fn", {
   d <- DurgaDiff(damselfly, 1, 3)
   p <- DurgaPlot(d, main = "Rounding of numbers", ef.size = FALSE, ylim = c(29.5, 36.5))
   DurgaBrackets(p)
-  expect_error(DurgaBrackets(p, dataGap = 10, roundFn = round), NA)
+  expect_error(DurgaBrackets(p, data.gap = 10, round.fn = round), NA)
 })
