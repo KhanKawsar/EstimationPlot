@@ -204,9 +204,9 @@ right) or bottom margin (if ES is below) is automatically adjusted to make
 room to display the effect size or axis annotations. The margins are
 restored before control returns from \code{DurgaPlot}.}
 
-\item{ef.size.top.pad}{Gap (in multiples of scaled character height) between
-the bottom of the main plot region and the top of the effect size plot
-region. Only applies when effect size is positioned below.}
+\item{ef.size.top.pad}{Gap (in units of default character height scaled by
+\code{cex}) between the bottom of the main plot region and the top of the
+effect size plot region. Only applies when effect size is positioned below.}
 
 \item{ef.size.height}{Height of the effect size plot region as a proportion
 of the main plot region. Only applies when effect size is positioned below.}
@@ -290,7 +290,8 @@ A list (returned invisibly) with 4 elements:
   \item{\code{extents}}{Matrix with the x-axis locations and y-axis extents
   of each displayed group.}
   \item{\code{plot.differences}}{A list of the
-  displayed differences, as \code{DurgaGroupDiff} objects.}
+  displayed differences, as \code{DurgaGroupDiff} objects. Will be an empty
+  list if no effect sizes are shown.}
   \item{\code{palette}}{Vector of colours used by default for each group.}
 }
 \description{
