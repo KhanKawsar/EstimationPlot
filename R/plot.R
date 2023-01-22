@@ -184,6 +184,8 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch,
     labels <- names(ticksAt)
     if (is.null(ticksAt)) {
       ticksAt <- pretty(esRange)
+    }
+    if (is.null(labels)) {
       labels <- ticksAt
     }
     graphics::axis(4, at = y2 + ticksAt, labels = labels, las = ef.size.las)
@@ -203,6 +205,8 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch,
     labels <- names(ticksAt)
     if (is.null(ticksAt)) {
       ticksAt <- pretty(esRange)
+    }
+    if (is.null(labels)) {
       labels <- ticksAt
     }
     graphics::axis(4, at = mapY(ticksAt), labels = labels, las = ef.size.las)
@@ -285,15 +289,16 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
   labels <- names(ticksAt)
   if (is.null(ticksAt)) {
     ticksAt <- pretty(ylimData)
-    # Consider? Pretty will create labels that extend beyond ylim, but do we want
+    # Pretty will create labels that extend beyond ylim, but do we want
     # to display them? Normal plot axes do not draw labels outside plot limits,
     # but given the small size of the effect size plot area and the fact there is
     # probably space above and below, perhaps we want non-standard behaviour here?
     # The line below produces standard axis behaviour
     ticksAt <- ticksAt[ticksAt >= ylim[1] & ticksAt <= ylim[2]]
   }
-  if (is.null(labels))
+  if (is.null(labels)) {
     labels <- ticksAt
+  }
   graphics::axis(2, at = mapY(ticksAt), labels = labels, xpd = TRUE, las = ef.size.las)
   graphics::mtext(ef.size.label, side = 2, at = mapY(mean(ylim)), line = graphics::par("mgp")[1], cex = graphics::par("cex"))
 
