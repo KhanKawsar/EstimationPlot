@@ -249,12 +249,11 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
   }
 
   # Range of effect size
-  ylim <- range(sapply(plotDiffs, rangeOfDiff), na.rm = TRUE)
+  ylimData <- range(sapply(plotDiffs, rangeOfDiff), na.rm = TRUE)
   # Ensure ylim includes 0
-  ylim <- range(c(0, ylim), na.rm = TRUE)
+  ylimData <- range(c(0, ylimData), na.rm = TRUE)
   # Extend range the same way a normal plot does
-  ylim <- grDevices::extendrange(ylim)
-
+  ylim <- grDevices::extendrange(ylimData)
 
   # Vertical layout. The effect size is plotted into the bottom margin. Layout
   # calculations are performed as follows:
@@ -277,15 +276,24 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
   uy0 <- uy1 - (usr[4] - usr[3]) * pseudoHeight
   # Function to map ylim to c(uy0, uy1)
   mapY <- function(y) {
-    stats::approx(ylim, c(uy0, uy1), y)$y
+    slope <- (uy1 - uy0) / (ylim[2] - ylim[1])
+    intercept <- uy0 - slope * ylim[1]
+    intercept + slope * y
   }
 
   # Y axis ticks and label
   labels <- names(ticksAt)
   if (is.null(ticksAt)) {
-    ticksAt <- pretty(ylim)
-    labels <- ticksAt
+    ticksAt <- pretty(ylimData)
+    # Consider? Pretty will create labels that extend beyond ylim, but do we want
+    # to display them? Normal plot axes do not draw labels outside plot limits,
+    # but given the small size of the effect size plot area and the fact there is
+    # probably space above and below, perhaps we want non-standard behaviour here?
+    # The line below produces standard axis behaviour
+    ticksAt <- ticksAt[ticksAt >= ylim[1] & ticksAt <= ylim[2]]
   }
+  if (is.null(labels))
+    labels <- ticksAt
   graphics::axis(2, at = mapY(ticksAt), labels = labels, xpd = TRUE, las = ef.size.las)
   graphics::mtext(ef.size.label, side = 2, at = mapY(mean(ylim)), line = graphics::par("mgp")[1], cex = graphics::par("cex"))
 
