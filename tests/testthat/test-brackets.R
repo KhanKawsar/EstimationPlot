@@ -111,3 +111,18 @@ test_that("round.fn", {
   DurgaBrackets(p)
   expect_error(DurgaBrackets(p, data.gap = 10, round.fn = round), NA)
 })
+
+test_that("default symbology", {
+  par(mfrow = c(2, 1))
+  set.seed(1)
+  contrasts <- c("self_fertilised - inter_cross, inter_cross- westerham_cross, self_fertilised - westerham_cross")
+  d <- DurgaDiff(petunia, 1, 2, contrasts = contrasts)
+  p <- DurgaPlot(d, main = "Default symbology", ef.size = FALSE, bty = "n", ylim = extendrange(petunia$height, f = c(0, 0.5)))
+  expect_error(DurgaBrackets(p), NA)
+
+  set.seed(1)
+  contrasts <- c("inter_cross - self_fertilised, westerham_cross - inter_cross, westerham_cross - self_fertilised")
+  d <- DurgaDiff(petunia, 1, 2, contrasts = contrasts)
+  p <- DurgaPlot(d, main = "Default symbology", ef.size = FALSE, bty = "n", ylim = extendrange(petunia$height, f = c(0, 0.5)))
+  expect_error(DurgaBrackets(p), NA)
+})

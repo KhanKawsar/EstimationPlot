@@ -135,8 +135,11 @@ negatePairwiseDiff <- function(pwd) {
   pwd$groupIndices <- rev(pwd$groupIndices)
   pwd$t0 <- -pwd$t0
   pwd$t <- -pwd$t
-  pwd$bca[4] <- -pwd$bca[4]
-  pwd$bca[5] <- -pwd$bca[5]
+  # Note that upper and lower are swapped due to sign change
+  lw <- -pwd$bca[5]
+  up <- -pwd$bca[4]
+  pwd$bca[4] <- lw
+  pwd$bca[5] <- up
   pwd
 }
 
