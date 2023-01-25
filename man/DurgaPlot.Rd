@@ -40,7 +40,6 @@ DurgaPlot(
   ef.size.violin.trunc = TRUE,
   ef.size.pch = 17,
   ef.size.ticks = NULL,
-  ef.size.las = 0,
   ef.size.label = es$effect.name,
   ef.size.dx = 0,
   ef.size.adj.margin = TRUE,
@@ -50,6 +49,7 @@ DurgaPlot(
   ef.size.line.col = "grey50",
   ef.size.line.lty = ifelse(ef.size.position == "below", 3, 1),
   ef.size.line.lwd = 1,
+  ef.size.params = list(),
   paired = es$paired.data,
   paired.lty = 1,
   paired.lwd = 1,
@@ -68,7 +68,7 @@ DurgaPlot(
   x.axis.dx = group.dx,
   xlab = "",
   left.ylab = es$data.col.name,
-  left.las = 0,
+  left.las = par("las"),
   add = FALSE,
   xlim,
   ylim,
@@ -189,9 +189,6 @@ negative effect" = -0.5, "Small negative effect" = -0.2, "No effect" = 0,
 "Small positive effect" = 0.2, "Medium positive effect" = 0.5, "Large
 positive effect" = 0.8)}}
 
-\item{ef.size.las}{Orientation of tick labels on the effect size axis (0 =
-parallel to axis, 1 = horizontal).}
-
 \item{ef.size.label}{Label to display on y-axis for effect size.}
 
 \item{ef.size.dx}{Horizontal shift to be applied to each contrast/effect
@@ -200,7 +197,7 @@ contrast rather than group. When effect size is below the plot, the
 \code{group.dx} for the group above the effect size is also added.}
 
 \item{ef.size.adj.margin}{If TRUE (the default), the right margin (if ES is
-right) or bottom margin (if ES is below) is automatically adjusted to make
+right) or bottom margin (if ES is below) is automatically increased to make
 room to display the effect size or axis annotations. The margins are
 restored before control returns from \code{DurgaPlot}.}
 
@@ -221,6 +218,14 @@ group means if effect size is on the right, otherwise colour of line at y = 0.}
 \item{ef.size.line.lty}{Line style of horizontal effect-size lines.}
 
 \item{ef.size.line.lwd}{Line width of horizontal effect-size lines.}
+
+\item{ef.size.params}{List of graphical parameters to apply when drawing effect
+sizes. These parameters are passed to \code{\link[graphics]{par}} before
+drawing the effect size. E.g. \code{ef.size.params = list(mgp = c(3.5, 1, 0))}
+will shift the effect size y-axis label to the left or right (for
+\code{ef.size.position} \code{"below"} or \code{"right"} respectively).
+\code{ef.size.params = list(las = 1)} will rotate the effect size axis
+labels without rotating the main axis labels.}
 
 \item{paired}{If \code{TRUE}, lines are drawn joining the individual data
 points.}

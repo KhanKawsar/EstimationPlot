@@ -58,7 +58,8 @@ DurgaPlot(d)
 A `DurgaPlot` data visualisation is a combination of one or more visual components: data `points`; `violin` plots; `bar` charts; `box` plots; repeated measure `paired` lines; a mean or median indicator (`central.tendency`); and error bars (`error.bars`). Each component is controlled by a set of parameters to the `DurgaPlot` function. The names of the parameters indicate the component they apply to, so to adjust the violin plot component, read the documentation about all parameters with prefix `violin`. Effect size display is controlled by parameters with prefix `ef.size`. Parameters have sensible default values, so for example, if you display bar charts (`bar = TRUE`),  violin plots and the central tendency indicator will be turned off. Obviously, you are able to override the defaults if you wish. Refer to help for the `DurgaPlot` function for full details on all arguments.
 
 ```{r fig.height=4, fig.width=8}
-par(mfrow = c(1, 2))
+# Show two plots in the same figure, and increase margins so they don't look crowded
+par(mfrow = c(1, 2), mar = c(5, 5, 4, 5) + 0.1)
 
 DurgaPlot(d, 
           # Display box plots
@@ -68,6 +69,8 @@ DurgaPlot(d,
           # Don't display paired-value lines
           paired = FALSE, 
           main = "Box plot")
+
+par(mar = c(5, 5, 4, 1) + 0.1)
 
 DurgaPlot(d, 
           # Display bar charts
@@ -299,8 +302,8 @@ DurgaPlot(d, violin = FALSE, main = "Cohen's d, labelled effect size",
           points.method = "jitter", 
           # Use our ticks and labels instead of default
           ef.size.ticks = effectSizes, 
-          # Don't rotate the tick labels
-          ef.size.las = 1,
+          # Horizontal tick labels
+          ef.size.params = list(las = 1),
           # Don't label the effect size y-axis because it won't fit with the long tick labels
           ef.size.label = "")
 ```
@@ -412,13 +415,17 @@ legend("topright", c("Female", "Male"), pch = c(21, 24), pt.bg = cols)
 
 Below is an alternative representation for the insulin dataset, showing overlayed rain cloud plots. Positioning is achieved by manually adjusting the relative positions of the various components, using the appropriate `*.dx` parameters. 
 
-```{r fig.height=5, fig.width=5}
+```{r fig.height=5, fig.width=6}
 
 d <- DurgaDiff(insulin, "sugar", "treatment", "id",
                groups = c("Before insulin" = "before", "After insulin" = "after"), na.rm = TRUE)
 
 # Change effect size tick label
 d$group.differences[[1]]$label.plot <- "Change in sugar"
+
+# Horizontal axis tick labels, move y-axis labels outwards to make space for the
+# horizontal ticks, and ensure the margins are large enough to show them
+par(las = 1, mgp = c(4, 1, 0), mar = c(3, 5.5, 4, 5.5) + 0.1)
 
 cols <- RColorBrewer::brewer.pal(3, "Set2")
 colsTr <- DurgaTransparent(cols, 0.7)

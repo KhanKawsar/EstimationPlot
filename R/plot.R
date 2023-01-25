@@ -162,7 +162,7 @@ plotEffectSize <- function(pwes, xo, centreY,
 # Plot effect size to the right of the main plot. Only useful when showing a single effect size
 plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch,
                                  showViolin, violinCol, violin.fill, violin.width, violin.shape, violin.trunc,
-                                 ef.size.dx, axisLabel, ticksAt, ef.size.las,
+                                 ef.size.dx, axisLabel, ticksAt,
                                  groupX, ef.size.line.col, ef.size.line.lty, ef.size.line.lwd) {
 
   # Get the means of the 2 groups
@@ -188,7 +188,7 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch,
     if (is.null(labels)) {
       labels <- ticksAt
     }
-    graphics::axis(4, at = y2 + ticksAt, labels = labels, las = ef.size.las)
+    graphics::axis(4, at = y2 + ticksAt, labels = labels)
   } else {
     esRange <- range(c(0, pwes$t0))
     ylim <- range(y, y2)
@@ -209,7 +209,7 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch,
     if (is.null(labels)) {
       labels <- ticksAt
     }
-    graphics::axis(4, at = mapY(ticksAt), labels = labels, las = ef.size.las)
+    graphics::axis(4, at = mapY(ticksAt), labels = labels)
   }
 
   # Horizontal lines from group means
@@ -223,7 +223,9 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch,
   labelXAxis(at = x, labels = getDiffLabel(pwes), tick = TRUE)
 
   # Label the right y-axis
-  graphics::mtext(axisLabel, side = 4, line = 2.5, cex = graphics::par("cex"))
+  # padj = 0 seems to make it look the same as the left-hand y-axis label
+  # mtext ignores (par("cex")), so pass it in explicitly
+  graphics::mtext(axisLabel, side = 4, line = graphics::par("mgp")[1], cex = graphics::par("cex"), las = 0, padj = 0)
 }
 
 # Plot effect size below the main plot. Assumes that bottom margin is large
@@ -235,7 +237,7 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch,
 #   the main plot region.
 plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
                                  showViolin, violinCol, violin.fill, violin.width, violin.shape, violin.trunc,
-                                 xlim, ef.size.dx, ef.size.label, ticksAt, ef.size.las,
+                                 xlim, ef.size.dx, ef.size.label, ticksAt,
                                  ef.size.line.col, ef.size.line.lty, ef.size.line.lwd,
                                  group.dx,
                                  paddingTop, plotProportion) {
@@ -299,8 +301,11 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
   if (is.null(labels)) {
     labels <- ticksAt
   }
-  graphics::axis(2, at = mapY(ticksAt), labels = labels, xpd = TRUE, las = ef.size.las)
-  graphics::mtext(ef.size.label, side = 2, at = mapY(mean(ylim)), line = graphics::par("mgp")[1], cex = graphics::par("cex"))
+  # Axis ticks
+  graphics::axis(2, at = mapY(ticksAt), labels = labels, xpd = TRUE)
+  # Axis label. mtext ignores (par("cex")), so pass it in explicitly
+  graphics::mtext(ef.size.label, side = 2, at = mapY(mean(ylim)), line = graphics::par("mgp")[1],
+                  cex = graphics::par("cex"), las = 0)
 
   # Plot the "Difference = 0" line, i.e. no effect
   graphics::lines(usr[1:2], c(mapY(0), mapY(0)), col = ef.size.line.col, lty = ef.size.line.lty, lwd = ef.size.line.lwd, xpd = TRUE)
@@ -308,6 +313,7 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
   # Recycle parameters
   ef.size.col <- rep_len(ef.size.col, length(plotDiffs))
   ef.size.pch <- rep_len(ef.size.pch, length(plotDiffs))
+
   # Plot all diffs
   for (i in seq_along(plotDiffs)) {
     pwes <- plotDiffs[[i]]
@@ -537,8 +543,6 @@ DurgaTransparent <-  function(colour, alpha, relative = FALSE) {
 #'   negative effect" = -0.5, "Small negative effect" = -0.2, "No effect" = 0,
 #'   "Small positive effect" = 0.2, "Medium positive effect" = 0.5, "Large
 #'   positive effect" = 0.8)}
-#' @param ef.size.las Orientation of tick labels on the effect size axis (0 =
-#'   parallel to axis, 1 = horizontal).
 #' @param ef.size.top.pad Gap (in units of default character height scaled by
 #'   \code{cex}) between the bottom of the main plot region and the top of the
 #'   effect size plot region. Only applies when effect size is positioned below.
@@ -553,9 +557,16 @@ DurgaTransparent <-  function(colour, alpha, relative = FALSE) {
 #' @param ef.size.line.lwd Line width of horizontal effect-size lines.
 #' @param ef.size.label Label to display on y-axis for effect size.
 #' @param ef.size.adj.margin If TRUE (the default), the right margin (if ES is
-#'   right) or bottom margin (if ES is below) is automatically adjusted to make
+#'   right) or bottom margin (if ES is below) is automatically increased to make
 #'   room to display the effect size or axis annotations. The margins are
 #'   restored before control returns from \code{DurgaPlot}.
+#' @param ef.size.params List of graphical parameters to apply when drawing effect
+#'   sizes. These parameters are passed to \code{\link[graphics]{par}} before
+#'   drawing the effect size. E.g. \code{ef.size.params = list(mgp = c(3.5, 1, 0))}
+#'   will shift the effect size y-axis label to the left or right (for
+#'   \code{ef.size.position} \code{"below"} or \code{"right"} respectively).
+#'   \code{ef.size.params = list(las = 1)} will rotate the effect size axis
+#'   labels without rotating the main axis labels.
 #'
 #' @param x.axis if TRUE, display the x-axis ticks and labels.
 #' @param x.axis.dx Horizontal shifts to be applied to each x-axis tick and
@@ -675,7 +686,6 @@ DurgaPlot <- function(es,
                     ef.size.violin.trunc = TRUE, # TODO
                     ef.size.pch = 17,
                     ef.size.ticks = NULL,
-                    ef.size.las = 0,
                     ef.size.label = es$effect.name,
                     ef.size.dx = 0,
                     ef.size.adj.margin = TRUE,
@@ -686,6 +696,7 @@ DurgaPlot <- function(es,
                     ef.size.line.col = "grey50",
                     ef.size.line.lty = ifelse(ef.size.position == "below", 3, 1),
                     ef.size.line.lwd = 1,
+                    ef.size.params = list(),
 
                     paired = es$paired.data, # if true draw lines between paired points
                     paired.lty = 1,
@@ -709,7 +720,7 @@ DurgaPlot <- function(es,
                     xlab = "",
 
                     left.ylab = es$data.col.name,
-                    left.las = 0,
+                    left.las = par("las"),
                     add = FALSE,
                     xlim, ylim,
                     ...
@@ -1066,19 +1077,24 @@ DurgaPlot <- function(es,
     if (.show(ef.size.violin))
       violinFill <- .boolToDef(ef.size.violin.fill, DurgaTransparent(violinCol, 0.8))
 
+    # Install par settings for drawing effect size
+    oldPars <- par(ef.size.params)
+
     if (ef.size.position == "right") {
       lineStartAt <- seq_len(nGroups) + ef.size.mean.line.dx
       plotEffectSizesRight(es, plotDiffs[[1]], ef.size.col, ef.size.pch,
                            .show(ef.size.violin), violinCol, violinFill, violin.width, ef.size.violin.shape, ef.size.violin.trunc,
-                           ef.size.dx, ef.size.label, ef.size.ticks, ef.size.las,
+                           ef.size.dx, ef.size.label, ef.size.ticks,
                            lineStartAt, ef.size.line.col, ef.size.line.lty, ef.size.line.lwd)
     } else if (ef.size.position == "below") {
       plotEffectSizesBelow(es, plotDiffs, ef.size.col, ef.size.pch,
                            .show(ef.size.violin), violinCol, violinFill, violin.width, ef.size.violin.shape, ef.size.violin.trunc,
-                           xlim, ef.size.dx, ef.size.label, ef.size.ticks, ef.size.las,
+                           xlim, ef.size.dx, ef.size.label, ef.size.ticks,
                            ef.size.line.col, ef.size.line.lty, ef.size.line.lwd, group.dx,
                            ef.size.top.pad, ef.size.height)
     }
+
+    par(oldPars)
   }
 
   # Return the coordinates of the group tick marks along the x-axis

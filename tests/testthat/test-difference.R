@@ -138,16 +138,19 @@ test_that("group names and contrasts", {
   DurgaDiff(data, "Measurement", "Group", groups = groups, contrasts = c("Group2 - Group1"))
   # Contrasts with group labels
   DurgaDiff(data, "Measurement", "Group", groups = groups, contrasts = c("G 2 - G 1"))
-  # Contrasts with micture
+  # Contrasts with mixture of labels and data values
   DurgaDiff(data, "Measurement", "Group", groups = groups, contrasts = c("G 2 - Group1"))
 
   # Each pair of plots in a row should be identical. One uses group data value, the other uses group label
-  op <- par(mfrow = c(2, 2))
+  # Seems to be a bug? in R, restoring mfrow after DurgaPlot changes the margins!
+  mar <- par("mar")
+  par(mfrow = c(2, 2))
   expect_error(DurgaPlot(d, contrasts = "Group1 - ZControl1", main = "1 contrast"), NA)
   expect_error(DurgaPlot(d, contrasts = "G 1 - Ctrl", main = "1 contrast"), NA)
   expect_error(DurgaPlot(d, contrasts = "Group1 - ZControl1, Group2 - ZControl1", main = "2 contrasts"), NA)
   expect_error(DurgaPlot(d, contrasts = "G 1 - Ctrl, G 2 - Ctrl", main = "2 contrasts"), NA)
-  par(op)
+  par(mfrow = c(1, 1))
+  par(mar = mar)
 })
 
 
@@ -835,9 +838,9 @@ test_that("custom effect axis", {
 
 
   d <- DurgaDiff(df, effect.type = "cohens", data.col = 1, group.col = 2)
-  op <- par(mar = c(5, 4, 4, 10))
+  op <- par(mar = c(5, 4, 4, 10) + 0.1)
   on.exit(par(op))
-  expect_error(DurgaPlot(d, ef.size.ticks = ef.size.ticks, ef.size.las = 1, ef.size.label = "", main = "Cohen's with custom labels"), NA)
+  expect_error(DurgaPlot(d, ef.size.ticks = ef.size.ticks, ef.size.params = list(las = 1), ef.size.label = "", main = "Cohen's with custom labels"), NA)
 })
 
 test_that("Axis las", {
@@ -846,10 +849,10 @@ test_that("Axis las", {
                    group = rep(c("Group1", "Group2", "Group3"), each = n))
   d2 <- DurgaDiff(df, groups = c("Group1", "Group2"), data.col = 1, group.col = 2)
   op <- par(mar = c(5, 4, 4, 4))
-  expect_error(DurgaPlot(d2, las = 1, ef.size.las = 1, main = "las horizontal"), NA)
+  expect_error(DurgaPlot(d2, las = 1, ef.size.params = list(las = 1), main = "las horizontal"), NA)
   par(op)
   d3 <- DurgaDiff(df, data.col = 1, group.col = 2)
-  expect_error(DurgaPlot(d3, las = 1, ef.size.las = 1, main = "las horizontal"), NA)
+  expect_error(DurgaPlot(d3, las = 1, ef.size.params = list(las = 1), main = "las horizontal"), NA)
 })
 
 test_that("Other data frame classes", {
@@ -1248,4 +1251,28 @@ test_that("ef below layout", {
   par(mfrow = c(1, 2), cex = 0.7)
   expect_error(DurgaPlot(d, main = "Default EF layout"), NA)
   expect_error(DurgaPlot(d, ef.size.top.pad = 1.5, ef.size.height = 0.6, main = "Smaller gap, larger height"), NA)
+})
+
+test_that("ef size ticks", {
+  data <- makeData()
+  par(mfrow = c(2, 2), mar = c(5, 4, 4, 1) + 0.1)
+  d <- DurgaDiff(data, 1, 2, groups = c("ZControl1", "Group1", "Group2"))
+  DurgaPlot(d, main = "Custom ef ticks", ef.size.ticks = c(30, 0, -50))
+  DurgaPlot(d, contrasts = "Group2 - ZControl1", main = "Custom ef ticks", ef.size.ticks = c(30, 0, -50))
+
+  d <- DurgaDiff(data, 1, 2, groups = c("ZControl1", "Group1", "Group2"), effect.type = "cohens")
+  DurgaPlot(d, main = "Custom ef ticks", ef.size.ticks = c(-2, 0, 1))
+  expect_error(DurgaPlot(d, contrasts = "Group2 - ZControl1", main = "Custom ef ticks", ef.size.ticks = c(-2, 0, 1)), NA)
+})
+
+test_that("ef size labels", {
+  data <- makeData()
+  par(mfrow = c(2, 2))
+  d <- DurgaDiff(data, 1, 2, groups = c("ZControl1", "Group1", "Group2"))
+  DurgaPlot(d, main = "Custom ef labels", ef.size.ticks = c("Big" = 30, "None" = 0, "Huge" = -50), ef.size.params = list(las = 1))
+  DurgaPlot(d, contrasts = "Group2 - ZControl1", main = "Custom ef labels", ef.size.ticks = c("Big" = 30, "None" = 0, "Huge" = -50), ef.size.params = list(las = 1))
+
+  d <- DurgaDiff(data, 1, 2, groups = c("ZControl1", "Group1", "Group2"), effect.type = "cohens")
+  DurgaPlot(d, main = "Custom ef labels", ef.size.ticks = c("Huge" = -2, "None" = 0, "Big" = 1), ef.size.params = list(las = 1))
+  expect_error(DurgaPlot(d, contrasts = "Group2 - ZControl1", main = "Custom ef labels", ef.size.ticks = c("Huge" = -2, "None" = 0, "Big" = 1), ef.size.params = list(las = 1)), NA)
 })
