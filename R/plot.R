@@ -357,9 +357,13 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
 #' @export
 DurgaTransparent <-  function(colour, alpha, relative = FALSE) {
   rgba.val <- grDevices::col2rgb(colour, TRUE)
-  newAlpha <- (100 - alpha * 100) * 255 / 100
-  if (relative)
+  if (relative) {
+    # Relative: alpha is a factor applied to the original transparency
     newAlpha <- newAlpha * rgba.val[4] / 255
+  } else {
+    # Absolute: alpha is the transparency of the new colour
+    newAlpha <- (100 - alpha * 100) * 255 / 100
+  }
   # Ensure it is limited to between 0 and 255
   newAlpha <- min(255, max(0, newAlpha))
   grDevices::rgb(rgba.val[1, ], rgba.val[2, ], rgba.val[3, ],
