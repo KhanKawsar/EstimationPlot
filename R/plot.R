@@ -724,7 +724,7 @@ DurgaPlot <- function(es,
                     xlab = "",
 
                     left.ylab = es$data.col.name,
-                    left.las = par("las"),
+                    left.las = graphics::par("las"),
                     add = FALSE,
                     xlim, ylim,
                     ...
@@ -1098,7 +1098,7 @@ DurgaPlot <- function(es,
                            ef.size.top.pad, ef.size.height)
     }
 
-    par(oldPars)
+    graphics::par(oldPars)
   }
 
   # Return the coordinates of the group tick marks along the x-axis
