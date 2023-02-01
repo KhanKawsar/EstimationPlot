@@ -20,7 +20,7 @@ Run devtools::check_win_release() and wait for the result
 
 Check CI github action results (CMD check and coverage) by going to the Actions page in the github project (https://github.com/KhanKawsar/EstimationPlot/actions)
 
-Upload ../trajr_x.y.z.tar.gz to CRAN (https://cran.r-project.org/). Use the ‘Optional comment’ field on the webform (and not a separate email) to explain how the feedback on previous submission(s) has been addressed.
+Upload ../Durga_x.y.z.tar.gz to CRAN (https://cran.r-project.org/). Use the ‘Optional comment’ field on the webform (and not a separate email) to explain how the feedback on previous submission(s) has been addressed.
 
 -----
 Once accepted by CRAN:
