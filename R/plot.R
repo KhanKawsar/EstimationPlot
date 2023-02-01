@@ -1082,7 +1082,7 @@ DurgaPlot <- function(es,
       violinFill <- .boolToDef(ef.size.violin.fill, DurgaTransparent(violinCol, 0.8))
 
     # Install par settings for drawing effect size
-    oldPars <- par(ef.size.params)
+    oldPars <- graphics::par(ef.size.params)
 
     if (ef.size.position == "right") {
       lineStartAt <- seq_len(nGroups) + ef.size.mean.line.dx
