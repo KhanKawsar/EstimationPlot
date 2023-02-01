@@ -68,7 +68,7 @@ DurgaPlot(
   x.axis.dx = group.dx,
   xlab = "",
   left.ylab = es$data.col.name,
-  left.las = par("las"),
+  left.las = graphics::par("las"),
   add = FALSE,
   xlim,
   ylim,
