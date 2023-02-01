@@ -1,0 +1,30 @@
+Release procedure
+-----------------
+
+Ensure vignette has been updated if necessary
+
+Update version number and date in DESCRIPTION file. See https://semver.org/
+
+Update NEWS.md (or create for the first update)
+
+Update session info in README.md: devtools::session_info()
+
+Commit and push all changes
+
+Build source package (creates ../trajr_x.y.z.b.tar.gz)
+
+Run (possibly from RStudio terminal window): cd ..; R CMD check --as-cran trajr_x.y.z.b.tar.gz
+Perhaps add --no-manual in case of error: pdflatex is not available
+
+Run devtools::check_win_release() and wait for the result
+
+Check CI github action results (CMD check and coverage) by clicking on the badges in the github README
+
+Upload ../trajr_x.y.z.tar.gz to CRAN (https://cran.r-project.org/). Use the ‘Optional comment’ field on the webform (and not a separate email) to explain how the feedback on previous submission(s) has been addressed.
+
+-----
+Once accepted by CRAN:
+
+Create a new release on GitHub (https://github.com/JimMcL/trajr)
+
+Update version number (in DESCRIPTION) to x.y.z.9000. See http://r-pkgs.had.co.nz/description.html#version for rationale for the use of 9000 as a version number.

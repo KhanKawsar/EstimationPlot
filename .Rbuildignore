@@ -4,3 +4,4 @@
 ^\.github$
 ^codecov\.yml$
 ^eg.png$
+^RELEASE-PROCEDURE.txt$
