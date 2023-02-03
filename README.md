@@ -1,4 +1,4 @@
-# Durga: Handy package for Estimation Plotting in R
+# Durga: An R package for effect size estimation and visualisation
 
 
 <!-- badges: start -->
@@ -16,6 +16,10 @@ If you use `Durga` in your research, please cite (and read) the article (which d
 `Durga`: An R package for estimating and plotting effect sizes 
 
 ## Installation
+
+To install the released version:
+
+    > install.packages("Durga")
 
 To install the development version (which is the only version available as yet):
 
@@ -49,12 +53,12 @@ A minimal example using constructed data:
 
 ![alt text](https://github.com/KhanKawsar/EstimationPlot/blob/main/eg.png?raw=true)
 
-<!-- To create plot
+<!-- To create the above PNG, run the example above, then run:
 JPlotToPNG("eg.png", { par(mar = c(5, 4, 1, 1) + 0.1); DurgaPlot(d)}, width = 600)
 -->
 
 
-## Environment
+## Development Environment
 <!-- Output from devtools::session_info() -->
 
 ```

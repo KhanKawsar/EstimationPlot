@@ -219,7 +219,8 @@ group means if effect size is on the right, otherwise colour of line at y = 0.}
 
 \item{ef.size.line.lwd}{Line width of horizontal effect-size lines.}
 
-\item{ef.size.params}{List of graphical parameters to apply when drawing effect
+\item{ef.size.params}{List of graphical parameters to apply when drawing
+effect
 sizes. These parameters are passed to \code{\link[graphics]{par}} before
 drawing the effect size. E.g. \code{ef.size.params = list(mgp = c(3.5, 1, 0))}
 will shift the effect size y-axis label to the left or right (for
@@ -402,6 +403,6 @@ Routledge.
 }
 \seealso{
 \code{\link{DurgaDiff}}, \code{\link{DurgaBrackets}},
-  \code{\link[vipor]{offsetX}}, \code{\link[graphics]{boxplot}},
+  \code{\link{DurgaTransparent}}, \code{\link[vipor]{offsetX}}, \code{\link[graphics]{boxplot}},
   \code{\link[graphics]{bxp}}
 }

@@ -54,8 +54,8 @@ May be a single value or a vector with one value per bracket. Refer to
 \code{Details} for default values.}
 
 \item{snap.to}{Snaps the base of the lowest brackets onto horizontal grid
-lines separated by \code{snap.to} mm. Used to improve aesthetics of vertical
-alignment.}
+lines separated by \code{snap.to} mm. Used to improve aesthetics of
+vertical alignment.}
 
 \item{shorten}{Amount (mm) to shrink brackets at each end}
 
@@ -75,6 +75,10 @@ function with one argument that converts its argument to the value to be
 displayed.}
 
 \item{...}{Additional arguments passed to \code{\link[graphics]{text}}}
+}
+\value{
+No return value. \code{DurgaBrackets} is called for its side effect
+  of adding confidence brackets to the current plot.
 }
 \description{
 Brackets are added to a \code{DurgaPlot} that already exists. That means you
@@ -99,4 +103,7 @@ p <- DurgaPlot(d, ef.size = FALSE, frame.plot = FALSE)
 # Add the brackets to the plot
 DurgaBrackets(p, lb.cex = 0.8)
 
+}
+\seealso{
+\code{\link{DurgaPlot}}
 }

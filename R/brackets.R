@@ -38,7 +38,7 @@ mmToUser <- function(mm, horizontal) {
 #   tips point upwards and text is below
 # @param shorten
 #
-# @return Bounding box as c(x0, x1, y0, y1)
+# @returns Bounding box as c(x0, x1, y0, y1)
 DrawBracket <- function(diff, plotExtents, y, text, text.pad, plot = TRUE,
                         tip.length, above = TRUE, shorten,
                         br.lwd, br.col, br.lty,
@@ -279,8 +279,8 @@ isRightToLeft <- function(diff) {
 #'   May be a single value or a vector with one value per bracket. Refer to
 #'   \code{Details} for default values.
 #' @param snap.to Snaps the base of the lowest brackets onto horizontal grid
-#'   lines separated by \code{snap.to} mm. Used to improve aesthetics of vertical
-#'   alignment.
+#'   lines separated by \code{snap.to} mm. Used to improve aesthetics of
+#'   vertical alignment.
 #' @param shorten Amount (mm) to shrink brackets at each end
 #' @param tip.length Length of bracket tips (mm). May be a vector with length 2;
 #'   length of tip at groups 1 and 2 respectively
@@ -294,6 +294,9 @@ isRightToLeft <- function(diff) {
 #'   displayed.
 #' @param ... Additional arguments passed to \code{\link[graphics]{text}}
 #'
+#' @returns No return value. \code{DurgaBrackets} is called for its side effect
+#'   of adding confidence brackets to the current plot.
+#'
 #' @examples
 #'
 #' d <- DurgaDiff(petunia, 1, 2)
@@ -301,6 +304,8 @@ isRightToLeft <- function(diff) {
 #' p <- DurgaPlot(d, ef.size = FALSE, frame.plot = FALSE)
 #' # Add the brackets to the plot
 #' DurgaBrackets(p, lb.cex = 0.8)
+#'
+#' @seealso \code{\link{DurgaPlot}}
 #'
 #' @export
 DurgaBrackets <- function(plot.stats,

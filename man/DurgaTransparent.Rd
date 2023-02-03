@@ -7,19 +7,19 @@
 DurgaTransparent(colour, alpha, relative = FALSE)
 }
 \arguments{
-\item{colour}{The R colour (or colours) to be made transparent. May be a
+\item{colour}{The R colour (or colours) to be made transparent. May be
+specified in any way recognised by \code{\link[grDevices]{col2rgb}}: a
 colour name, a hexadecimal string such as \code{"#ffbc48"} or a positive
-integer.}
+integer \code{i} meaning meaning \code{\link[grDevices]{palette}()[i]}.}
 
-\item{alpha}{Transparency, from \code{0} meaning fully opaque (\code{colour}
-is returned unchanged), through to \code{1} which is completely transparent
-(i.e. invisible).}
+\item{alpha}{Transparency, from \code{0}, meaning fully opaque, through to
+\code{1}, which is completely transparent (i.e. invisible).}
 
 \item{relative}{Determines what happens if \code{colour} is already
-transparent. if \code{relative} is \code{TRUE}, the existing transparency
-value is multiplied by \code{alpha}. If \code{FALSE}, then the original
-transparency is ignored and \code{alpha} defines the transparency of the
-returned colour.}
+transparent. If \code{relative} is \code{FALSE} (the default), then the
+transparency value of \code{colour} is ignored and \code{alpha} defines the
+transparency of the returned colour. If \code{TRUE}, the existing
+transparency value is multiplied by \code{alpha}.}
 }
 \value{
 A colour or colours that are transparent versions of \code{colour}.
@@ -27,6 +27,11 @@ A colour or colours that are transparent versions of \code{colour}.
 \description{
 Returns a transparent version of the specified colour(s).
 }
+\examples{
+transparentPink <- DurgaTransparent("red", 0.8)
+transparentPink
+
+}
 \seealso{
-[grDevices]{col2rgb}, [grDevices]{rgb}
+\code{\link[grDevices]{col2rgb}}, \code{\link[grDevices]{rgb}}
 }

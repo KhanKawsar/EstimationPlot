@@ -338,21 +338,25 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
 
 #' Returns a transparent version of the specified colour(s).
 #'
-#' @param colour The R colour (or colours) to be made transparent. May be a
+#' @param colour The R colour (or colours) to be made transparent. May be
+#'   specified in any way recognised by \code{\link[grDevices]{col2rgb}}: a
 #'   colour name, a hexadecimal string such as \code{"#ffbc48"} or a positive
-#'   integer.
-#' @param alpha Transparency, from \code{0} meaning fully opaque (\code{colour}
-#'   is returned unchanged), through to \code{1} which is completely transparent
-#'   (i.e. invisible).
+#'   integer \code{i} meaning meaning \code{\link[grDevices]{palette}()[i]}.
+#' @param alpha Transparency, from \code{0}, meaning fully opaque, through to
+#'   \code{1}, which is completely transparent (i.e. invisible).
 #' @param relative Determines what happens if \code{colour} is already
-#'   transparent. if \code{relative} is \code{TRUE}, the existing transparency
-#'   value is multiplied by \code{alpha}. If \code{FALSE}, then the original
-#'   transparency is ignored and \code{alpha} defines the transparency of the
-#'   returned colour.
+#'   transparent. If \code{relative} is \code{FALSE} (the default), then the
+#'   transparency value of \code{colour} is ignored and \code{alpha} defines the
+#'   transparency of the returned colour. If \code{TRUE}, the existing
+#'   transparency value is multiplied by \code{alpha}.
 #'
 #' @returns A colour or colours that are transparent versions of \code{colour}.
 #'
-#' @seealso [grDevices]{col2rgb}, [grDevices]{rgb}
+#' @examples
+#' transparentPink <- DurgaTransparent("red", 0.8)
+#' transparentPink
+#'
+#' @seealso \code{\link[grDevices]{col2rgb}}, \code{\link[grDevices]{rgb}}
 #'
 #' @export
 DurgaTransparent <-  function(colour, alpha, relative = FALSE) {
@@ -564,7 +568,8 @@ DurgaTransparent <-  function(colour, alpha, relative = FALSE) {
 #'   right) or bottom margin (if ES is below) is automatically increased to make
 #'   room to display the effect size or axis annotations. The margins are
 #'   restored before control returns from \code{DurgaPlot}.
-#' @param ef.size.params List of graphical parameters to apply when drawing effect
+#' @param ef.size.params List of graphical parameters to apply when drawing
+#'   effect
 #'   sizes. These parameters are passed to \code{\link[graphics]{par}} before
 #'   drawing the effect size. E.g. \code{ef.size.params = list(mgp = c(3.5, 1, 0))}
 #'   will shift the effect size y-axis label to the left or right (for
@@ -587,7 +592,7 @@ DurgaTransparent <-  function(colour, alpha, relative = FALSE) {
 #' @param ... Additional arguments are passed on to the
 #'   \code{\link[graphics]{plot}} function.
 #'
-#' @return A list (returned invisibly) with 4 elements:
+#' @returns A list (returned invisibly) with 4 elements:
 #'
 #'   \item{\code{es}}{Value of the \code{es} parameter.}
 #'   \item{\code{extents}}{Matrix with the x-axis locations and y-axis extents
@@ -598,7 +603,7 @@ DurgaTransparent <-  function(colour, alpha, relative = FALSE) {
 #'   \item{\code{palette}}{Vector of colours used by default for each group.}
 #'
 #' @seealso \code{\link{DurgaDiff}}, \code{\link{DurgaBrackets}},
-#'   \code{\link[vipor]{offsetX}}, \code{\link[graphics]{boxplot}},
+#'   \code{\link{DurgaTransparent}}, \code{\link[vipor]{offsetX}}, \code{\link[graphics]{boxplot}},
 #'   \code{\link[graphics]{bxp}}
 #'
 #' @examples

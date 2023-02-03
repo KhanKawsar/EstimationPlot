@@ -141,5 +141,6 @@ cumulative science: a practical primer for t-tests and ANOVAs. Frontiers in
 Psychology, 4. doi:10.3389/fpsyg.2013.00863
 }
 \seealso{
-\code{\link{DurgaDiff.default}}
+\code{\link{DurgaDiff.default}}, \code{\link[boot]{boot}},
+  \code{\link[boot]{boot.ci}}, \code{\link{DurgaPlot}}
 }

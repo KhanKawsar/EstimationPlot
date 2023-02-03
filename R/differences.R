@@ -184,7 +184,8 @@ DurgaDiff <- function(x, ...) {
 #' d <- DurgaDiff(sugar ~ treatment, insulin, id.col = "id")
 #' print(d)
 #'
-#' @seealso \code{\link{DurgaDiff.default}}
+#' @seealso \code{\link{DurgaDiff.default}}, \code{\link[boot]{boot}},
+#'   \code{\link[boot]{boot.ci}}, \code{\link{DurgaPlot}}
 #'
 #' @export
 DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
@@ -283,7 +284,7 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #'   for "paired" data (i.e. \code{id.col} is specified), all rows
 #'   (observations) for IDs with missing data are stripped.
 #'
-#' @return A \code{DurgaDiff} object, which is a list containing:
+#' @returns A \code{DurgaDiff} object, which is a list containing:
 #'
 #'   \item{\code{group.statistics}}{Matrix with a row for each group, columns
 #'   are: \code{mean}, \code{median}, \code{sd} (standard deviation), \code{se}

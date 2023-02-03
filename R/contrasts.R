@@ -176,10 +176,11 @@ buildPlotDiffs <- function(contrasts, es) {
 
 # Converts a contrasts argument to a list of DurgaGroupDiff objects.
 #
-# @return List of DurgaDiff objects. The list will be empty if there is only one
-#   group or there are no contrasts to be displayed for some other reason
 # @param defaultToAll If TRUE and constrasts were unspecified, returns the list
 #   of all calculated group differences, otherwise returns all - the first group
+#
+# @returns List of DurgaDiff objects. The list will be empty if there is only one
+#   group or there are no contrasts to be displayed for some other reason
 plotDiffsFromContrasts <- function(contrasts, contrastsMissing, es, fnName, defaultToAll) {
   plotDiffs <- list()
   if (length(es$groups) > 1) {
