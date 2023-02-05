@@ -745,7 +745,7 @@ DurgaPlot <- function(es,
 
   # Check and process input parameters
   if (!methods::is(es, "DurgaDiff"))
-    stop("data must be a DurgaDiff object")
+    stop("Argument es must be a DurgaDiff object")
   if (!isFALSE(violin)) {
     # This is tricky - we want to allow multiple shapes, but default to just the
     # first. That's what several.ok = !missing(violin.shape) does
