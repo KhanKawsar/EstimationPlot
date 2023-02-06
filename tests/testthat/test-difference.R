@@ -86,6 +86,16 @@ compareDiffs <- function(d1, d2, tolerance = 0.1) {
 ##########################################################################
 # Tests start here ####
 
+test_that("transparency", {
+  expect_equal(DurgaTransparent("red", 0.8), "#FF000033")
+  expect_equal(DurgaTransparent("#ff0000", 0.8), "#FF000033")
+  expect_equal(DurgaTransparent("red", 0.8, TRUE), "#FF000033")
+  expect_equal(DurgaTransparent("red", 0.8, FALSE), "#FF000033")
+  expect_equal(DurgaTransparent("#ff0000cc", 0.8), "#FF000033")
+  expect_equal(DurgaTransparent("#ff0000cc", 0.8, TRUE), "#FF000029")
+  expect_equal(DurgaTransparent("#ff0000cc", 0.8, FALSE), "#FF000033")
+})
+
 test_that("expand contrasts", {
   .makeX <- function(g) matrix(g, nrow = 2)
 

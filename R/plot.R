@@ -342,13 +342,13 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
 #'   specified in any way recognised by \code{\link[grDevices]{col2rgb}}: a
 #'   colour name, a hexadecimal string such as \code{"#ffbc48"} or a positive
 #'   integer \code{i} meaning meaning \code{\link[grDevices]{palette}()[i]}.
-#' @param alpha Transparency, from \code{0}, meaning fully opaque, through to
+#' @param transparency Transparency, from \code{0}, meaning fully opaque, through to
 #'   \code{1}, which is completely transparent (i.e. invisible).
 #' @param relative Determines what happens if \code{colour} is already
 #'   transparent. If \code{relative} is \code{FALSE} (the default), then the
-#'   transparency value of \code{colour} is ignored and \code{alpha} defines the
+#'   transparency value of \code{colour} is ignored and \code{transparency} defines the
 #'   transparency of the returned colour. If \code{TRUE}, the existing
-#'   transparency value is multiplied by \code{alpha}.
+#'   transparency value is multiplied by \code{transparency}.
 #'
 #' @returns A colour or colours that are transparent versions of \code{colour}.
 #'
@@ -359,14 +359,16 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch,
 #' @seealso \code{\link[grDevices]{col2rgb}}, \code{\link[grDevices]{rgb}}
 #'
 #' @export
-DurgaTransparent <-  function(colour, alpha, relative = FALSE) {
+DurgaTransparent <-  function(colour, transparency, relative = FALSE) {
   rgba.val <- grDevices::col2rgb(colour, TRUE)
+
+  # Note that we convert from "transparency", i.e. 1 is invisible, to "alpha", i.e. 1 is opaque
   if (relative) {
-    # Relative: alpha is a factor applied to the original transparency
-    newAlpha <- newAlpha * rgba.val[4] / 255
+    # Relative: transparency is a factor applied to the original transparency
+    newAlpha <- round((1 - transparency) * rgba.val[4])
   } else {
-    # Absolute: alpha is the transparency of the new colour
-    newAlpha <- (100 - alpha * 100) * 255 / 100
+    # Absolute: transparency is the transparency of the new colour
+    newAlpha <- round((1 - transparency) * 255)
   }
   # Ensure it is limited to between 0 and 255
   newAlpha <- min(255, max(0, newAlpha))
