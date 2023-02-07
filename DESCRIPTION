@@ -12,7 +12,7 @@ Description: An easy-to-use yet powerful system for plotting grouped data effect
     representation of the original data. Select from many possible data representations
     (box plots, violin plots, raw data points etc.), and combine as desired.
     'Durga' plots are implemented in base R, so are compatible with base R methods
-    for combining plots, such as 'layout()'.
+    for combining plots, such as 'layout()'. See Khan & McLean (2023) <doi:10.1101/2023.02.06.526960>.
 License: MIT + file LICENSE
 URL: https://github.com/KhanKawsar/EstimationPlot
 Encoding: UTF-8
@@ -30,7 +30,7 @@ Suggests:
     data.table,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3
 VignetteBuilder: knitr
 BuildVignettes: true
 Depends: 
