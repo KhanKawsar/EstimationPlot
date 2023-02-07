@@ -1,14 +1,13 @@
-citHeader("To cite Durga in publications use:")
 
-citEntry(
-  entry    = "Article",
+bibentry(
+  bibtype  = "Article",
   title    = "Durga: An R package for effect size estimation and visualisation",
-  author   = c(person(given = "Md Kawsar", family = "Khan"),
-               person(given = "Donald James", family = "McLean")),
+  author   = "Md Kawsar Khan, Donald James McLean",
   journal  = "bioRxiv",
   year     = 2023,
   #volume   = ,
   #number   = ,
+  doi      = "10.1101/2023.02.06.526960",
   pages    = "2023.02.06.526960",
   url      = "https://github.com/KhanKawsar/EstimationPlot",
   textVersion = "Khan, M. K., & McLean, D. J. (2023). Durga: An R package for effect size estimation and visualisation. bioRxiv, 2023.2002.2006.526960. doi:10.1101/2023.02.06.526960",
