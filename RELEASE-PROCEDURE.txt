@@ -13,8 +13,8 @@ Commit and push all changes
 
 Build source package from RStudio menu (creates ../Durga_x.y.z.b.tar.gz)
 
-Run (possibly from RStudio terminal window): cd ..; R CMD check --as-cran Durga_x.y.z.b.tar.gz
-Perhaps add --no-manual in case of error: pdflatex is not available
+Run (possibly from RStudio terminal window): cd ..; R CMD check --as-cran --no-manual Durga_x.y.z.b.tar.gz
+The option --no-manual is only required if pdflatex is not available
 
 Run devtools::check_win_release() and wait for the result
 
