@@ -22,7 +22,7 @@ To install the released version:
 
     > install.packages("Durga")
 
-To install the development version (which is the only version available as yet):
+To install the development version:
 
     > install.packages("devtools") # If not already installed
     > devtools::install_github("KhanKawsar/EstimationPlot", build_vignettes = TRUE)
