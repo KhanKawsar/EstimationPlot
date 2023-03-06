@@ -29,6 +29,8 @@ To install the development version:
     > install.packages("devtools") # If not already installed
     > devtools::install_github("KhanKawsar/EstimationPlot", build_vignettes = TRUE)
 
+Refer to [NEWS.md](NEWS.md) for a list of changes in each version, including the current development version.
+
 ## Usage
  
 Read the paper [Khan & McLean (2023)](https://doi.org/10.1101/2023.02.06.526960) for a detailed description of the package. Once Durga is installed, you can read the vignette named `Introduction to Durga` for a shorter introduction to using Durga, complete with examples and code.

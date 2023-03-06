@@ -5,7 +5,7 @@ Ensure vignette has been updated if necessary
 
 Update version number and date in DESCRIPTION file. See https://semver.org/
 
-Update NEWS.md (or create for the first update)
+Update NEWS.md
 
 Update session info in README.md: devtools::session_info()
 

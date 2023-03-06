@@ -91,6 +91,8 @@ DrawBracket <- function(diff, plotExtents, y, text, text.pad, plot = TRUE,
     bb[3:4] <- range(bb[3:4], y + textHeight)
   }
 
+    #rect(bb[1], bb[3], bb[2], bb[4], col = ifelse(plot, "#00ff0020", "#ff000010"), angle = ifelse(plot, 45, -45))
+
   bb
 }
 
@@ -104,11 +106,17 @@ rectsIntersect <- function(r1, r2) {
 shiftRect <- function(r, dx, dy) r + rep(c(dx, dy), each = 2)
 
 
-# Calculates how to fit confidence brackets depicting a set of group differences without overlaps.
+# Calculates how to fit confidence brackets depicting a set of group differences
+# without overlaps.
+#
+# Strategy is to position the shortest brackets first since they are likely to
+# fit well, then progressively add brackets, shifting them upwards so they don't
+# overlap any others (or the data).
 #
 # @param es Object of class \code{DurgaDiff}
 # @param diffs List of \code{DurgaGroupDiff} objects
-# @param plotExtents Extents object from object returned by the call to \code{\link{DurgaPlot}}
+# @param plotExtents Extents object from object returned by the call to
+#   \code{\link{DurgaPlot}}
 #
 fitBrackets <- function(plotExtents, diffs, text, shorten, data.gap, vertical.gap, snap.to, ...) {
   # Sort shortest brackets first
@@ -121,7 +129,7 @@ fitBrackets <- function(plotExtents, diffs, text, shorten, data.gap, vertical.ga
     max(plotExtents[allGrpIdx, 2:3])
   }
 
-  # Position them in order
+  # Position them in order. This will be a matrix of bounding boxes, columns are (x0, x1, y0, y1)
   bbs <- matrix(nrow = length(diffs), ncol = 4)
 
   text <- rep_len(text, length(diffs))
@@ -151,6 +159,7 @@ fitBrackets <- function(plotExtents, diffs, text, shorten, data.gap, vertical.ga
       testy <- ceiling((testy - gridO) / snap.toU) * snap.toU + gridO
     }
 
+    # Calculate bounding box with y = testy
     bb <- DrawBracket(diff, plotExtents, testy, text = text[ord[i]], plot = FALSE, shorten = shorten, ...)
     dy <- testy - bb[3]
     bb <- shiftRect(bb, 0, dy)
@@ -161,12 +170,21 @@ fitBrackets <- function(plotExtents, diffs, text, shorten, data.gap, vertical.ga
 
     # Now check if it overlaps any previous bracket
     if (i > 1) {
-      for (ii in 1:(i - 1)) {
-        if (rectsIntersect(bb, bbs[ii, ])) {
-          # Shift it above this one
-          dy <- bbs[ii, 4] - bb[3]
-          testy <- testy + dy
-          bb <- shiftRect(bb, 0, dy)
+      # Perform an exhaustive search
+      overlaps <- TRUE
+      while (overlaps) {
+        # Search all previously positioned brackets for any that overlap this position
+        overlaps <- FALSE
+        for (ii in 1:(i - 1)) {
+          if (rectsIntersect(bb, bbs[ii, ])) {
+            # Found an overlapping bracket. Shift this one above the overlapping one
+            dy <- bbs[ii, 4] - bb[3]
+            testy <- testy + dy
+            bb <- shiftRect(bb, 0, dy)
+            # Need to recheck all the ones we have already checked
+            overlaps <- TRUE
+            break
+          }
         }
       }
     }

@@ -113,7 +113,8 @@ test_that("round.fn", {
 })
 
 test_that("default symbology", {
-  par(mfrow = c(2, 1))
+  op <- par(mfrow = c(2, 1))
+  on.exit(par(op))
   set.seed(1)
   contrasts <- c("self_fertilised - inter_cross, inter_cross- westerham_cross, self_fertilised - westerham_cross")
   d <- DurgaDiff(petunia, 1, 2, contrasts = contrasts)
@@ -125,4 +126,15 @@ test_that("default symbology", {
   d <- DurgaDiff(petunia, 1, 2, contrasts = contrasts)
   p <- DurgaPlot(d, main = "Default symbology", ef.size = FALSE, bty = "n", ylim = extendrange(petunia$height, f = c(0, 0.5)))
   expect_error(DurgaBrackets(p), NA)
+})
+
+test_that("bracket overlap", {
+  n <- 10
+  ng <- 7
+  set.seed(1)
+  data <- data.frame(val = c(replicate(ng, rnorm(n, runif(1)))),
+                     group = rep(1:ng, each = n))
+  d <- DurgaDiff(data, "val", "group")
+  p <- DurgaPlot(d, main = "No overlapping brackets", ef.size = FALSE, bty = "n", ylim = extendrange(data$val, f = c(0, 1)))
+  expect_error(DurgaBrackets(p, contrasts = "*", labels = "diff", lb.cex = 0.6, tip.length = 1, vertical.gap = 0.6), NA)
 })
