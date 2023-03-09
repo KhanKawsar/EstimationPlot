@@ -171,6 +171,15 @@ test_that("matrix data", {
   expect_error(DurgaPlot(d), NA)
 })
 
+test_that("violin symbology", {
+  op <- par(mfrow = c(1, 2))
+  data <- makeData()
+  d <- DurgaDiff(data, 1, 2, groups = c("ZControl1", "Group1", "Group2"))
+  expect_error(DurgaPlot(d, main = "Default symbology"), NA)
+  expect_error(DurgaPlot(d, main = "Custom symbology", violin.params = list(lwd = 2, ljoin = 2, density = 10)), NA)
+  par(op)
+})
+
 test_that("contrast plots", {
   data <- makeData()
   groups <- c("ZControl1", "Group1", "Group2", "Group3")

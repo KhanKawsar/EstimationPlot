@@ -18,6 +18,7 @@ DurgaPlot(
   violin = isFALSE(box) && isFALSE(bar),
   violin.shape = c("left-half", "right-half", "full"),
   violin.fill = TRUE,
+  violin.params = list(),
   violin.adj = 1.5,
   violin.width = 0.35,
   violin.trunc = TRUE,
@@ -120,6 +121,11 @@ borders.}
 right-half only (\code{"right"}), or a full violin (\code{"full"}).}
 
 \item{violin.fill}{Colour used to fill violins.}
+
+\item{violin.params}{Additional graphical parameters applied to drawing
+violins. May include \code{density}, \code{angle}, \code{lty}, \code{lwd},
+\code{lend} etc. Values are passed on to \code{\link[graphics]{polygon}};
+see its help page for details.}
 
 \item{violin.adj}{Value used to control violin plot smoothness by adjusting
 the kernel density bandwidth. Higher values produce a smoother plot.}

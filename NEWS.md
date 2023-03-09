@@ -2,6 +2,7 @@
 
 ## Durga 1.0.0.9000 (to be 1.1)
 
+* Added argument violin.params to DurgaPlot to provide additional control over violin appearance.
 * Fixed bug in DurgaBrackets; drawing many brackets sometimes resulted in overlapping brackets.
 
 ## Durga 1.0

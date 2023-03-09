@@ -468,6 +468,10 @@ DurgaTransparent <-  function(colour, transparency, relative = FALSE) {
 #'   are drawn in default colours. Otherwise specifies the colour of the violin
 #'   borders.
 #' @param violin.fill Colour used to fill violins.
+#' @param violin.params Additional graphical parameters applied to drawing
+#'   violins. May include \code{density}, \code{angle}, \code{lty}, \code{lwd},
+#'   \code{lend} etc. Values are passed on to \code{\link[graphics]{polygon}};
+#'   see its help page for details.
 #' @param violin.adj Value used to control violin plot smoothness by adjusting
 #'   the kernel density bandwidth. Higher values produce a smoother plot.
 #' @param violin.width Width of maximum violin horizontal extents, as a
@@ -672,6 +676,7 @@ DurgaPlot <- function(es,
                     violin = isFALSE(box) && isFALSE(bar),
                     violin.shape = c("left-half", "right-half", "full"),
                     violin.fill = TRUE,
+                    violin.params = list(),
                     violin.adj = 1.5,
                     violin.width = 0.35,
                     violin.trunc = TRUE,
@@ -967,7 +972,10 @@ DurgaPlot <- function(es,
       d <- densities[[i]]
       col <- violin.fill[i]
       border <- borders[i]
-      plotViolin(violin.shape[i], i + dx[i], d, col = col, border = border)
+      # Explicit parameters override values set in violin.params
+      violin.params["col"] <- NULL
+      violin.params["border"] <- NULL
+      do.call(plotViolin, c(list(violin.shape[i], i + dx[i], d, col = col, border = border), violin.params))
     }
   }
 
