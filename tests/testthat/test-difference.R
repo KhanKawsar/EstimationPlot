@@ -176,8 +176,15 @@ test_that("violin symbology", {
   data <- makeData()
   d <- DurgaDiff(data, 1, 2, groups = c("ZControl1", "Group1", "Group2"))
   expect_error(DurgaPlot(d, main = "Default symbology"), NA)
-  expect_error(DurgaPlot(d, main = "Custom symbology", violin.params = list(lwd = 2, ljoin = 2, density = 10)), NA)
+  expect_error(DurgaPlot(d, main = "Custom violins", violin.params = list(lwd = 2, ljoin = 2, density = 10)), NA)
   par(op)
+})
+
+test_that("violin no fill", {
+  data <- makeData()
+  d <- DurgaDiff(data, 1, 2, groups = c("ZControl1", "Group3", "Group4"))
+  expect_error(DurgaPlot(d, main = "No violin fill", violin.width = 2, violin.fill = F, violin.params = list(lwd = 2),
+                         ef.size.violin.fill = F, ef.size.violin.shape = "full"), NA)
 })
 
 test_that("contrast plots", {

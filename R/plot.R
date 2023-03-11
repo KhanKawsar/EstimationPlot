@@ -744,6 +744,7 @@ DurgaPlot <- function(es,
 
   # We allow TRUE/FALSE or colours to be specified for many values. TRUE is equivalent to a default colour
   .boolToDef <- function(arg, def) if (isTRUE(arg)) { def } else { arg }
+  .FALSEToVal <- function(arg, val) if (isFALSE(arg)) { val } else { arg }
   .show <- function(what) !isFALSE(what) && !is.null(what)
   .isColour <- function(c) tryCatch(is.matrix(grDevices::col2rgb(c)), error = function(e) FALSE)
   .colour <- function(what) if (.isColour(what)) { what } else { NA }
@@ -965,6 +966,8 @@ DurgaPlot <- function(es,
   if (.show(violin)) {
     violin <- .boolToDef(violin, defBorderPalette)
     borders <- .extend(violin)
+    # If fill is FALSE, pass in NA to specify no fill
+    violin.fill <- .FALSEToVal(violin.fill, NA)
     violin.fill <- .extend(.boolToDef(violin.fill, defFillPalette))
     violin.shape <- .extend(violin.shape)
     dx <- violin.dx
@@ -1093,8 +1096,11 @@ DurgaPlot <- function(es,
     # Handle default colours
     ef.size.col <- .boolToDef(ef.size, "black")
     violinCol <- .boolToDef(ef.size.violin, "grey40")
-    if (.show(ef.size.violin))
-      violinFill <- .boolToDef(ef.size.violin.fill, DurgaTransparent(violinCol, 0.8))
+    if (.show(ef.size.violin)) {
+      # To not fill, use col = NA
+      violinFill <- .FALSEToVal(ef.size.violin.fill, NA)
+      violinFill <- .boolToDef(violinFill, DurgaTransparent(violinCol, 0.8))
+    }
 
     # Install par settings for drawing effect size
     oldPars <- graphics::par(ef.size.params)
