@@ -276,7 +276,16 @@ DurgaPlot(d,
 ```
 
 
+`group.dx` is implemented very simply as a default value for various other `*.dx` arguments. That means that values such as `violin.dx` are not added to `group.dx`; rather they replace it. Under some circumstances, it can be more convenient if `*.dx` values are added to `group.dx`. You can achieve this in your own code by storing `group.dx` in a variable, then adding relative offsets for other arguments.
 
+```{r eval=FALSE}
+# Example snippet, make *.dx arguments relative to group.dx
+group.dx <- c(0.75, 0)  # Shift group 1 right, leave group 2 unchanged
+DurgaPlot(..., group.dx = group.dx, 
+          central.tendency.dx = group.dx + 0.1, # Shift mean & error bars right
+          violin.dx = group.dx + c(-0.4, -0.5), # Shift violins left
+          ef.size.dx = -0.5)
+```
 
 ## Advanced techniques
 
