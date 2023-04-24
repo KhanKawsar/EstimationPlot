@@ -4,7 +4,8 @@
 #### Private functions ####
 
 # Confidence interval of the mean of a group
-CI <- function(x, alpha = 0.95){
+CI <- function(x, alpha = 0.95) {
+  # Alternatively, perhaps we should bootstrap this so not assuming normal distribution
   m <- mean(x)
   sd <- stats::sd(x)
   n <- length(x)
@@ -29,6 +30,7 @@ stCohensD <- function(x1, x2){
   m2 <- mean(x2)
   SD2 <- stats::sd(x2)
   N2 <- length(x2)
+  # Calculate pooled standard deviation
   x <- sqrt(((N1 - 1) * (SD1 * SD1) + (N2 - 1) * (SD2 * SD2)) / (N1 + N2 - 2))
   (m2 - m1) / x
 }
