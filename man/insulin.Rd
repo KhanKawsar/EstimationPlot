@@ -32,4 +32,7 @@ testing whether insulin reduces blood sugar. Insulin was administered in
 rabbits and blood sugar was measured within three hours. Data collated from
 Table 1 and Table 2 of Banting \emph{et al}., (1922)
 }
+\seealso{
+\link{petunia}, \link{damselfly}
+}
 \keyword{datasets}

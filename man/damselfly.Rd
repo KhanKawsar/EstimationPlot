@@ -25,4 +25,7 @@ Measurements of the body size and mass for adult and juvenile males
 of \emph{Xanthagrion erythroneurum} damselflies. In this species, juvenile
 males are coloured yellow and change to red upon sexual maturity.
 }
+\seealso{
+\link{petunia}, \link{insulin}
+}
 \keyword{datasets}

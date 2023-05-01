@@ -23,6 +23,8 @@
 #'   \item{time}{Time of blood sugar measurement; minutes after administration of insulin}
 #' }
 #'
+#' @seealso \link{petunia}, \link{damselfly}
+#'
 #' @source Banting, F. G., Best, C. H., Collip, J. B., Macleod, J. J., & Noble,
 #'   E. C. (1922). The effect of pancreatic extract (insulin) on normal rabbits.
 #'   American Journal of Physiology-Legacy Content, 62(1), 162-176.
@@ -39,6 +41,8 @@
 #'   \item{pot_no}{Identifier of pot number in which each plant was grown}
 #' }
 #'
+#' @seealso \link{insulin}, \link{damselfly}
+#'
 #' @source Darwin, C. (1877). The effects of cross and self fertilisation in the vegetable kingdom. John Murray, Albemarle Street, London.
 "petunia"
 
@@ -54,6 +58,8 @@
 #'   \item{mass}{Measured body mass (mg) of damselflies}
 #'   \item{maturity}{Male age groups; \code{adult} or \code{juvenile} used for body size and weight measurements}
 #' }
+#'
+#' @seealso \link{petunia}, \link{insulin}
 #'
 #' @source Khan, M. K., & Herberstein, M. E. (2021). Male-male interactions
 #'   select for conspicuous male coloration in damselflies. Animal Behaviour,

@@ -21,4 +21,7 @@ petunia
 \description{
 Charles Darwin's experimental results on petunia plants to determine the difference of plant length between self fertilised and cross-fertilised, either with the same stock (inter-cross) or with a fresh stock (westerham-cross)
 }
+\seealso{
+\link{insulin}, \link{damselfly}
+}
 \keyword{datasets}
