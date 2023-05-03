@@ -487,3 +487,11 @@ DurgaPlot(d, paired = FALSE,
 
 legend("topright", c("Before insulin", "After insulin"), col = cols, fill = colsTr, bty = "n")
 ```
+
+## Suggestions? Problems?
+
+The source code for Durga is available at [github.com/KhanKawsar/EstimationPlot](https://github.com/KhanKawsar/EstimationPlot). We welcome suggestions for improvements or reports of problems. Let us know by [logging an issue](https://github.com/KhanKawsar/EstimationPlot/issues) on GitHub.
+
+The Durga [GitHub page](https://github.com/KhanKawsar/EstimationPlot) has additional information such as how to install the latest development version of Durga.
+
+
