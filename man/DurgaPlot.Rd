@@ -122,7 +122,8 @@ borders.}
 \item{violin.shape}{Desired violin shape - left-half only (\code{"left"}),
 right-half only (\code{"right"}), or a full violin (\code{"full"}).}
 
-\item{violin.fill}{Colour used to fill violins.}
+\item{violin.fill}{Colour used to fill violins. Specify \code{FALSE} or
+\code{NA} to leave violins unfilled.}
 
 \item{violin.params}{Additional graphical parameters applied to drawing
 violins. May include \code{density}, \code{angle}, \code{lty}, \code{lwd},
@@ -181,10 +182,11 @@ increase the size of the right margin before plotting (see
 \code{\link[graphics:par]{par(mar = ...)}}).}
 
 \item{ef.size.violin}{If not \code{FALSE}, boostrapped effect size estimates
-are shown as a violin plot. May be a colour, used for the violin border, and a
-transparent version is used for the violin fill.}
+are shown as a violin plot. May be a colour that is used for the violin
+border and fill (unless \code{ef.size.violin.fill} is specified).}
 
-\item{ef.size.violin.fill}{Colour used to fill effect size violins.}
+\item{ef.size.violin.fill}{Colour used to fill effect size violins. Default
+is a transparent version of \code{ef.size.violin}.}
 
 \item{ef.size.violin.shape}{Shape of the effect size violin. One of
 \code{"right-half"}, \code{"left-half"} or \code{"full"}.}

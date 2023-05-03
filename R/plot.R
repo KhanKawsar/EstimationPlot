@@ -469,7 +469,8 @@ DurgaTransparent <-  function(colour, transparency, relative = FALSE) {
 #'   violins
 #'   are drawn in default colours. Otherwise specifies the colour of the violin
 #'   borders.
-#' @param violin.fill Colour used to fill violins.
+#' @param violin.fill Colour used to fill violins. Specify \code{FALSE} or
+#'   \code{NA} to leave violins unfilled.
 #' @param violin.params Additional graphical parameters applied to drawing
 #'   violins. May include \code{density}, \code{angle}, \code{lty}, \code{lwd},
 #'   \code{lend} etc. Values are passed on to \code{\link[graphics]{polygon}};
@@ -548,13 +549,14 @@ DurgaTransparent <-  function(colour, transparency, relative = FALSE) {
 #'   increase the size of the right margin before plotting (see
 #'   \code{\link[graphics:par]{par(mar = ...)}}).
 #' @param ef.size.violin If not \code{FALSE}, boostrapped effect size estimates
-#'   are shown as a violin plot. May be a colour, used for the violin border, and a
-#'   transparent version is used for the violin fill.
+#'   are shown as a violin plot. May be a colour that is used for the violin
+#'   border and fill (unless \code{ef.size.violin.fill} is specified).
 #' @param ef.size.violin.shape Shape of the effect size violin. One of
 #'   \code{"right-half"}, \code{"left-half"} or \code{"full"}.
 #' @param ef.size.violin.trunc If \code{TRUE}, effect size violin is truncated
 #'   vertically so that it just covers the estimated effect size.
-#' @param ef.size.violin.fill Colour used to fill effect size violins.
+#' @param ef.size.violin.fill Colour used to fill effect size violins. Default
+#'   is a transparent version of \code{ef.size.violin}.
 #' @param ef.size.pch Symbol to represent mean effect size.
 #' @param ef.size.dx Horizontal shift to be applied to each contrast/effect
 #'   size. Unlike other \code{.dx} parameters, \code{ef.size.dx} is indexed by
