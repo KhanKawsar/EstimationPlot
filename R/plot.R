@@ -446,7 +446,8 @@ DurgaTransparent <-  function(colour, transparency, relative = FALSE) {
 #' @param group.colour Colours to use for each group. Either an
 #'   \code{\link{RColorBrewer}} palette name or a vector of colours.
 #'
-#' @param points If not FALSE, points are plotted. If \code{TRUE}, points are
+#' @param points If not \code{FALSE}, points are plotted. If \code{TRUE}, points
+#'   are
 #'   displayed with a default colour (which is the group colour with 40%
 #'   transparency). You may specify a vector of colours; if length 1, all points
 #'   are drawn with the specified colour. If length is less than the number of
@@ -464,7 +465,8 @@ DurgaTransparent <-  function(colour, transparency, relative = FALSE) {
 #'   \code{\link[graphics]{points}}, e.g. \code{DurgaPlot(es, points = "black",
 #'   points.params = list(pch = 21, bg = as.numeric(factor(data$Sex)) + 1))}.
 #'
-#' @param violin If not FALSE, violin plots are drawn. If \code{TRUE}, violins
+#' @param violin If not \code{FALSE}, violin plots are drawn. If \code{TRUE},
+#'   violins
 #'   are drawn in default colours. Otherwise specifies the colour of the violin
 #'   borders.
 #' @param violin.fill Colour used to fill violins.
@@ -482,7 +484,8 @@ DurgaTransparent <-  function(colour, transparency, relative = FALSE) {
 #'   right-half only (\code{"right"}), or a full violin (\code{"full"}).
 #' @param violin.dx Horizontal shift to be applied to each violin.
 #'
-#' @param box If not FALSE, draw a box-and-whisker plot of the grouped values.
+#' @param box If not \code{FALSE}, draw a box-and-whisker plot of the grouped
+#'   values.
 #'   Value may be a colour, in which case the box borders are plotted with the
 #'   colour(s). See \code{\link[graphics]{boxplot}}.
 #' @param box.fill Colour used to fill the bodies of the box-and-whisker plot.
@@ -496,14 +499,16 @@ DurgaTransparent <-  function(colour, transparency, relative = FALSE) {
 #'   list.
 #' @param box.dx Horizontal shift to be applied to each box.
 #'
-#' @param bar If not FALSE, draw a bar plot of the group means or medians,
+#' @param bar If not \code{FALSE}, draw a bar plot of the group means or
+#'   medians,
 #'   according to \code{central.tendency}. May be \code{TRUE} or a colour.
 #' @param bar.fill Colour used to fill bars.
 #' @param bar.width Width of bars.
 #' @param bar.dx Horizontal shift to be applied to each bar.
 #'
-#' @param central.tendency If not FALSE, a visual indicator of central tendency
-#'   is drawn. May be a colour, in which case it is used for mean/median and
+#' @param central.tendency If not \code{FALSE}, a visual indicator of central
+#'   tendency
+#'   is drawn. May be \code{TRUE} or a colour, in which case it is used for mean/median and
 #'   error bars.
 #' @param central.tendency.type Should the indicated measure of central tendency
 #'   be \code{"mean"} or \code{"median"}?
@@ -527,22 +532,26 @@ DurgaTransparent <-  function(colour, transparency, relative = FALSE) {
 #' @param error.bars.lty Line style for error bars.
 #' @param error.bars.lwd Line width for error bars.
 #'
-#' @param paired If \code{TRUE}, lines are drawn joining the individual data
-#'   points.
+#' @param paired If not \code{FALSE} and the data a paired, lines are drawn
+#'   joining the individual data points. May be \code{TRUE} or a colour.
+#'   Defaults to \code{TRUE} if the data are paired (i.e. the \code{id.col}
+#'   argument was specified in the call to \code{\link{DurgaDiff}}).
 #' @param paired.lty Line style for pair lines.
 #' @param paired.lwd Line width for pair lines.
 #'
-#' @param ef.size If not FALSE, effect sizes are plotted. May be \code{TRUE} or
+#' @param ef.size If not \code{FALSE}, effect sizes are plotted. May be
+#'   \code{TRUE} or
 #'   a colour.
 #' @param ef.size.position Effect sizes are plotted to the right of the main
 #'   plot if there is only one effect size to plot and \code{ef.size.position !=
 #'   "below"}. If the effect size is drawn to the right, you will need to
 #'   increase the size of the right margin before plotting (see
 #'   \code{\link[graphics:par]{par(mar = ...)}}).
-#' @param ef.size.violin If not FALSE, boostrapped effect size estimates are
-#'   show as a violin plot. May be a colour, used for the violin border, and a
+#' @param ef.size.violin If not \code{FALSE}, boostrapped effect size estimates
+#'   are shown as a violin plot. May be a colour, used for the violin border, and a
 #'   transparent version is used for the violin fill.
-#' @param ef.size.violin.shape Shape of the effect size violin.
+#' @param ef.size.violin.shape Shape of the effect size violin. One of
+#'   \code{"right-half"}, \code{"left-half"} or \code{"full"}.
 #' @param ef.size.violin.trunc If \code{TRUE}, effect size violin is truncated
 #'   vertically so that it just covers the estimated effect size.
 #' @param ef.size.violin.fill Colour used to fill effect size violins.
@@ -553,7 +562,7 @@ DurgaTransparent <-  function(colour, transparency, relative = FALSE) {
 #'   \code{group.dx} for the group above the effect size is also added.
 #' @param ef.size.ticks Optional locations and labels for ticks on the effect
 #'   size y-axis. E.g. to interpret effect size using Cohen's default values,
-#'   specif \code{ef.size.ticks = c("Large negative effect" = -0.8, "Medium
+#'   specify \code{ef.size.ticks = c("Large negative effect" = -0.8, "Medium
 #'   negative effect" = -0.5, "Small negative effect" = -0.2, "No effect" = 0,
 #'   "Small positive effect" = 0.2, "Medium positive effect" = 0.5, "Large
 #'   positive effect" = 0.8)}
