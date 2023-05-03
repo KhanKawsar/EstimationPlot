@@ -699,7 +699,7 @@ DurgaPlot <- function(es,
                     ef.size.violin = TRUE,
                     ef.size.violin.fill = TRUE,
                     ef.size.violin.shape = c("right-half", "left-half", "full"),
-                    ef.size.violin.trunc = TRUE, # TODO
+                    ef.size.violin.trunc = TRUE,
                     ef.size.pch = 17,
                     ef.size.ticks = NULL,
                     ef.size.label = es$effect.name,
