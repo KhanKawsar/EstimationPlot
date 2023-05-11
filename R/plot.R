@@ -204,7 +204,9 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch,
     # Axis labels on right-hand
     labels <- names(ticksAt)
     if (is.null(ticksAt)) {
-      ticksAt <- pretty(esRange)
+      # Extend ticks to include entire CI
+      tickRange <- range(esRange, pwes$bca[4:5])
+      ticksAt <- pretty(tickRange)
     }
     if (is.null(labels)) {
       labels <- ticksAt
