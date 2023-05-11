@@ -40,6 +40,8 @@ DurgaPlot(
   ef.size.violin.shape = c("right-half", "left-half", "full"),
   ef.size.violin.trunc = TRUE,
   ef.size.pch = 17,
+  ef.size.lty = 1,
+  ef.size.lwd = 2,
   ef.size.ticks = NULL,
   ef.size.label = es$effect.name,
   ef.size.dx = 0,
@@ -195,6 +197,10 @@ is a transparent version of \code{ef.size.violin}.}
 vertically so that it just covers the estimated effect size.}
 
 \item{ef.size.pch}{Symbol to represent mean effect size.}
+
+\item{ef.size.lty}{Line style for the effect size error bar.}
+
+\item{ef.size.lwd}{Line weight for the effect size error bar.}
 
 \item{ef.size.ticks}{Optional locations and labels for ticks on the effect
 size y-axis. E.g. to interpret effect size using Cohen's default values,
