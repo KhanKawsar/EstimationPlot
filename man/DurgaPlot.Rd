@@ -116,9 +116,10 @@ points horizontally (ignored if \code{points.method = "overplot"}).}
 \code{\link[graphics]{points}}, e.g. \code{DurgaPlot(es, points = "black",
 points.params = list(pch = 21, bg = as.numeric(factor(data$Sex)) + 1))}.}
 
-\item{violin}{If not \code{FALSE}, violin plots are drawn. If \code{TRUE},
-violins
-are drawn in default colours. Otherwise specifies the colour of the violin
+\item{violin}{If not \code{FALSE}, violin plots are drawn. Violins
+are simply probability density plots, with density on the x-axis
+and value on the y-axis. If \code{TRUE}, violins are drawn in
+default colours. Otherwise specifies the colour of the violin
 borders.}
 
 \item{violin.shape}{Desired violin shape - left-half only (\code{"left"}),
@@ -133,7 +134,9 @@ violins. May include \code{density}, \code{angle}, \code{lty}, \code{lwd},
 see its help page for details.}
 
 \item{violin.adj}{Value used to control violin plot smoothness by adjusting
-the kernel density bandwidth. Higher values produce a smoother plot.}
+the kernel density bandwidth. Higher values produce a smoother plot.
+Passed unchanged as the \code{adjust} argument to the
+\code{\link[stats]{density}} function.}
 
 \item{violin.width}{Width of maximum violin horizontal extents, as a
 proportion of the distance between groups.}

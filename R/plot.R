@@ -469,9 +469,10 @@ DurgaTransparent <-  function(colour, transparency, relative = FALSE) {
 #'   \code{\link[graphics]{points}}, e.g. \code{DurgaPlot(es, points = "black",
 #'   points.params = list(pch = 21, bg = as.numeric(factor(data$Sex)) + 1))}.
 #'
-#' @param violin If not \code{FALSE}, violin plots are drawn. If \code{TRUE},
-#'   violins
-#'   are drawn in default colours. Otherwise specifies the colour of the violin
+#' @param violin If not \code{FALSE}, violin plots are drawn. Violins
+#'   are simply probability density plots, with density on the x-axis
+#'   and value on the y-axis. If \code{TRUE}, violins are drawn in
+#'   default colours. Otherwise specifies the colour of the violin
 #'   borders.
 #' @param violin.fill Colour used to fill violins. Specify \code{FALSE} or
 #'   \code{NA} to leave violins unfilled.
@@ -481,6 +482,8 @@ DurgaTransparent <-  function(colour, transparency, relative = FALSE) {
 #'   see its help page for details.
 #' @param violin.adj Value used to control violin plot smoothness by adjusting
 #'   the kernel density bandwidth. Higher values produce a smoother plot.
+#'   Passed unchanged as the \code{adjust} argument to the
+#'   \code{\link[stats]{density}} function.
 #' @param violin.width Width of maximum violin horizontal extents, as a
 #'   proportion of the distance between groups.
 #' @param violin.trunc Numeric value that specifies what vertical proportion of

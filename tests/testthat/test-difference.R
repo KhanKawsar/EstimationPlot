@@ -1302,3 +1302,12 @@ test_that("ef size labels", {
   DurgaPlot(d, main = "Custom ef labels", ef.size.ticks = c("Huge" = -2, "None" = 0, "Big" = 1), ef.size.params = list(las = 1))
   expect_error(DurgaPlot(d, contrasts = "Group2 - ZControl1", main = "Custom ef labels", ef.size.ticks = c("Huge" = -2, "None" = 0, "Big" = 1), ef.size.params = list(las = 1)), NA)
 })
+
+test_that("ef size symbology", {
+  data <- makeData()
+  par(mfrow = c(1, 2))
+  d <- DurgaDiff(data, 1, 2, groups = c(Control = "ZControl1", "Group1", "Group2"))
+  expect_error(DurgaPlot(d, main = "Custom ef symbology", ef.size = 2:3, ef.size.lty = 3:2, ef.size.lwd = c(4, 2)), NA)
+  d <- DurgaDiff(data, 1, 2, groups = c(Control = "ZControl1", "Group1"), effect.type = "cohens")
+  expect_error(DurgaPlot(d, main = "Custom ef symbology", ef.size.lty = 2, ef.size.lwd = 4), NA)
+})
