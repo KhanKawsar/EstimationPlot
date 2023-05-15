@@ -46,7 +46,8 @@ used as group labels for plotting or printing.}
 
 \item{contrasts}{Specify the pairs of groups to be compared. By default, all
 pairwise differences are generated. May be a single string, a vector of
-strings, or a matrix. See Details for more information.}
+strings, or a matrix. Specify \code{NULL} to avoid calculating any
+contrasts. See Details for more information.}
 
 \item{effect.type}{Type of group difference to be estimated. Possible types
 are: \code{"mean"}, difference in unstandardised group means;

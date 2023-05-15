@@ -5,7 +5,7 @@
 
 # Confidence interval of the mean of a group
 CI <- function(x, alpha = 0.95) {
-  # Alternatively, perhaps we should bootstrap this so not assuming normal distribution
+  # Alternatively, perhaps we should bootstrap this so not assuming any particular distribution
   m <- mean(x)
   sd <- stats::sd(x)
   n <- length(x)
@@ -267,7 +267,8 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #'   used as group labels for plotting or printing.
 #' @param contrasts Specify the pairs of groups to be compared. By default, all
 #'   pairwise differences are generated. May be a single string, a vector of
-#'   strings, or a matrix. See Details for more information.
+#'   strings, or a matrix. Specify \code{NULL} to avoid calculating any
+#'   contrasts. See Details for more information.
 #' @param effect.type Type of group difference to be estimated. Possible types
 #'   are: \code{"mean"}, difference in unstandardised group means;
 #'   \code{"cohens"}, Cohen's d; \code{"hedges"}, Hedges' g; or a function. See
