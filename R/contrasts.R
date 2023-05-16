@@ -43,7 +43,8 @@
 #   use either group value or label to identify a group.
 expandContrasts <- function(contrasts, groups, groupNames = NULL) {
 
-  if (is.null(contrasts))
+  # Allow various ways to express no contrasts
+  if (is.null(contrasts) || length(contrasts) == 0 || (length(contrasts) == 1 && contrasts == ""))
     return(NULL)
 
   # This implementation is complicated because we allow any characters in group

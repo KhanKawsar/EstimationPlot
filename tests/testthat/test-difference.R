@@ -367,8 +367,10 @@ test_that("contrasts", {
 
   expect_error(DurgaDiff(data, "Measurement", "Group", contrasts = "Group2:ZControl"))
   expect_error(DurgaDiff(data, "Measurement", "Group", contrasts = "ZControl"))
-  expect_error(DurgaDiff(data, "Measurement", "Group", contrasts = ""))
   expect_error(DurgaDiff(data, "Measurement", "Group", contrasts = "Group 2 - Group 1"))
+
+  # Allow "" as meaning no contrasts
+  d <- DurgaDiff(data, "Measurement", "Group", contrasts = "")
 
   # Wildcard contrasts
   d <- DurgaDiff(data, "Measurement", "Group", effect.type = "cohen", contrasts = "*")

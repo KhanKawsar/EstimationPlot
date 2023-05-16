@@ -295,11 +295,13 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #'   are: \code{mean}, \code{median}, \code{sd} (standard deviation), \code{se}
 #'   (standard error of the mean), \code{CI.lower} and \code{CI.upper} (lower
 #'   and upper confidence intervals of the mean, confidence level as set by the
-#'   \code{ci.conf} parameter) and \code{n} (group sample size.)}
+#'   \code{ci.conf} parameter) and \code{n} (group sample size)}
 #'
 #'   \item{\code{group.differences}}{List of \code{DurgaGroupDiff} objects,
 #'   which are \code{boot} objects with added confidence interval information.
-#'   See \code{\link[boot]{boot}} and \code{\link[boot]{boot.ci}}}
+#'   See \code{\link[boot]{boot}} and \code{\link[boot]{boot.ci}}. This element will be missing
+#'   if \code{contrasts} is empty or \code{NULL}}
+#'
 #'   \item{\code{groups}}{Vector of group names}
 #'   \item{\code{group.names}}{Labels used to identify groups}
 #'   \item{\code{effect.type}}{Value of \code{effect.type} parameter}
