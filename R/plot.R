@@ -22,7 +22,11 @@ truncateDensity <- function(density, range) {
   to <- utils::head(which(density$x > range[2]), 1)
   keep <- seq(from, to)
   # Extend by 1 step in each direction so that density completely includes data
-  keep <- c(keep[1] - 1, keep, keep[length(keep)] + 1)
+  # Handle pathological case when density does not extend past data
+  if (keep[1] > 1)
+    keep <- c(keep[1] - 1, keep)
+  if (keep[length(keep)] < length(density$x))
+    keep <- c(keep, keep[length(keep)] + 1)
 
   density$y <- c(0, density$y[keep], 0)
   density$x <- c(density$x[keep[1]], density$x[keep], density$x[keep[length(keep)]])

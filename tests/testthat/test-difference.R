@@ -1313,3 +1313,12 @@ test_that("ef size symbology", {
   d <- DurgaDiff(data, 1, 2, groups = c(Control = "ZControl1", "Group1"), effect.type = "cohens")
   expect_error(DurgaPlot(d, main = "Custom ef symbology", ef.size.lty = 2, ef.size.lwd = 4), NA)
 })
+
+test_that("pathological data", {
+  # There is a weird case when the density does not extend past the data
+  n <- 10000
+  df <- data.frame(c(rnorm(n), 500, rnorm(n), -500),
+                   group = rep(c("G1", "G2"), each = n + 1))
+  d <- DurgaDiff(df, 1, 2, contrasts = NULL)
+  expect_error(DurgaPlot(d), NA)
+})
