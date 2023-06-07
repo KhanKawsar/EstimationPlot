@@ -1322,3 +1322,21 @@ test_that("pathological data", {
   d <- DurgaDiff(df, 1, 2, contrasts = NULL)
   expect_error(DurgaPlot(d), NA)
 })
+
+test_that("points layout", {
+  # Make some bimodal data
+  n1 <- 300
+  n2 <- 100
+  n3 <- 50
+  n <- n1 + n2 + n3
+  data <- data.frame(Measurement = c(rnorm(n1, mean = 1), rnorm(n2, mean = 4), rnorm(n3, mean = 7, sd = 0.2),
+                                     rnorm(n1, mean = 4), rnorm(n2, mean = 0.5), rnorm(n3, mean = -1, sd = 0.5)),
+                     Group = rep(c("Group 1", "Group 2"), each = n))
+
+  par(mfrow = c(2, 2))
+  d <- DurgaDiff(data, 1, 2, contrasts = "")
+  expect_error(DurgaPlot(d, main = "Default point layout", ef.size = FALSE), NA)
+  expect_error(DurgaPlot(d, main = "Adjust = 0.7", ef.size = FALSE, points.adjust = 0.7, violin.adj = 0.7), NA)
+  expect_error(DurgaPlot(d, main = "Method = tukey", ef.size = FALSE, points.method = "tukey"), NA)
+  expect_error(DurgaPlot(d, main = "Method = overplot", ef.size = FALSE, points.method = "overplot"), NA)
+})

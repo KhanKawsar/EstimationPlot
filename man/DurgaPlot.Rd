@@ -14,6 +14,7 @@ DurgaPlot(
     "minout", "tukey", "tukeyDense", "jitter", "overplot"),
   points.spread = ifelse(points.method == "jitter", 0.1, 0.3),
   points.dx = group.dx,
+  points.adjust = 1,
   points.params = list(),
   violin = isFALSE(box) && isFALSE(bar),
   violin.shape = c("left-half", "right-half", "full"),
@@ -111,6 +112,9 @@ methods.}
 points horizontally (ignored if \code{points.method = "overplot"}).}
 
 \item{points.dx}{Horizontal shift to be applied to points in each group.}
+
+\item{points.adjust}{Adjust the bandwidth used to calculate kernel density
+when drawing points. Smaller values mean a tighter fit.}
 
 \item{points.params}{List of named parameters to pass on to
 \code{\link[graphics]{points}}, e.g. \code{DurgaPlot(es, points = "black",

@@ -469,6 +469,8 @@ DurgaTransparent <-  function(colour, transparency, relative = FALSE) {
 #' @param points.spread Numeric value used to adjust the points scatter method
 #'   points horizontally (ignored if \code{points.method = "overplot"}).
 #' @param points.dx Horizontal shift to be applied to points in each group.
+#' @param points.adjust Adjust the bandwidth used to calculate kernel density
+#'   when drawing points. Smaller values mean a tighter fit.
 #' @param points.params List of named parameters to pass on to
 #'   \code{\link[graphics]{points}}, e.g. \code{DurgaPlot(es, points = "black",
 #'   points.params = list(pch = 21, bg = as.numeric(factor(data$Sex)) + 1))}.
@@ -695,6 +697,7 @@ DurgaPlot <- function(es,
                                       "tukeyDense", "jitter", "overplot"),
                     points.spread = ifelse(points.method == "jitter", 0.1, 0.3),
                     points.dx = group.dx,
+                    points.adjust = 1,
                     points.params = list(),
 
                     violin = isFALSE(box) && isFALSE(bar),
@@ -1045,7 +1048,8 @@ DurgaPlot <- function(es,
     } else {
       # Scatter the points
       x <- x + vipor::offsetX(data[[es$data.col]], as.numeric(data$.group.as.factor),
-                              method = points.method, varwidth = TRUE, width = points.spread)
+                              method = points.method, varwidth = TRUE, width = points.spread,
+                              adjust = points.adjust)
     }
     # Complicated way of calling is to allow user to pass in arbitrary parameters
     pch <- points.params[["pch"]] %||% 19
