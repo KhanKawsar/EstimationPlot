@@ -103,6 +103,11 @@ p <- DurgaPlot(d, ef.size = FALSE, frame.plot = FALSE)
 # Add the brackets to the plot
 DurgaBrackets(p, lb.cex = 0.8)
 
+# Only draw brackets that do not include zero
+p <- DurgaPlot(d, ef.size = FALSE, frame.plot = FALSE)
+diffs <- Filter(function(pwes) (pwes$bca[4] > 0 || pwes$bca[5] < 0), d$group.differences)
+DurgaBrackets(p, contrasts = diffs)
+
 }
 \seealso{
 \code{\link{DurgaPlot}}
