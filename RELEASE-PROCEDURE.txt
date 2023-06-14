@@ -7,11 +7,11 @@ Update version number and date in DESCRIPTION file. See https://semver.org/
 
 Update NEWS.md
 
-Update session info in README.md: devtools::session_info()
+Update session info in README.md by calling: devtools::session_info()
 
 Commit and push all changes
 
-Build source package from RStudio menu (creates ../Durga_x.y.z.b.tar.gz)
+Build source package from RStudio Build menu (creates ../Durga_x.y.z.b.tar.gz)
 
 Run (possibly from RStudio terminal window): cd ..; R CMD check --as-cran Durga_x.y.z.b.tar.gz
 You can add the option --no-manual if you get an error: pdflatex is not available
@@ -27,4 +27,4 @@ Once accepted by CRAN:
 
 Create a new release on GitHub (https://github.com/KhanKawsar/EstimationPlot)
 
-Update version number (in DESCRIPTION) to x.y.z.9000. See http://r-pkgs.had.co.nz/description.html#version for rationale for the use of 9000 as a version number.
+Update version number in DESCRIPTION to x.y.z.9000. See http://r-pkgs.had.co.nz/description.html#version for rationale behind the use of 9000 as a version number.
