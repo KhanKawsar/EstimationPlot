@@ -154,12 +154,13 @@ test_that("group names and contrasts", {
   # Each pair of plots in a row should be identical. One uses group data value, the other uses group label
   # Seems to be a bug? in R, restoring mfrow after DurgaPlot changes the margins!
   mar <- par("mar")
-  par(mfrow = c(2, 2))
+  op <- par(mfrow = c(2, 2))
+  on.exit(par(op))
+
   expect_error(DurgaPlot(d, contrasts = "Group1 - ZControl1", main = "1 contrast"), NA)
   expect_error(DurgaPlot(d, contrasts = "G 1 - Ctrl", main = "1 contrast"), NA)
   expect_error(DurgaPlot(d, contrasts = "Group1 - ZControl1, Group2 - ZControl1", main = "2 contrasts"), NA)
   expect_error(DurgaPlot(d, contrasts = "G 1 - Ctrl, G 2 - Ctrl", main = "2 contrasts"), NA)
-  par(mfrow = c(1, 1))
   par(mar = mar)
 })
 
@@ -579,10 +580,11 @@ test_that("many groups", {
   trt <- c(sapply(seq_along(groupMean), function(i) rep(groups[i], n)))
   df <- data.frame(Height = val, Treatment = trt)
   d <- DurgaDiff(df, "Height", "Treatment", groups = groups)
-  par(cex = 0.8)
+  op <- par(cex = 0.8)
   expect_error(DurgaPlot(d, main = "1/3) Many groups"), NA)
   expect_error(DurgaPlot(d, main = "2/3) Many groups, control-.", contrasts = paste(df$Treatment[1], "-.")), NA)
   expect_error(DurgaPlot(d, main = "3/3) Many groups, .-control", contrasts = paste(" . - ", df$Treatment[1])), NA)
+  par(op)
 })
 
 test_that("plots work", {
@@ -1276,14 +1278,17 @@ test_that("ef range plot bug", {
 test_that("ef below layout", {
   data <- makeData()
   d <- DurgaDiff(data, 1, 2, groups = c("ZControl1", "Group1", "Group2"))
-  par(mfrow = c(1, 2), cex = 0.7)
+  op <- par(mfrow = c(1, 2), cex = 0.7)
+  on.exit(par(op))
   expect_error(DurgaPlot(d, main = "Default EF layout"), NA)
   expect_error(DurgaPlot(d, ef.size.top.pad = 1.5, ef.size.height = 0.6, main = "Smaller gap, larger height"), NA)
 })
 
 test_that("ef size ticks", {
   data <- makeData()
-  par(mfrow = c(2, 2), mar = c(5, 4, 4, 1) + 0.1)
+  op <- par(mfrow = c(2, 2), mar = c(5, 4, 4, 1) + 0.1)
+  on.exit(par(op))
+
   d <- DurgaDiff(data, 1, 2, groups = c("ZControl1", "Group1", "Group2"))
   DurgaPlot(d, main = "Custom ef ticks", ef.size.ticks = c(30, 0, -50))
   DurgaPlot(d, contrasts = "Group2 - ZControl1", main = "Custom ef ticks", ef.size.ticks = c(30, 0, -50))
@@ -1295,7 +1300,9 @@ test_that("ef size ticks", {
 
 test_that("ef size labels", {
   data <- makeData()
-  par(mfrow = c(2, 2))
+  op <- par(mfrow = c(2, 2))
+  on.exit(par(op))
+
   d <- DurgaDiff(data, 1, 2, groups = c("ZControl1", "Group1", "Group2"))
   DurgaPlot(d, main = "Custom ef labels", ef.size.ticks = c("Big" = 30, "None" = 0, "Huge" = -50), ef.size.params = list(las = 1))
   DurgaPlot(d, contrasts = "Group2 - ZControl1", main = "Custom ef labels", ef.size.ticks = c("Big" = 30, "None" = 0, "Huge" = -50), ef.size.params = list(las = 1))
@@ -1307,7 +1314,9 @@ test_that("ef size labels", {
 
 test_that("ef size symbology", {
   data <- makeData()
-  par(mfrow = c(1, 2))
+  op <- par(mfrow = c(1, 2))
+  on.exit(par(op))
+
   d <- DurgaDiff(data, 1, 2, groups = c(Control = "ZControl1", "Group1", "Group2"))
   expect_error(DurgaPlot(d, main = "Custom ef symbology", ef.size = 2:3, ef.size.lty = 3:2, ef.size.lwd = c(4, 2)), NA)
   d <- DurgaDiff(data, 1, 2, groups = c(Control = "ZControl1", "Group1"), effect.type = "cohens")
@@ -1317,10 +1326,10 @@ test_that("ef size symbology", {
 test_that("pathological data", {
   # There is a weird case when the density does not extend past the data
   n <- 10000
-  df <- data.frame(c(rnorm(n), 500, rnorm(n), -500),
+  df <- data.frame(Value = c(rnorm(n), 500, rnorm(n), -500),
                    group = rep(c("G1", "G2"), each = n + 1))
   d <- DurgaDiff(df, 1, 2, contrasts = NULL)
-  expect_error(DurgaPlot(d), NA)
+  expect_error(DurgaPlot(d, main = "Pathological case - don't crash!"), NA)
 })
 
 test_that("points layout", {
@@ -1333,7 +1342,9 @@ test_that("points layout", {
                                      rnorm(n1, mean = 4), rnorm(n2, mean = 0.5), rnorm(n3, mean = -1, sd = 0.5)),
                      Group = rep(c("Group 1", "Group 2"), each = n))
 
-  par(mfrow = c(2, 2))
+  op <- par(mfrow = c(2, 2))
+  on.exit(par(op))
+
   d <- DurgaDiff(data, 1, 2, contrasts = "")
   expect_error(DurgaPlot(d, main = "Default point layout", ef.size = FALSE), NA)
   expect_error(DurgaPlot(d, main = "Adjust = 0.7", ef.size = FALSE, points.adjust = 0.7, violin.adj = 0.7), NA)
