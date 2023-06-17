@@ -6,6 +6,7 @@
 # Confidence interval of the mean of a group
 CI <- function(x, alpha = 0.95) {
   # Alternatively, perhaps we should bootstrap this so not assuming any particular distribution
+  # See sample implementation below (CI.boot)
   m <- mean(x)
   sd <- stats::sd(x)
   n <- length(x)
@@ -16,6 +17,13 @@ CI <- function(x, alpha = 0.95) {
   me <- t * se
   c(m - me, m + me)
 }
+
+# CI.boot <- function(x, alpha = 0.95, R = 1000) {
+#   bmean <- function(x, i) mean(x[i])
+#   b <- boot::boot(x, bmean, R)
+#   ci <- boot::boot.ci(b, conf = alpha, type = "bca")
+#   ci$bca[4:5]
+# }
 
 # Two group statistic functions
 
@@ -100,6 +108,7 @@ calcPairDiff <- function(data, pair, isPaired, pairNames, pairIndices, data.col,
     }
     # Statistic functions operate on differences between paired values
     bootstrapData <- g1[[data.col]][g1Idx] - g2[[data.col]]
+    strata <- rep(1, length(bootstrapData))
     if (is.function(effect.type)) {
       statistic <- .wrapPairedStatistic(effect.type)
     } else if (effect.type == "mean") {
@@ -110,8 +119,9 @@ calcPairDiff <- function(data, pair, isPaired, pairNames, pairIndices, data.col,
       statistic <- .wrapPairedStatistic(stHedgesGz)
     }
   } else {
-    # Unpaired data
-    bootstrapData <- data
+    # Unpaired data. Only bootstrap rows that are in this pair of groups
+    bootstrapData <- data[data[[group.col]] %in% pair, ]
+    strata <- factor(bootstrapData[[group.col]])
     if (is.function(effect.type)) {
       statistic <- .wrap2GroupStatistic(effect.type)
     } else if (effect.type == "mean") {
@@ -123,8 +133,9 @@ calcPairDiff <- function(data, pair, isPaired, pairNames, pairIndices, data.col,
     }
   }
 
-  # Bootstrap the statistic
-  es <- do.call(boot::boot, c(list(data = bootstrapData, statistic = statistic, R = R, stype = "i"), boot.params))
+  # Bootstrap the statistic. The strata argument means that we bootstrap within each group separately
+  es <- do.call(boot::boot, c(list(data = bootstrapData, strata = strata,
+                                   statistic = statistic, R = R, stype = "i"), boot.params))
 
   if (is.na(es$t0))
     stop(sprintf("Estimate is NA; do you need to specify na.rm = TRUE?"))

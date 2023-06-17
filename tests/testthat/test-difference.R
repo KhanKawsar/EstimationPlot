@@ -291,14 +291,16 @@ test_that("print", {
               "Group1    122\\.9210 118\\.8367 21\\.31850 3\\.370750 116\\.10300 129\\.7390 40\\n",
               "ZControl1 102\\.3007 103\\.2276 22\\.16668 3\\.504859  95\\.21141 109\\.3899 40\\n",
               "Unpaired Mean difference \\(R = 1000, bootstrap CI method = bca\\):\\n",
-              "  ZControl1 - Group1: -20\\.6203, 95% CI \\[-30\\.[0-9]+, -10\\.[0-9]+\\]")
+              "  ZControl1 - Group1: -20\\.6203, 95% CI \\[-29\\.[0-9]+, -11\\.[0-9]+\\]")
   expect_output(print(d), expected)
   # Print mismatched lines
-  # got <- capture.output(print(d))
-  # expLines <- gsub("\\\\", "", strsplit(expected, "\\\\n")[[1]])
-  # matched <- got == expLines
-  # print(got[!matched])
-  # print(expLines[!matched])
+  if (FALSE) {
+  got <- capture.output(print(d))
+  expLines <- gsub("\\\\", "", strsplit(expected, "\\\\n")[[1]])
+  matched <- got == expLines
+  print(got[!matched])
+  print(expLines[!matched])
+  }
 
   checkSummaryMatches <- function(d1, d2) {
     d1s <- capture.output(print(d1))
@@ -1351,3 +1353,29 @@ test_that("points layout", {
   expect_error(DurgaPlot(d, main = "Method = tukey", ef.size = FALSE, points.method = "tukey"), NA)
   expect_error(DurgaPlot(d, main = "Method = overplot", ef.size = FALSE, points.method = "overplot"), NA)
 })
+
+test_that("missing right axis", {
+  # Bug: Can fail with very small group sizes, because bootstrap wasn't stratified
+
+  stats <- structure(list(cat = c("RelearningwalksOld", "RelearningwalksOld",
+                                  "RelearningwalksOld", "RelearningwalksOld", "RelearningwalksOld",
+                                  "RelearningwalksOld", "RelearningNew", "RelearningNew", "RelearningNew",
+                                  "RelearningNew", "RelearningNew"),
+                          `Convex hull area` = c(5749.50993182344,
+                                                 12052.2167954142, 11692.8373439029, 5327.12611957551, 434.590489399867,
+                                                 19118.6301846389, 7934.00774651262, 28646.8325343417, 25339.7006681887,
+                                                 11880.8673679235, 26535.4117772832),
+                          `Max displacement` = c(8.41844123108767,
+                                                 6.34767201343218, 25.188225965698, 6.20186762835405, 2.10714057756224,
+                                                 5.98568895263556, 11.3602307617808, 15.453027281305, 11.3599509921636,
+                                                 18.5884235814962, 21.898981986908),
+                          Duration = c(25.02, 43.14, 25.6, 44.76, 13.1, 55.48, 8.28, 9.52, 22, 9.28, 11.96)),
+                     row.names = c(NA, -11L), class = "data.frame")
+
+  learningSheets <- c(`Old nest relearning walks` = "RelearningwalksOld", `New nest relearning walks` = "RelearningNew")
+  set.seed(1)
+  d <- DurgaDiff(stats, "Convex hull area", "cat", groups = learningSheets)
+  expect_error(DurgaPlot(d, main = "Effect size axis present?"), NA)
+
+  data <- data.frame(Val = rnorm(10), Group = c(1, 2, rep(2, 8)))
+  expect_error(DurgaDiff(data, 1, 2), NA)
