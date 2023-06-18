@@ -404,9 +404,9 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #'                groups = c("Self-fertilised" = "self_fertilised",
 #'                           "Intercrossed" = "inter_cross",
 #'                           "Westerham-crossed" = "westerham_cross"),
-#'                contrasts = c("Westerham-crossed - self-fertilised",
-#'                              "Westerham-crossed - intercrossed",
-#'                              "intercrossed - self-fertilised"))
+#'                contrasts = c("Westerham-crossed - Self-fertilised",
+#'                              "Westerham-crossed - Intercrossed",
+#'                              "Intercrossed - Self-fertilised"))
 #'
 #' # Wide format data
 #' d <- DurgaDiff(insulin.wide, groups = c("sugar.before", "sugar.after"))
