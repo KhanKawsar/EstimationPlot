@@ -108,9 +108,9 @@ expandContrasts <- function(contrasts, groups, groupNames = NULL) {
       found <- mapply(.findGroupOrLabel, groups, groupNames, MoreArgs = list(contrast))
       if (sum(found > 0) != 2) {
         extra <- ""
-        if (!is.null(groupNames))
+        if (!is.null(groupNames) && !identical(groupNames, groups))
           extra <- sprintf(" (or %s)", paste(groupNames, collapse = ", "))
-        stop(sprintf("Invalid contrast '%s'; must be 'group1 - group2, groups are %s%s",
+        stop(sprintf("Invalid contrast '%s'; must be 'group1 - group2; groups are %s%s",
                      contrast, paste(groups, collapse = ", "), extra))
       }
       found <- found[found != 0]

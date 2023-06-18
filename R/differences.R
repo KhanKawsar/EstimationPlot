@@ -166,6 +166,41 @@ calcPairDiff <- function(data, pair, isPaired, pairNames, pairIndices, data.col,
   es
 }
 
+# Convert a wide-format paired data set to long format
+wideToLong <- function(x, id.col, groups) {
+  # Check columns exist
+  badCols <- !(groups %in% names(x))
+  if (any(badCols)) {
+    stop(sprintf("Invalid group name%s \"%s\"; in wide format, groups must be column names.\nAvailable columns are: %s",
+                 ifelse(sum(badCols) == 1, "", "s"), paste(groups[badCols], collapse = ", "), paste(names(x), collapse = ", ")))
+  }
+  # Pick unique column names
+  .pickCol <- function(base) {
+    existingNames <- names(x)
+    nm <- base
+    suf <- 1
+    while (nm %in% existingNames) {
+      nm <- sprintf("%s.%d", base, suf)
+      suf <- suf + 1
+    }
+    nm
+  }
+  if (missing(id.col) || is.null(id.col) || id.col == "")
+    id.col <- .pickCol("id")
+  data.col <- .pickCol("value")
+  group.col <- .pickCol("group")
+  x <- stats::reshape(x, direction = "long",
+                      varying = list(groups),
+                      idvar = id.col,
+                      v.names = data.col,
+                      timevar = group.col,
+                      times = groups
+  )
+  attr(x, "id.col") <- id.col
+  attr(x, "data.col") <- data.col
+  attr(x, "group.col") <- group.col
+  x
+}
 
 #__________________________________________________________________________#
 #### Public functions ####
@@ -225,12 +260,24 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #' Estimates differences between groups in preparation for plotting by
 #' \code{\link{DurgaPlot}}.
 #'
-#' If \code{x} is a \code{data.frame} (or similar), it must be in \emph{long
+#' If \code{x} is a \code{data.frame} (or similar), and does not contain repeated measures data, it must be in \emph{long
 #' format}: one column (\code{data.col}) contains the measurement or value to be
 #' compared, and another column (\code{group.col}) the group identity. For
-#' repeated measures/paired data, a subject identity column (\code{id.col}) is
-#' also required. Alternatively, \code{x} may be a formula; see
-#' \code{\link{DurgaDiff.formula}}.
+#' repeated measures/paired data in long format, a subject identity column
+#' (\code{id.col}) is also required. Alternatively, \code{x} may be a formula;
+#' see \code{\link{DurgaDiff.formula}}.
+#'
+#' Repeated measures or paired data can be passed in either \emph{long} or
+#' \emph{wide} format. Long format is as described above. Wide format contains
+#' repeated measurements in different columns of the same row. To pass wide
+#' format data, do not specify the arguments \code{data.col} or
+#' \code{group.col}, and you must explicitly specify the groups to be compared
+#' in the \code{groups} argument. Each group must be the name of a column in
+#' \code{x}. You may specify \code{id.col}. The \code{id.col} can be a column
+#' that already exists and uniquely identifies each specimen, or it can be the
+#' name of a column to be created, and the specimen ID will be a generated
+#' integer sequence. Wide format data will be internally convert to long format,
+#' then processing continues as normal.
 #'
 #' The pairs of groups to be compared are defined by the parameter
 #' \code{contrasts}. An asterisk (\code{"*"}, the default) creates contrasts for
@@ -320,10 +367,12 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #'   \item{\code{data.col}}{Value of \code{data.col} parameter; may be an index
 #'   or a name} \item{\code{data.col.name}}{Name of the \code{data.col} column}
 #'   \item{\code{group.col}}{Value of \code{group.col} parameter; may be an
-#'   index or a name} \item{\code{group.col.name}}{Name of the \code{group.col}
-#'   column} \item{\code{id.col}}{Value of \code{id.col} parameter. May be
-#'   \code{NULL}} \item{\code{paired.data}}{\code{TRUE} if paired differences
-#'   were estimated} \item{\code{data}}{The input data frame}
+#'   index or a name}
+#'   \item{\code{group.col.name}}{Name of the \code{group.col} column}
+#'   \item{\code{id.col}}{Value of \code{id.col} parameter. May be \code{NULL}}
+#'   \item{\code{paired.data}}{\code{TRUE} if paired differences
+#'   were estimated}
+#'   \item{\code{data}}{The input data frame, or the reshaped (long format) data frame if the input data set was in wide format}
 #'   \item{\code{call}}{How this function was called}
 #'
 #'   A \code{DurgaGroupDiff} object is a \code{boot} object (as returned by
@@ -352,12 +401,15 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #' # Change group order and displayed group labels, reverse the
 #' # direction of one of the contrasts from the default
 #' d <- DurgaDiff(petunia, 1, 2,
-#'                groups = c("self-fertilised" = "self_fertilised",
-#'                           "intercrossed" = "inter_cross",
+#'                groups = c("Self-fertilised" = "self_fertilised",
+#'                           "Intercrossed" = "inter_cross",
 #'                           "Westerham-crossed" = "westerham_cross"),
 #'                contrasts = c("Westerham-crossed - self-fertilised",
 #'                              "Westerham-crossed - intercrossed",
 #'                              "intercrossed - self-fertilised"))
+#'
+#' # Wide format data
+#' d <- DurgaDiff(insulin.wide, groups = c("sugar.before", "sugar.after"))
 #'
 #' @references
 #'
@@ -393,12 +445,20 @@ DurgaDiff.default <- function(x,
   # If data is a data.table, it breaks things, so convert to a data.frame
   x <- as.data.frame(x)
 
-  pairedData <- !missing(id.col) && !is.null(id.col) && !is.na(id.col)
-
   effectNames <- c(mean = "Mean difference", cohens = "Cohen's d", hedges = "Hedges' g", median = "Median difference")
 
   if (!is.function(effect.type))
     effect.type <- match.arg(effect.type)
+
+  # Interpret wide format paired data
+  if (missing(data.col) && missing(group.col) && !missing(groups)) {
+    x <- wideToLong(x, id.col, groups)
+    data.col <- attr(x, "data.col")
+    group.col <- attr(x, "group.col")
+    id.col <- attr(x, "id.col")
+  }
+
+  pairedData <- !missing(id.col) && !is.null(id.col) && !is.na(id.col)
 
   # Check column specifications
   .isACol <- function(spec) (is.numeric(spec) && spec >= 1 && spec <= ncol(x)) || (!is.numeric(spec) && spec %in% names(x))

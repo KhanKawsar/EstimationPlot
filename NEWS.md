@@ -2,6 +2,7 @@
 
 ## Durga 1.1.0.9000 (development version)
 
+* `DurgaDiff` now accepts repeated measures data in wide format.
 * Fixed bug in bootstrap implementation, so that now each group is sampled separately. The bug sometimes meant that the effect size axis disappeared for groups with small sample sizes, and the confidence intervals will be slightly different now (although the difference seems negligible).
 
 ## Durga 1.1.0

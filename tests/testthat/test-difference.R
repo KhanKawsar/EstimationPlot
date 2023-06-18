@@ -1377,5 +1377,47 @@ test_that("missing right axis", {
   d <- DurgaDiff(stats, "Convex hull area", "cat", groups = learningSheets)
   expect_error(DurgaPlot(d, main = "Effect size axis present?"), NA)
 
-  data <- data.frame(Val = rnorm(10), Group = c(1, 2, rep(2, 8)))
+  data <- data.frame(Val = rnorm(10), Group = c(1, 1, rep(2, 8)))
   expect_error(DurgaDiff(data, 1, 2), NA)
+})
+
+test_that("Wide format data", {
+  n <- 10
+  wide <- data.frame(Control = rnorm(n, 10), Treatment = rnorm(n, 11), Mass = rnorm(n, 2, .4))
+  l <- stats::reshape(wide, direction = "long",
+                      varying = list(c("Control", "Treatment")),
+                      idvar = "Specimen",
+                      v.names = "Measurement", # Name of the value column
+                      timevar = "Condition", # Name of the group column
+                      times = c("Control", "Treatment"))
+  d1 <- DurgaDiff(l, "Measurement", "Condition")
+  d2 <- DurgaDiff(wide, id.col = "Specimen", groups = c("Control", "Treatment"))
+  par(mfrow = c(2, 2))
+  DurgaPlot(d1, main = "Manual wide to long")
+  expect_error(DurgaPlot(d2, main = "Auto wide to long"), NA)
+
+  # 3 groups
+  n <- 20
+  df3 <- data.frame(Control = rnorm(n, 10),
+                    Treatment1 = rnorm(n, 11),
+                    Treatment2 = rnorm(n, 11.1, .4),
+                    Treatment3 = rnorm(n, 9, 2))
+  d <- DurgaDiff(df3, id.col = "Id", groups = c("Control", "Treatment1", "Treatment2", "Treatment3"))
+  DurgaPlot(d, main = "Paired - multiple groups", left.ylab = "Mass (g)")
+  DurgaPlot(d, main = "Paired - multiple groups, contrasts", left.ylab = "Mass (g)",
+            contrasts = "Treatment1 - Control, Treatment2 - Treatment1, Treatment3 - Treatment2")
+
+  # Id column that isn't unique
+  df <- data.frame(id = rep(1:5, each = 2), Control = rnorm(10, 10), Treatment = rnorm(10, 11))
+  expect_error(DurgaDiff(df, id.col = "id", groups = c("Control", "Treatment")))
+
+  # Id column not specified
+  df <- data.frame(Control = rnorm(10, 10), Treatment = rnorm(10, 11))
+  d <- DurgaDiff(df, groups = c("Control", "Treatment"))
+  expect_true(d$paired.data)
+
+  # Existing id column not specified
+  df <- data.frame(id = sample(10), Control = rnorm(10, 10), Treatment = rnorm(10, 11))
+  d <- DurgaDiff(df, groups = c("Control", "Treatment"))
+  expect_true(d$paired.data)
+})

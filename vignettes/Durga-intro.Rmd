@@ -23,7 +23,7 @@ This vignette shows some example Durga plots. Each plot is preceded by the code 
 
 ## Effect size estimation
 
-Before plotting your data, you must estimate the differences in group means by calling `DurgaDiff`. Your raw data should be in a data frame (or similar), with one observation per row - this is known as _long format_ data. The data frame must contain a column for the measurement or value being analysed, and another for the group or treatment. In addition, paired or repeated measures data requires an ID column to match measurements for the same specimen/individual. For example, within the `insulin` data set, the value being measured - blood sugar level - is recorded in the column `sugar` (specified in the `DurgaDiff` call by passing the argument `data.col = "sugar"`); treatments are `"before"` and `"after"` in the `treatment` column (`group.col = "treatment"`); and the identity of the individual (rabbit) being tested is given in the `id` column (`id.col = "id"`). The blood sugar level of each rabbit was tested before and after treatment with insulin, so for each rabbit, there is a row with the `before` sugar level, and another with the `after` sugar level.
+Before plotting your data, you must estimate the differences in group means by calling `DurgaDiff`. Your raw data should be in a data frame (or similar), with one observation per row - this is known as _long format_ data (repeated measures may be in _wide format_ as described below). The data frame must contain a column for the measurement or value being analysed, and another for the group or treatment. In addition, paired or repeated measures data requires an ID column to match measurements for the same specimen/individual. For example, within the `insulin` data set, the value being measured - blood sugar level - is recorded in the column `sugar` (specified in the `DurgaDiff` call by passing the argument `data.col = "sugar"`); treatments are `"before"` and `"after"` in the `treatment` column (`group.col = "treatment"`); and the identity of the individual (rabbit) being tested is given in the `id` column (`id.col = "id"`). The blood sugar level of each rabbit was tested before and after treatment with insulin, so for each rabbit, there is a row with the `before` sugar level, and another with the `after` sugar level.
 
 ```{r} 
 # Inspect the insulin data set
@@ -34,11 +34,26 @@ d <- DurgaDiff(insulin, data.col = "sugar", group.col = "treatment", id.col = "i
 d
 ```
 
-You may alternatively specify your data with a formula. Formulae allow a little more flexibility when specifying your model, but the end results are equivalent. The formula must be specified as `<data variable> ~ <group variable>`. For paired data, you must specify the `id` column using the `id.col` argument.
+### Formula interface
+
+You may alternatively specify your data with a formula. Formulae allow a little more flexibility when specifying your model, but the end results are equivalent. The formula must be specified as `<data variable> ~ <group variable>`. The data table must be in long format. For paired data, you must specify the `id` column using the `id.col` argument.
 
 ```{r} 
 # Use a formula to define the model
 DurgaDiff(sugar ~ treatment, insulin, id.col = "id")
+```
+
+### Wide data
+
+Repeated measures data may be in _wide format_, with repeated measures in separate columns of the same row. With wide data, you do not specify the `data.col` or `group.col` arguments to `DurgaDiff`. Instead, you must identify the groups (or treatments) in your data with the `groups` argument. Each group must be the name of a column in the data frame. 
+
+```{r} 
+# Inspect the wide insulin data set
+head(insulin.wide[insulin.wide$id < 4, ])
+
+# Calculate differences in group means
+d <- DurgaDiff(insulin.wide, groups = c("sugar.before", "sugar.after"))
+d
 ```
 
 ## Plotting

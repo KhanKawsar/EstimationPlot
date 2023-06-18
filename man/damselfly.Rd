@@ -7,9 +7,9 @@
 \format{
 A data frame with 77 observations and 3 variables.
 \describe{
-  \item{length}{Measured body length (mm) of damselflies}
-  \item{mass}{Measured body mass (mg) of damselflies}
-  \item{maturity}{Male age groups; \code{adult} or \code{juvenile} used for body size and weight measurements}
+  \item{\code{length}}{Measured body length (mm) of damselflies}
+  \item{\code{mass}}{Measured body mass (mg) of damselflies}
+  \item{\code{maturity}}{Male age groups; \code{adult} or \code{juvenile} used for body size and weight measurements}
 }
 }
 \source{
@@ -26,6 +26,6 @@ of \emph{Xanthagrion erythroneurum} damselflies. In this species, juvenile
 males are coloured yellow and change to red upon sexual maturity.
 }
 \seealso{
-\link{petunia}, \link{insulin}
+\link{petunia}, \link{insulin.wide}, \link{insulin}
 }
 \keyword{datasets}

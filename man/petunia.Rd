@@ -7,9 +7,9 @@
 \format{
 A data frame with 64 observations and 3 variables. Plants (self fertilised, inter-cross and westerham-cross) were measured to the tops of their stems when coming into flower. Data collated from Darwin (1877)
 \describe{
-  \item{height}{Measured height of plants}
-  \item{group}{Plant fertilisation groups; \code{westerham_cross}, \code{inter_cross} or \code{self_fertilised}}
-  \item{pot_no}{Identifier of pot number in which each plant was grown}
+  \item{\code{height}}{Measured height of plants}
+  \item{\code{group}}{Plant fertilisation groups; \code{westerham_cross}, \code{inter_cross} or \code{self_fertilised}}
+  \item{\code{pot_no}}{Identifier of pot number in which each plant was grown}
 }
 }
 \source{
@@ -22,6 +22,6 @@ petunia
 Charles Darwin's experimental results on petunia plants to determine the difference of plant length between self fertilised and cross-fertilised, either with the same stock (inter-cross) or with a fresh stock (westerham-cross)
 }
 \seealso{
-\link{insulin}, \link{damselfly}
+\link{insulin}, \link{insulin.wide}, \link{damselfly}
 }
 \keyword{datasets}
