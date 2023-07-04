@@ -299,7 +299,9 @@ the mean (\code{"CI"}), standard deviation (\code{"SD"}) or standard error
 \item{error.bars.cross.width}{Length (in inches) of the horizontal crossbars
 at the ends of the error bars. If 0, no crossbar is drawn.}
 
-\item{x.axis}{if TRUE, display the x-axis ticks and labels.}
+\item{x.axis}{if TRUE, display the x-axis ticks and labels. The effect of
+\code{x.axis = FALSE} is similar to setting \code{xaxt = "n"} in a base R
+plot.}
 
 \item{x.axis.dx}{Horizontal shifts to be applied to each x-axis tick and
 label.}

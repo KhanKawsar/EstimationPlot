@@ -609,7 +609,9 @@ DurgaTransparent <-  function(colour, transparency, relative = FALSE) {
 #'   \code{ef.size.params = list(las = 1)} will rotate the effect size axis
 #'   labels without rotating the main axis labels.
 #'
-#' @param x.axis if TRUE, display the x-axis ticks and labels.
+#' @param x.axis if TRUE, display the x-axis ticks and labels. The effect of
+#'   \code{x.axis = FALSE} is similar to setting \code{xaxt = "n"} in a base R
+#'   plot.
 #' @param x.axis.dx Horizontal shifts to be applied to each x-axis tick and
 #'   label.
 #' @param xlab X axis label.
