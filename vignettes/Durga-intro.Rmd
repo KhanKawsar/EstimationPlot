@@ -49,7 +49,7 @@ Repeated measures data may be in _wide format_, with repeated measures in separa
 
 ```{r} 
 # Inspect the wide insulin data set
-head(insulin.wide[insulin.wide$id < 4, ])
+head(insulin.wide)
 
 # Calculate differences in group means
 d <- DurgaDiff(insulin.wide, groups = c("sugar.before", "sugar.after"))

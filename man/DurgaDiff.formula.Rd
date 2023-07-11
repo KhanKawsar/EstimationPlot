@@ -24,7 +24,10 @@ individual must have the same ID. For non-paired data, do not specify an
   \describe{
     \item{\code{groups}}{Vector of group names. Defaults to all groups in \code{data} in
 \emph{natural} order. If \code{groups} is a named vector, the names are
-used as group labels for plotting or printing.}
+used as group labels for plotting or printing. If \code{data.col} and
+\code{group.col} are not specified, \code{x} is assumed be to in \emph{wide
+format}, and \code{groups} must be a list of column names identifying the
+group/treatment data (see example).}
     \item{\code{contrasts}}{Specify the pairs of groups to be compared. By default, all
 pairwise differences are generated. May be a single string, a vector of
 strings, or a matrix. Specify \code{NULL} to avoid calculating any
@@ -33,10 +36,12 @@ contrasts. See Details for more information.}
 are: \code{"mean"}, difference in unstandardised group means;
 \code{"cohens"}, Cohen's d; \code{"hedges"}, Hedges' g; or a function. See
 Details for further information.}
-    \item{\code{R}}{The number of bootstrap replicates. The default value of 1000 may
-need to be increased for large sample sizes; if \code{R <= nrow(x)}, an
-error such as "Error in bca.ci... estimated adjustment 'a' is NA" will be
-thrown.}
+    \item{\code{R}}{The number of bootstrap replicates. \code{R} should be larger than
+your sample size, so the default value of 1000 may need to be increased for
+large sample sizes. If \code{R <= nrow(x)}, an error such as "\code{Error in
+bca.ci... estimated adjustment 'a' is NA}" will be thrown. Additionally,
+warnings such as "\code{In norm.inter(t, adj.alpha) : extreme order
+statistics used as endpoints}" may be avoided by increasing \code{R}.}
     \item{\code{boot.params}}{Optional list of additional names parameters to pass to
 the \code{\link[boot]{boot}} function.}
     \item{\code{ci.conf}}{Numeric confidence level of the required confidence interval,
@@ -76,8 +81,9 @@ A \code{DurgaDiff} object, which is a list containing:
   \item{\code{id.col}}{Value of \code{id.col} parameter. May be \code{NULL}}
   \item{\code{paired.data}}{\code{TRUE} if paired differences
   were estimated}
-  \item{\code{data}}{The input data frame, or the reshaped (long format) data frame if the input data set was in wide format}
-  \item{\code{call}}{How this function was called}
+  \item{\code{data}}{The input data frame, or the reshaped (long format) data
+  frame if the input data set was in wide format} \item{\code{call}}{How this
+  function was called}
 
   A \code{DurgaGroupDiff} object is a \code{boot} object (as returned by
   \code{\link[boot]{boot}}) with added \code{bootci} components (as returned
