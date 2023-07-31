@@ -121,6 +121,24 @@ DurgaPlot(d,
           box = TRUE, box.fill = FALSE)
 ```
 
+If you need greater control over the display of the group labels, for example to display in italics or bold, set the `group.names` field in the DurgaDiff object. It must be a vector of characters or expressions, one for each group.
+
+```{r fig.height=4, fig.width=5}
+# No title on this plot, so reduce the top margin size
+par(mar = c(5, 4, 1, 1) + 0.1)
+
+# Immature males are yellow, mature are red. Display juveniles first, and label
+# with colour rather than developmental stage
+d <- DurgaDiff(mass ~ maturity, damselfly, na.rm = TRUE,
+               groups = c("Juveniles" = "juvenile", "Adults" = "adult"))
+d$group.names <- c(expression(italic("Juveniles")), expression(bold("Adults")))
+DurgaPlot(d, 
+          # Custom y-axis label
+          left.ylab = "Body mass (mg)", 
+          # Specify the colours to (approximately) match the data
+          group.colour = c("orange", "red"), 
+          box = TRUE, box.fill = FALSE)
+```
 
 ### Colours
 
