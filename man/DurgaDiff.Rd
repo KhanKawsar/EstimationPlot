@@ -85,8 +85,11 @@ A \code{DurgaDiff} object, which is a list containing:
   \item{\code{group.statistics}}{Matrix with a row for each group, columns
   are: \code{mean}, \code{median}, \code{sd} (standard deviation), \code{se}
   (standard error of the mean), \code{CI.lower} and \code{CI.upper} (lower
-  and upper confidence intervals of the mean, confidence level as set by the
-  \code{ci.conf} parameter) and \code{n} (group sample size)}
+  and upper bootstrapped confidence intervals of the mean, confidence level
+  as set by the \code{ci.conf} parameter) and \code{n} (group sample size).
+  If there are fewer than 3 distinct values in the group, or if \code{R} is
+  \code{NA}, the confidence interval will not be calculated and
+  \code{CI.lower} and \code{CI.upper} will be \code{NA}.}
 
   \item{\code{group.differences}}{List of \code{DurgaGroupDiff} objects,
   which are \code{boot} objects with added confidence interval information.

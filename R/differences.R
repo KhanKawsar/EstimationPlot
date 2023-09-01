@@ -4,8 +4,7 @@
 #### Private functions ####
 
 # Confidence interval of the mean of a group
-CI <- function(x, alpha = 0.95) {
-  # See sample implementation below (CI.boot)
+mean.CI <- function(x, alpha = 0.95) {
   m <- mean(x)
   sd <- stats::sd(x)
   n <- length(x)
@@ -17,11 +16,24 @@ CI <- function(x, alpha = 0.95) {
   c(m - me, m + me)
 }
 
-CI.boot <- function(x, alpha = 0.95, R = 1000, ci.type = "bca") {
+# Bootstrapped confidence interval of the mean of a group
+#
+mean.CI.boot <- function(x, alpha = 0.95, R = 1000, ci.type = "bca") {
   bmean <- function(x, i) mean(x[i], na.rm = TRUE) # ??? how to handle NAs???
-  b <- boot::boot(x, bmean, R)
-  ci <- boot::boot.ci(b, conf = alpha, type = ci.type)
-  ci[[ci.type]][4:5] # Not sure if this works if ci.type != "bca"
+  if (length(unique(x)) < 3 || is.na(R)) {
+    # Silently return NAs
+    c(NA, NA)
+  } else {
+    b <- boot::boot(x, bmean, R)
+    ci <- boot::boot.ci(b, conf = alpha, type = ci.type)
+    switch(ci.type,
+           norm = ci[["normal"]][2:3],
+           basic = ci[["basic"]][4:5],
+           #?stud = ci[["stud"]],
+           perc = ci[["percent"]][4:5],
+           bca = ci[["bca"]][4:5]
+    )
+  }
 }
 
 # Two group statistic functions
@@ -356,8 +368,11 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #'   \item{\code{group.statistics}}{Matrix with a row for each group, columns
 #'   are: \code{mean}, \code{median}, \code{sd} (standard deviation), \code{se}
 #'   (standard error of the mean), \code{CI.lower} and \code{CI.upper} (lower
-#'   and upper confidence intervals of the mean, confidence level as set by the
-#'   \code{ci.conf} parameter) and \code{n} (group sample size)}
+#'   and upper bootstrapped confidence intervals of the mean, confidence level
+#'   as set by the \code{ci.conf} parameter) and \code{n} (group sample size).
+#'   If there are fewer than 3 distinct values in the group, or if \code{R} is
+#'   \code{NA}, the confidence interval will not be calculated and
+#'   \code{CI.lower} and \code{CI.upper} will be \code{NA}.}
 #'
 #'   \item{\code{group.differences}}{List of \code{DurgaGroupDiff} objects,
 #'   which are \code{boot} objects with added confidence interval information.
@@ -466,7 +481,7 @@ DurgaDiff.default <- function(x,
   pairedData <- !missing(id.col) && !is.null(id.col) && !is.na(id.col)
 
   # Check column specifications
-  .isACol <- function(spec) (is.numeric(spec) && spec >= 1 && spec <= ncol(x)) || (!is.numeric(spec) && spec %in% names(x))
+  .isACol <- function(spec) (is.numeric(spec) && all(spec >= 1) && all(spec <= ncol(x))) || (!is.numeric(spec) && all(spec %in% names(x)))
   if (!.isACol(data.col))
     stop(sprintf("data.col '%s' is not a valid column name or index (names are %s)",
                  data.col, paste(names(x), collapse = ", ")))
@@ -527,7 +542,8 @@ DurgaDiff.default <- function(x,
   # Fill in statistical summary about each of the groups
   gil <- lapply(groups, function(g) {
     grpVals <- x[[data.col]][x[[group.col]] == g]
-    ci <- CI(grpVals, ci.conf)
+    #ci <- mean.CI(grpVals, ci.conf)
+    ci <- mean.CI.boot(grpVals, ci.conf, R = R)
     c(mean = mean(grpVals),
       median = stats::median(grpVals),
       sd = stats::sd(grpVals),

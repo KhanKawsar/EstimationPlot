@@ -288,18 +288,18 @@ test_that("print", {
               "  Measurement ~ Group\\n",
               "Groups:\\n",
               "              mean   median       sd       se  CI\\.lower CI\\.upper  n\\n",
-              "Group1    122\\.9210 118\\.8367 21\\.31850 3\\.370750 116\\.10300 129\\.7390 40\\n",
-              "ZControl1 102\\.3007 103\\.2276 22\\.16668 3\\.504859  95\\.21141 109\\.3899 40\\n",
+              "Group1    122\\.9210 118\\.8367 21\\.31850 3\\.370750 116\\.63706 129\\.4538 40\\n",
+              "ZControl1 102\\.3007 103\\.2276 22\\.16668 3\\.504859  95\\.22564 108\\.5316 40\\n",
               "Unpaired Mean difference \\(R = 1000, bootstrap CI method = bca\\):\\n",
-              "  ZControl1 - Group1: -20\\.6203, 95% CI \\[-29\\.[0-9]+, -11\\.[0-9]+\\]")
+              "  ZControl1 - Group1: -20\\.6203, 95% CI \\[-30\\.[0-9]+, -11\\.[0-9]+\\]")
   expect_output(print(d), expected)
   # Print mismatched lines
   if (FALSE) {
-  got <- capture.output(print(d))
-  expLines <- gsub("\\\\", "", strsplit(expected, "\\\\n")[[1]])
-  matched <- got == expLines
-  print(got[!matched])
-  print(expLines[!matched])
+    got <- capture.output(print(d))
+    expLines <- gsub("\\\\", "", strsplit(expected, "\\\\n")[[1]])
+    matched <- got == expLines
+    print(got[!matched])
+    print(expLines[!matched])
   }
 
   checkSummaryMatches <- function(d1, d2) {
@@ -312,11 +312,13 @@ test_that("print", {
   }
 
   # Check that formula output matches non-formula
+  set.seed(1) # Avoid white-space differences caused by different printed precisions
   d1 <- DurgaDiff(petunia, 1, 2)
   d2 <- DurgaDiff(height ~ group, petunia)
   checkSummaryMatches(d1, d2)
 
   # Paired
+  set.seed(1) # Avoid white-space differences caused by different printed precisions
   d1 <- DurgaDiff(insulin, 1, 2, 3)
   d2 <- DurgaDiff(sugar ~ treatment, insulin, id.col = "id")
   checkSummaryMatches(d1, d2)
@@ -962,6 +964,7 @@ test_that("Grouped plot", {
   op <- par(mar = c(4, 5, 1, 10.5) + 0.1, mfrow = c(2, 1))
   on.exit(par(op))
   cols <- RColorBrewer::brewer.pal(4, "Dark2")
+  set.seed(1)
   for (i in 1:2) {
 
     n <- 6
@@ -1045,8 +1048,8 @@ test_that("plot miscellanea", {
 test_that("CI", {
 
   x <- rnorm(200)
-  CI90 <- CI(x, .9)
-  CI95 <- CI(x, .95)
+  CI90 <- mean.CI(x, .9)
+  CI95 <- mean.CI(x, .95)
   expect_lt(CI95[1], mean(x))
   expect_lt(CI95[1], CI90[1])
   expect_gt(CI95[2], mean(x))
@@ -1226,7 +1229,9 @@ test_that("custom stat", {
   dc1 <- DurgaDiff(df, 1, 2, groups = c("A1", "A2"), effect.type = function(x1, x2) { median(x2) - median(x1) })
 
   # Many groups
+  set.seed(1)
   dd <- DurgaDiff(df, 1, 2, contrasts = ". - A1")
+  set.seed(1)
   dc <- DurgaDiff(df, 1, 2, contrasts = ". - A1", effect.type = function(x1, x2) { median(x2) - median(x1) })
 
   # Check that group details are the same, pairwise differences are different
@@ -1330,7 +1335,7 @@ test_that("pathological data", {
   n <- 10000
   df <- data.frame(Value = c(rnorm(n), 500, rnorm(n), -500),
                    group = rep(c("G1", "G2"), each = n + 1))
-  d <- DurgaDiff(df, 1, 2, contrasts = NULL)
+  d <- DurgaDiff(df, 1, 2, contrasts = NULL, R = NA) # Don't bootstrap anything
   expect_error(DurgaPlot(d, main = "Pathological case - don't crash!"), NA)
 })
 
