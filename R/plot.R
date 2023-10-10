@@ -408,7 +408,7 @@ DurgaTransparent <-  function(colour, transparency, relative = FALSE) {
 #' Group data annotations are controlled with parameters \code{central.tendency}
 #' and \code{error.bars}. \code{central.tendency} visually represents the mean
 #' or median (\code{central.tendency.type}) of each group, while
-#' \code{error.bars} are vertical bars showing the 95%% CI of the mean, standard
+#' \code{error.bars} are vertical bars showing the 95% CI of the mean, standard
 #' deviation or standard error of the groups (\code{error.bars.type}).
 #'
 #' An effect size (for our purposes) is the difference in means between two
@@ -455,8 +455,7 @@ DurgaTransparent <-  function(colour, transparency, relative = FALSE) {
 #'   \code{\link{RColorBrewer}} palette name or a vector of colours.
 #'
 #' @param points If not \code{FALSE}, points are plotted. If \code{TRUE}, points
-#'   are
-#'   displayed with a default colour (which is the group colour with 40%
+#'   are displayed with a default colour (which is the group colour with 40%
 #'   transparency). You may specify a vector of colours; if length 1, all points
 #'   are drawn with the specified colour. If length is less than the number of
 #'   data points, points in each group are drawn with the appropriate colour
@@ -508,9 +507,9 @@ DurgaTransparent <-  function(colour, transparency, relative = FALSE) {
 #' @param box.notch If TRUE, draws notches in the sides of the boxes. See
 #'   \code{\link[grDevices]{boxplot.stats}} for the calculations used.
 #' @param box.params List with additional graphical parameters to control the
-#'   box
-#'   plot. See \code{\link[graphics]{bxp}} graphical parameters for a complete
-#'   list.
+#'   box plot appearance. Many aspects of the plots can be controlled, e.g.
+#'   \code{box.params = list(outpch = NA)} prevents outlier points from being
+#'   drawn. See \code{\link[graphics]{bxp}} graphical parameters for a complete list.
 #' @param box.dx Horizontal shift to be applied to each box.
 #'
 #' @param bar If not \code{FALSE}, draw a bar plot of the group means or
@@ -538,7 +537,7 @@ DurgaTransparent <-  function(colour, transparency, relative = FALSE) {
 #'
 #' @param error.bars Should error bars be displayed? May be the colour to be
 #'   used for error bars.
-#' @param error.bars.type Should error bars depict 95%% confidence intervals of
+#' @param error.bars.type Should error bars depict 95% confidence intervals of
 #'   the mean (\code{"CI"}), standard deviation (\code{"SD"}) or standard error
 #'   (\code{"SE"})?
 #' @param error.bars.cross.width Length (in inches) of the horizontal crossbars

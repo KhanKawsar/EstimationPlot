@@ -84,7 +84,7 @@ DurgaPlot(
 
 \item{contrasts}{Set of contrasts (i.e. group comparisons) to be plotted.
 Defaults to contrasts passed to \code{\link{DurgaDiff}}, otherwise \code{".
-- group1"} (where \code{group1} is the first group). See Details for more
+  - group1"} (where \code{group1} is the first group). See Details for more
 information.}
 
 \item{group.dx}{Used to shift group centres horizontally. E.g.,
@@ -95,8 +95,7 @@ can be shifted independently using the appropriate \code{*.dx} parameters.}
 \code{\link{RColorBrewer}} palette name or a vector of colours.}
 
 \item{points}{If not \code{FALSE}, points are plotted. If \code{TRUE}, points
-are
-displayed with a default colour (which is the group colour with 40%
+are displayed with a default colour (which is the group colour with 40\%
 transparency). You may specify a vector of colours; if length 1, all points
 are drawn with the specified colour. If length is less than the number of
 data points, points in each group are drawn with the appropriate colour
@@ -118,7 +117,7 @@ when drawing points. Smaller values mean a tighter fit.}
 
 \item{points.params}{List of named parameters to pass on to
 \code{\link[graphics]{points}}, e.g. \code{DurgaPlot(es, points = "black",
-points.params = list(pch = 21, bg = as.numeric(factor(data$Sex)) + 1))}.}
+  points.params = list(pch = 21, bg = as.numeric(factor(data$Sex)) + 1))}.}
 
 \item{violin}{If not \code{FALSE}, violin plots are drawn. Violins
 are simply probability density plots, with density on the x-axis
@@ -164,9 +163,9 @@ If FALSE or NA, bodies are not filled.}
 \code{\link[grDevices]{boxplot.stats}} for the calculations used.}
 
 \item{box.params}{List with additional graphical parameters to control the
-box
-plot. See \code{\link[graphics]{bxp}} graphical parameters for a complete
-list.}
+box plot appearance. Many aspects of the plots can be controlled, e.g.
+\code{box.params = list(outpch = NA)} prevents outlier points from being
+drawn. See \code{\link[graphics]{bxp}} graphical parameters for a complete list.}
 
 \item{box.dx}{Horizontal shift to be applied to each box.}
 
@@ -186,7 +185,7 @@ a colour.}
 
 \item{ef.size.position}{Effect sizes are plotted to the right of the main
 plot if there is only one effect size to plot and \code{ef.size.position !=
-"below"}. If the effect size is drawn to the right, you will need to
+  "below"}. If the effect size is drawn to the right, you will need to
 increase the size of the right margin before plotting (see
 \code{\link[graphics:par]{par(mar = ...)}}).}
 
@@ -212,9 +211,9 @@ vertically so that it just covers the estimated effect size.}
 \item{ef.size.ticks}{Optional locations and labels for ticks on the effect
 size y-axis. E.g. to interpret effect size using Cohen's default values,
 specify \code{ef.size.ticks = c("Large negative effect" = -0.8, "Medium
-negative effect" = -0.5, "Small negative effect" = -0.2, "No effect" = 0,
-"Small positive effect" = 0.2, "Medium positive effect" = 0.5, "Large
-positive effect" = 0.8)}}
+  negative effect" = -0.5, "Small negative effect" = -0.2, "No effect" = 0,
+  "Small positive effect" = 0.2, "Medium positive effect" = 0.5, "Large
+  positive effect" = 0.8)}}
 
 \item{ef.size.label}{Label to display on y-axis for effect size.}
 
@@ -279,7 +278,7 @@ a horizontal line segment?}
 
 \item{central.tendency.params}{Additional arguments to be passed to
 \code{\link[graphics]{points}} (if \code{central.tendency.symbol ==
-"point"}) or \code{\link[graphics]{segments}} (if
+  "point"}) or \code{\link[graphics]{segments}} (if
 \code{central.tendency.symbol == "segment"}).}
 
 \item{central.tendency.dx}{Horizontal shift to apply to central tendency
@@ -288,7 +287,7 @@ indicator and error bars.}
 \item{error.bars}{Should error bars be displayed? May be the colour to be
 used for error bars.}
 
-\item{error.bars.type}{Should error bars depict 95%% confidence intervals of
+\item{error.bars.type}{Should error bars depict 95\% confidence intervals of
 the mean (\code{"CI"}), standard deviation (\code{"SD"}) or standard error
 (\code{"SE"})?}
 
@@ -324,13 +323,13 @@ FALSE, a new plot is created.}
 \value{
 A list (returned invisibly) with 4 elements:
 
-  \item{\code{es}}{Value of the \code{es} parameter.}
-  \item{\code{extents}}{Matrix with the x-axis locations and y-axis extents
-  of each displayed group.}
-  \item{\code{plot.differences}}{A list of the
-  displayed differences, as \code{DurgaGroupDiff} objects. Will be an empty
-  list if no effect sizes are shown.}
-  \item{\code{palette}}{Vector of colours used by default for each group.}
+\item{\code{es}}{Value of the \code{es} parameter.}
+\item{\code{extents}}{Matrix with the x-axis locations and y-axis extents
+of each displayed group.}
+\item{\code{plot.differences}}{A list of the
+displayed differences, as \code{DurgaGroupDiff} objects. Will be an empty
+list if no effect sizes are shown.}
+\item{\code{palette}}{Vector of colours used by default for each group.}
 }
 \description{
 Plot grouped data and effect size in base R, with control over a large range
@@ -355,7 +354,7 @@ colours are not specified, they default to the group colours
 Group data annotations are controlled with parameters \code{central.tendency}
 and \code{error.bars}. \code{central.tendency} visually represents the mean
 or median (\code{central.tendency.type}) of each group, while
-\code{error.bars} are vertical bars showing the 95%% CI of the mean, standard
+\code{error.bars} are vertical bars showing the 95\% CI of the mean, standard
 deviation or standard error of the groups (\code{error.bars.type}).
 
 An effect size (for our purposes) is the difference in means between two
@@ -435,6 +434,6 @@ Routledge.
 }
 \seealso{
 \code{\link{DurgaDiff}}, \code{\link{DurgaBrackets}},
-  \code{\link{DurgaTransparent}}, \code{\link[vipor]{offsetX}}, \code{\link[graphics]{boxplot}},
-  \code{\link[graphics]{bxp}}
+\code{\link{DurgaTransparent}}, \code{\link[vipor]{offsetX}}, \code{\link[graphics]{boxplot}},
+\code{\link[graphics]{bxp}}
 }
