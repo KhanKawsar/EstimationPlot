@@ -38,8 +38,8 @@ appear the same as \code{contrasts = "G2 - G1"}.}
 \item{labels}{Text to display above each bracket. May be NULL, otherwise one
 of: \code{"diff"} (displayed text is "\code{<difference in means>}"),
 \code{"CI"} ("\code{[<lower>, <upper>]}"), \code{"level CI"} ("\code{<level>\% CI [<lower>,
-<upper>]}") or \code{"diff CI"} ("\code{<difference in means> [<lower>,
-<upper>]}"); a vector of texts to display for each element of \code{diffs},
+  <upper>]}") or \code{"diff CI"} ("\code{<difference in means> [<lower>,
+  <upper>]}"); a vector of texts to display for each element of \code{diffs},
 or a function called with one argument; a \code{DurgaGroupDiff} object,
 which should return the label to be displayed.}
 
@@ -78,7 +78,7 @@ displayed.}
 }
 \value{
 No return value. \code{DurgaBrackets} is called for its side effect
-  of adding confidence brackets to the current plot.
+of adding confidence brackets to the current plot.
 }
 \description{
 Brackets are added to a \code{DurgaPlot} that already exists. That means you
@@ -105,7 +105,7 @@ DurgaBrackets(p, lb.cex = 0.8)
 
 # Only draw brackets that do not include zero
 p <- DurgaPlot(d, ef.size = FALSE, frame.plot = FALSE)
-diffs <- Filter(function(pwes) (pwes$bca[4] > 0 || pwes$bca[5] < 0), d$group.differences)
+diffs <- Filter(function(pwes) (pwes$bca[4] > 0 || pwes$bca[5] < 0), p$es$group.differences)
 DurgaBrackets(p, contrasts = diffs)
 
 }
