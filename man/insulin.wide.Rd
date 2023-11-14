@@ -8,16 +8,16 @@
 A data frame with 52 observations and 4 variables.
 
 \describe{
-  \item{\code{experimenter_time}}{Initial of researchers who performed the experiment and at what date}
-  \item{\code{sugar.before}}{Blood sugar measurement before administering insulin}
-  \item{\code{sugar.after}}{Blood sugar measurement after administering insulin}
-  \item{\code{time}}{Time of blood sugar measurement; minutes after administration of insulin}
+\item{\code{experimenter_time}}{Initial of researchers who performed the experiment and at what date}
+\item{\code{sugar.before}}{Blood sugar measurement before administering insulin}
+\item{\code{sugar.after}}{Blood sugar measurement after administering insulin}
+\item{\code{time}}{Time of blood sugar measurement; minutes after administration of insulin}
 }
 }
 \source{
 Banting, F. G., Best, C. H., Collip, J. B., Macleod, J. J., & Noble,
-  E. C. (1922). The effect of pancreatic extract (insulin) on normal rabbits.
-  American Journal of Physiology-Legacy Content, 62(1), 162-176.
+E. C. (1922). The effect of pancreatic extract (insulin) on normal rabbits.
+American Journal of Physiology-Legacy Content, 62(1), 162-176.
 }
 \usage{
 insulin.wide

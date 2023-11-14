@@ -8,20 +8,20 @@
 A data frame with 104 observations and 5 variables.
 
 \describe{
-  \item{\code{sugar}}{Measured blood sugar level}
-  \item{\code{treatment}}{Blood sugar measurements treatment group; \code{before} or \code{after}
-  administering insulin}
-  \item{\code{id}}{Identifier of individual being measured
-  (not in original data set)}
-  \item{\code{experimenter_time}}{Initial of researchers
-  who performed the experiment and at what date}
-  \item{\code{time}}{Time of blood sugar measurement; minutes after administration of insulin}
+\item{\code{sugar}}{Measured blood sugar level}
+\item{\code{treatment}}{Blood sugar measurements treatment group; \code{before} or \code{after}
+administering insulin}
+\item{\code{id}}{Identifier of individual being measured
+(not in original data set)}
+\item{\code{experimenter_time}}{Initial of researchers
+who performed the experiment and at what date}
+\item{\code{time}}{Time of blood sugar measurement; minutes after administration of insulin}
 }
 }
 \source{
 Banting, F. G., Best, C. H., Collip, J. B., Macleod, J. J., & Noble,
-  E. C. (1922). The effect of pancreatic extract (insulin) on normal rabbits.
-  American Journal of Physiology-Legacy Content, 62(1), 162-176.
+E. C. (1922). The effect of pancreatic extract (insulin) on normal rabbits.
+American Journal of Physiology-Legacy Content, 62(1), 162-176.
 }
 \usage{
 insulin

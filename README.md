@@ -29,7 +29,7 @@ To install the development version:
     > install.packages("devtools") # If not already installed
     > devtools::install_github("KhanKawsar/EstimationPlot", build_vignettes = TRUE)
 
-Refer to [NEWS.md](NEWS.md) for a list of changes in each version, including changes in the current development version. You can read the news for a package by running:
+Refer to [NEWS.md](NEWS.md) for a list of changes in each version, including changes in the current development version. You can read the news for an installed package by running:
 
     > news(package = "Durga")
 
