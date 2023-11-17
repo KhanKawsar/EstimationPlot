@@ -130,6 +130,17 @@ plotViolin <- function(shape, centreX, d, ...) {
   }
 }
 
+# Returns the range of an effect size for a single group difference
+rangeOfDiff <- function(pwes, violin.trunc) {
+  if (is.null(pwes)) {
+    NA
+  } else if (violin.trunc) {
+    range(pwes$bca[4:5])
+  } else {
+    range(pwes$t, na.rm = TRUE)
+  }
+}
+
 # Plot a single pairwise effect size
 #
 # @param mapYFn Function to map logical y values to display coordinates. If not
@@ -161,6 +172,17 @@ plotEffectSize <- function(pwes, xo, centreY,
   # Confidence interval of effect size
   graphics::segments(xo, mapYFn(pwes$bca[4] + deltaY), xo, mapYFn(pwes$bca[5] + deltaY),
            col = ef.size.col, lty = ef.size.lty, lwd = ef.size.lwd, xpd = xpd)
+}
+
+# Given two points on a line, returns a function that, given an x, returns the y on the line
+#
+# @param xc,yc Two element numeric vectors, x & y coordinates of points on the line
+# @returns Function which accepts one argument, `x`, and returns the corresponding y value
+buildMapYFn <- function(xc, yc) {
+  function(y) {
+    # Interpolate/extrapolate along the line (x[1], y[1]), (x[2], y[2])
+    yc[1] + (y - xc[1]) * (yc[2] - yc[1]) / (xc[2] - xc[1])
+  }
 }
 
 # Plot effect size to the right of the main plot. Only useful when showing a single effect size
@@ -197,10 +219,7 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch, ef.size.lty
     esRange <- range(c(0, pwes$t0))
     ylim <- range(y, y2)
     # Function to map esRange to ylim
-    mapY <- function(y) {
-      # Interpolate/extrapolate along the line (esRange[1], ylim[1]), (esRange[2], ylim[2])
-      ylim[1] + (y - esRange[1]) * (ylim[2] - ylim[1]) / (esRange[2] - esRange[1])
-    }
+    mapY <- buildMapYFn(esRange, ylim)
     plotEffectSize(pwes, x, pwes$t0,
                    showViolin, violinCol, violin.fill, violin.width, violin.shape, violin.trunc,
                    ef.size.col, ef.size.pch, ef.size.lty, ef.size.lwd, mapYFn = mapY)
@@ -250,18 +269,8 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch, ef.siz
   groups <- es$groups
 
   # What will we plot?
-  rangeOfDiff <- function(pwes) {
-    if (is.null(pwes)) {
-      NA
-    } else if (violin.trunc) {
-      range(pwes$bca[4:5])
-    } else {
-      range(pwes$t, na.rm = TRUE)
-    }
-  }
-
-  # Range of effect size
-  ylimData <- range(sapply(plotDiffs, rangeOfDiff), na.rm = TRUE)
+  # Range of effect sizes
+  ylimData <- range(sapply(plotDiffs, rangeOfDiff, violin.trunc), na.rm = TRUE)
   # Ensure ylim includes 0
   ylimData <- range(c(0, ylimData), na.rm = TRUE)
   # Extend range the same way a normal plot does
@@ -952,7 +961,22 @@ DurgaPlot <- function(es,
 
   if (missing(ylim)) {
     # Get vertical range of all groups combined
-    ylim <- range(groupRange)
+    ylim <- range(groupRange, na.rm = TRUE)
+
+    # Ensure that effect size on right is fully visible
+    if (.show(ef.size) && ef.size.position == "right") {
+      # Convert effect size range to data coordinate system. Do this in steps:
+      # 1.map [0, effect size] to [mean G1, mean G2]
+      g1m <- es$group.statistics[plotDiffs[[1]]$groupIndices[1], 1] # Column 1 is mean
+      g2m <- es$group.statistics[plotDiffs[[1]]$groupIndices[2], 1]
+      myf <- buildMapYFn(c(0, plotDiffs[[1]]$t0), c(g2m, g1m))
+      # 2. Get effect size range
+      esRange <- rangeOfDiff(plotDiffs[[1]], violin.trunc = ef.size.violin.trunc)
+      # 3. Map effect size to display coordinates
+      esYRange <- myf(esRange)
+      # 4. Incorporate into ylim
+      ylim <- range(ylim, esYRange, na.rm = TRUE)
+    }
   }
 
   #--- X limits ---
