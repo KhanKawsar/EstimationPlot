@@ -200,7 +200,7 @@ DurgaPlot(d, bar = TRUE, error.bars.type = "SD", points = FALSE,
 ```
 
 
-### Multiple effect sizes
+### Plotting multiple effect sizes
 
 The default behaviour of `DurgaDiff` is to calculate differences between all pairs of groups; each difference is a _contrast_ and has an estimated effect size with confidence interval. When plotted, each of multiple effect sizes is positioned below the first group in the contrast. This can cause layout problems when one group participates in multiple contrasts. For example, the iris dataset (available within standard R) contains three species: `setosa`, `versicolor` and `virginica`, hence three possible contrasts: `virginica - versicolor`, `virginica - setosa` and `versicolor - setosa`. If all three effect sizes are plotted, two of them (`virginica - versicolor` and `virginica - setosa`) will be positioned at the same horizontal location, resulting in superimposed text and an illegible graph (panel <span style="color:brown">__a)__</span> below)!
 
@@ -213,7 +213,7 @@ There are several ways around this problem:
 
 There is no single best solution to this problem. The appropriate method depends on your data and the information that you wish to communicate.
 
-To avoid this problem in default plots, the default behaviour of `DurgaPlot` is to assume that the first group is a control, and then show the differences between all subsequent groups and the control (method __1.__). This behaviour prevents effect sizes from overwriting each other, but may exclude pertinant data from the plot (panel <span style="color:brown">__b)__</span> below).
+To avoid this problem in default plots, the default behaviour of `DurgaPlot` is to assume that the first group is a control, and then show the differences between all subsequent groups and the control (method __1.__). This behaviour prevents effect sizes from overwriting each other, but may exclude pertinent data from the plot (panel <span style="color:brown">__b)__</span> below).
 
 To change the default contrast selection, specify the `contrasts` argument to either `DurgaDiff` or `DurgaPlot`. Contrasts are specified as `"<group> - <group>, <group> - <group>"`, so to apply method __2.__ to the `iris` dataset, you could specify `contrasts = c("virginica - setosa", "versicolor - setosa", "setosa - versicolor")`. This differs from the default behaviour by also plotting the contrast `"setosa - versicolor"`. Note that if the contrast `"versicolor - setosa"` were specified rather than `"setosa - versicolor"`, the effect size would be shown at the same location as the `"versicolor - setosa"` effect size, hence failing to solve the problem.
 
@@ -338,9 +338,9 @@ effectSizes <- c("No effect" = 0, "Large positive effect" = 0.8, "Huge positive 
 groups <- c("Self" = "self_fertilised", "Westerham" = "westerham_cross", "Inter" = "inter_cross")
 
 # Calculate Cohen's d rather than unstandardised difference in means
-d <- DurgaDiff(petunia, 1, 2, effect.type = "cohens", groups = groups)
+d <- DurgaDiff(petunia, 1, 2, effect.type = "hedges g*", groups = groups)
 
-DurgaPlot(d, violin = FALSE, main = "Cohen's d, labelled effect size", 
+DurgaPlot(d, violin = FALSE, main = "Hedges' g, labelled effect size", 
           points.method = "jitter", 
           # Use our ticks and labels instead of default
           ef.size.ticks = effectSizes, 
@@ -378,19 +378,19 @@ d
 
 ```
 
-The Durga implementation of Cohen's d uses pooled standard deviation, so what if you need to Cohen's d with averaged standard deviations instead? The following example shows one way to use the `cohens_d` function from the [effectsize](https://easystats.github.io/effectsize/index.html) R package with Durga.
+Durga implements a variety of standardisers, but what if you wish to calculate an effect size that is not implemented by Durga? The following example shows one way to use the `cohens_d` function from the [effectsize](https://easystats.github.io/effectsize/index.html) R package with Durga.
 
 
 ```{R eval=FALSE}
 # Create a new function that calls effectsize::cohens_d and returns just the calculated statistic 
-myCohens <- function(x1, x2) {
+myCohensAv <- function(x1, x2) {
   # Note that we swap the arguments because Durga expects the calculation to be x2 - x1
   cd <- effectsize::cohens_d(x2, x1, pooled_sd = FALSE) 
   # Extract and return just the Cohen's d value
   cd$Cohens_d
 }
 # Pass it in to DurgaDiff as the effect.type
-d <- DurgaDiff(petunia, 1, 2, effect.type = myCohens)
+d <- DurgaDiff(petunia, 1, 2, effect.type = myCohensAv)
 
 # Specify the effect type label
 DurgaPlot(d, ef.size.label = expression("Cohen's d"))

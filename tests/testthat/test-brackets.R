@@ -58,7 +58,7 @@ test_that("many bars", {
 
 
   # Just show the long brackets
-  d <- DurgaDiff(data, "Measurement", "Group", groups = groups, effect.type = "cohen")
+  d <- DurgaDiff(data, "Measurement", "Group", groups = groups, effect.type = "cohens d*")
   diffs <- Filter(function(pwes) (pwes$bca[4] > 0 || pwes$bca[5] < 0), d$group.differences)
   col <- sapply(diffs, function(diff) ifelse(diff$t0 < 0, "#f06040", "#7090f0"))
   diffs <- Filter(function(pwes) (abs(diff(pwes$groupIndices)) > 2), d$group.differences)

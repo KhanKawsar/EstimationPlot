@@ -18,54 +18,238 @@ mean.CI <- function(x, alpha = 0.95) {
 
 # Bootstrapped confidence interval of the mean of a group
 #
-mean.CI.boot <- function(x, alpha = 0.95, R = 1000, ci.type = "bca") {
-  bmean <- function(x, i) mean(x[i], na.rm = TRUE) # ??? how to handle NAs???
+mean.CI.boot <- function(x, alpha = 0.95, R = 1000) {
+  bmean <- function(x, i) mean(x[i], na.rm = TRUE) # How should we handle NAs?
   if (length(unique(x)) < 3 || is.na(R)) {
     # Silently return NAs
     c(NA, NA)
   } else {
     b <- boot::boot(x, bmean, R)
-    ci <- boot::boot.ci(b, conf = alpha, type = ci.type)
-    switch(ci.type,
-           norm = ci[["normal"]][2:3],
-           basic = ci[["basic"]][4:5],
-           #?stud = ci[["stud"]],
-           perc = ci[["percent"]][4:5],
-           bca = ci[["bca"]][4:5]
-    )
+    ci <- boot::boot.ci(b, conf = alpha, type = "bca")
+    ci[["bca"]][4:5]
   }
 }
 
-# Two group statistic functions
 
-# Mean difference (group 2 - group 1)
-stMeanDiff <- function(x1, x2) { mean(x2) - mean(x1) }
+#---------------------------------------------
+# Building blocks for effect size calculations
 
-# Cohens d (group 2 - group 1)
-stCohensD <- function(x1, x2){
-  m1 <- mean(x1)
+
+#### Bias correction ####
+
+# Hedges' bias correction, approximate method. Hedges (1981) pp. 114,  Cummings
+# (2012) equation 11.13. The approximate method is approximately twice as fast
+# to calculate as the exact method.
+#
+# @param df Degrees of freedom in standardisation value, i.e. denominator in
+#   effect size calculation
+esBiasCorrectApprox <- function(df) {
+  1 - (3 / (4 * df - 1))
+}
+
+# Hedges' bias correction, exact method (Hedges 1981, equation 6e)
+#
+# @param df Degrees of freedom in standardisation value, i.e. denominator in
+#   effect size calculation.
+esBiasCorrectExact <- function(df) {
+  # By working with logs then taking the exp, this calculation works for large values of df
+  exp(lgamma(df / 2) - log(sqrt(df / 2)) - lgamma((df - 1) / 2))
+}
+
+# Allow approximate bias correction for testing purposes
+#esBiasCorrect <- esBiasCorrectApprox
+esBiasCorrect <- esBiasCorrectExact
+
+
+#### Effect size components ####
+
+# Difference of groups means, mean(group 2) - mean(group 1)
+esDiffOfMeans <- function(x1, x2) { mean(x2) - mean(x1) }
+# Means of group differences, mean(group 2 - group 1).
+esMeanOfDiffs <- function(x1, x2) { mean(x2 - x1) }
+
+# Calculate the pooled and weighted (by sample size) standard deviation of two
+# groups. This is the denominator in the original Cohen's d.
+esWeightedPooledSD <- function(x1, x2) {
+  N1 <- length(x1)
+  N2 <- length(x2)
   SD1 <- stats::sd(x1)
-  N1 <- length(x1)
-  m2 <- mean(x2)
   SD2 <- stats::sd(x2)
-  N2 <- length(x2)
-  # Calculate pooled standard deviation
-  x <- sqrt(((N1 - 1) * (SD1 * SD1) + (N2 - 1) * (SD2 * SD2)) / (N1 + N2 - 2))
-  (m2 - m1) / x
+  sqrt(((N1 - 1) * (SD1 * SD1) + (N2 - 1) * (SD2 * SD2)) / (N1 + N2 - 2))
 }
 
-# Hedges' g (group 2 - group 1)
-stHedgesG <- function(x1, x2){
+# Calculate the unweighted pooled standard deviation of 2 groups. This is the
+# expression for pooled SD when both groups are equal in size, the denominator
+# in the original Cohen's d for unpaired data and Cohens d_av for paired data,
+# and also the denominator for Cohen's d*, where they name it the non-pooled
+# standard deviation (which I think is a poor choice of terminology).
+esUnweightedPooledSD <- function(x1, x2) {
+  SD1 <- stats::sd(x1)
+  SD2 <- stats::sd(x2)
+  sqrt((SD1 * SD1 + SD2 * SD2) / 2)
+}
+
+# Returns the average of the SDs of both groups
+esAverageSD <- function(x1, x2) {
+  (stats::sd(x1) + stats::sd(x2)) / 2
+}
+
+# Calculate degrees of freedom from the two group sizes. The calculation to be used depends on the nature of the standardisation
+esDFAsterisk <- function(x1, x2) {
   N1 <- length(x1)
+  S1 <- stats::sd(x1)
   N2 <- length(x2)
-  stCohensD(x1, x2) * (1 - 3 / (4 * (N1 + N2) - 9))
+  S2 <- stats::sd(x2)
+  # Equation 16 in Delacre et al., 2021
+  (N1 - 1) * (N2 - 1) * (S1^2 + S2^2)^2 / ((N2 - 1) * S1^4 + (N1 - 1) * S2^4)
 }
 
-# Cohen's dz, one sample or correlated/paired samples comparison
-stCohensDz <- function(x) mean(x) / stats::sd(x)
+#--------------------------------------------------------------------
+#### Effect size calculations ####
+# Dep = paired
+# Ind = unpaired
 
-# TODO IS THIS CORRECT??? Hedges' g for paired data
-stHedgesGz <- function(x) stCohensDz(x) * (1 - 3 / (4 * length(x) - 9))
+# ---- Paired ---- #
+
+# Paired Cohen's d_s
+stDepCohensD_z <- function(x1, x2) {
+  diffs <- x2 - x1
+  mean(diffs) / stats::sd(diffs)
+}
+
+# Paired Hedges' g_s
+stDepHedgesG_z <- function(x1, x2) {
+  diffs <- x2 - x1
+  mean(diffs) / stats::sd(diffs) * esBiasCorrect(length(x1) - 1)
+}
+
+# Paired Cohen's d_av
+# Eqn 10 Lakens (2013)
+stDepCohensD_av <- function(x1, x2) {
+  esMeanOfDiffs(x1, x2) / esAverageSD(x1, x2)
+}
+
+stDepHedgesG_av <- function(x1, x2) {
+  esMeanOfDiffs(x1, x2) / esAverageSD(x1, x2) * esBiasCorrect(length(x1) - 1)
+}
+
+# Cohen's d_av according to Cumming's (2012) equation (11.10), paired samples comparison
+stDepCummingsD_av <- function(x1, x2) esMeanOfDiffs(x1, x2) / esUnweightedPooledSD(x1, x2)
+
+# Cumming's d_av with Hedges' bias correction applied
+stDepCummingsG_av <- function(x1, x2) esMeanOfDiffs(x1, x2) / esUnweightedPooledSD(x1, x2) * esBiasCorrect(length(x1) - 1)
+
+
+# ---- Unpaired ---- #
+
+# Unpaired Cohen's d_s
+# Lakens (2013) eqn 1
+stIndCohensD_s <- function(x1, x2) {
+  esDiffOfMeans(x1, x2) / esWeightedPooledSD(x1, x2)
+}
+
+# Unpaired Hedges' g_s
+stIndHedgesG_s <- function(x1, x2) {
+  esDiffOfMeans(x1, x2) / esWeightedPooledSD(x1, x2) * esBiasCorrect(length(x1) + length(x2) - 2)
+}
+
+# Unpaired Cohens d*
+# Delacre et al., 2021 (equation unnumbered, but located before eqn 15)
+stIndCohensDAst <- function(x1, x2) {
+  esDiffOfMeans(x1, x2) / esUnweightedPooledSD(x1, x2)
+}
+
+# Unpaired Hedges' g*
+stIndHedgesGAst <- function(x1, x2) {
+  esDiffOfMeans(x1, x2) / esUnweightedPooledSD(x1, x2) * esBiasCorrect(esDFAsterisk(x1, x2))
+}
+
+# Glass's delta, pre-measurement
+stIndGlassDeltaPre <- function(x1, x2) {
+  # Standardise with pre-measurement deviation
+  esDiffOfMeans(x1, x2) / stats::sd(x2)
+}
+
+# Glass's delta, post-measurement
+stIndGlassDeltaPost <- function(x1, x2) {
+  # Standardise with post-measurement deviation
+  esDiffOfMeans(x1, x2) / stats::sd(x1)
+}
+
+#### General stuff ####
+
+# Combines multiple variables into one
+#
+# Simply combines all variables for each row into a single variable, delimited
+# by " & " (by default). This is a naive implementation that can fail in
+# pathological cases by mapping different combinations of variables to the same
+# string. A correct implementation would be much more complicated.
+#
+# @param x A data frame (or similar) variable columns.
+# @param col Names or indices of the columns within \code{x} containing the
+#   variables to be combined.
+# @param delim The delimiter used to separate values from different variables.
+#
+# @return Vector of combined variables, with one value for each row in `x`.
+combineVariables <- function(x, col, delim = " & ") {
+  if (length(col) < 2) {
+    x[, col]
+  } else {
+    apply(x[, col], 1, paste, collapse = delim)
+  }
+}
+
+
+# Given an effect type's code and paired/unpaired flag, return a descriptor about the effect type.
+# This is where the various effect types are defined
+lookupStat <- function(code, paired) {
+  # This function just constructs a list, but it also documents and enforces the arguments
+  # @param code The code that identifies the effect type, as passed to DurgaDiff
+  # @param paired TRUE if data are paired
+  # @param fun Function to calculate effect size
+  # @param label Label used to describe effect size in plots
+  # @param label.print Label used to describe effect size when printing to console
+  Stat <- function(code, paired, fun, label, label.print) {
+    if (!is.function(fun)) stop("Invalid effect size function")
+    list(code = code, paired = paired, label = label, label.print = label.print, fun = fun)
+  }
+
+  allStats <- list(
+    Stat("mean",         TRUE,  esMeanOfDiffs, "Mean difference", "Mean of differences"),
+    Stat("hedges g_av",  TRUE,  stDepHedgesG_av, expression("Hedges' g"[av]), "Hedges' g_av"),
+    Stat("cohens d*",    TRUE, stDepCummingsD_av, expression("Cohen's d*"), "Cohen's d*"),
+    Stat("hedges g*",    TRUE, stDepCummingsG_av, expression("Hedges' g*"), "Hedges' g*"),
+    Stat("cohens d_av",  TRUE,  stDepCohensD_av, expression("Cohen's d"[av]), "Cohen's d_av"),
+    Stat("hedges g_z",   TRUE,  stDepHedgesG_z, expression("Hedges' g"[z]), "Hedges' g_z"),
+    Stat("cohens d_z",   TRUE,  stDepCohensD_z, expression("Cohen's d"[z]), "Cohen's d_z"),
+
+    Stat("mean",         FALSE, esDiffOfMeans, "Mean difference", "Difference of means"),
+    Stat("hedges g*",    FALSE, stIndHedgesGAst, expression("Cohen's g*"), "Cohen's g*"),
+    Stat("cohens d*",    FALSE, stIndCohensDAst, expression("Cohen's d*"), "Cohen's d*"),
+    Stat("hedges g_s",   FALSE, stIndHedgesG_s, expression("Hedges' g"[s]), "Hedges' g_s"),
+    Stat("cohens d_s",   FALSE, stIndCohensD_s, expression("Cohen's d"[s]), "Cohen's d_s"),
+
+    Stat("glass delta_pre",  FALSE, stIndGlassDeltaPre, expression(paste("Glass's " * Delta["pre"])), "Glass's delta_pre"),
+    Stat("glass delta_post", FALSE, stIndGlassDeltaPost, expression(paste("Glass's " * Delta["post"])), "Glass's delta_post")
+  )
+
+  if (is.function(code)) {
+    # Handle custom function.
+    Stat("custom function", paired, code, "Custom effect type", "Custom effect type")
+  } else {
+    # Handle standard effect type. Code comparison is case insensitive
+    candidates <- Filter(function(st) st$code == tolower(code) && st$paired == paired, allStats)
+    if (length(candidates) != 1) {
+      # Try to report available effect types
+      types <- sapply(Filter(function(st) st$paired == paired, allStats), function(st) st$code)
+      what <- ifelse(paired, "paired", "unpaired")
+      stop(sprintf("Unable to calculate effect type '%s' on %s data, available %s effect types:\n\t%s\n",
+                   code, what, what, paste(types, collapse = ", ")))
+    }
+    candidates[[1]]
+  }
+}
+
 
 # Calculate the difference statistic for a pair of groups
 # @param data Values for the two groups
@@ -76,14 +260,14 @@ stHedgesGz <- function(x) stCohensDz(x) * (1 - 3 / (4 * length(x) - 9))
 # @param data.col Name/index of the data column
 # @param group.col Name/index of the group column
 # @param id.col Name/index of the id column
-# @param effect.type Name of the statistic to be calculated
+# @param etDescr Descriptor with details of the statistic to be calculated
 # @param R Number of bootstrap replicates
 # @param ci.conf Level for confidence interval
 # @param ci.type Value passed to the `boot::boot.ci` `type` parameter
 # @param boot.params List of additional argument to pass to boot::boot
 # @param boot.ci.params List of additional argument to pass to boot::boot.ci
 calcPairDiff <- function(data, pair, isPaired, pairNames, pairIndices, data.col, group.col, id.col,
-                         effect.type, R, ci.conf, ci.type, boot.params, boot.ci.params) {
+                         etDescr, R, ci.conf, ci.type, boot.params, boot.ci.params) {
 
   # Functions to simplify writing bootstrap statistic functions
   .wrap2GroupStatistic <- function(statisticFn) {
@@ -95,53 +279,51 @@ calcPairDiff <- function(data, pair, isPaired, pairNames, pairIndices, data.col,
       statisticFn(x2, x1)
     }
   }
+
+  # The function should calculate the mean diff as mean(g2 - g1)
   .wrapPairedStatistic <- function(statisticFn) {
     function(data, indices) {
-      statisticFn(data[indices])
+      statisticFn(data$g2[indices], data$g1[indices])
     }
   }
 
-  # Decide how to calculate the statistic
+  # Decide how to calculate the statistic. Different types of functions required different arguments
   statistic <- NULL
   if (isPaired) {
     # Paired data
     g1 <- data[data[[group.col]] == pair[1], ]
     g2 <- data[data[[group.col]] == pair[2], ]
-    # Pair on ID (don't assume they are sorted)
-    g1Idx <- match(g2[[id.col]], g1[[id.col]])
-    if (any(is.na(g1Idx))) {
+    # Check that all specimens occur in both groups
+    missing <- unique(c(setdiff(g2[[id.col]], g1[[id.col]]),
+                      setdiff(g1[[id.col]], g2[[id.col]])))
+    if (length(missing) > 0) {
       # Report missing data
       idColName <- id.col
       if (is.numeric(idColName))
         idColName <- names(data)[id.col]
-      nBad <- sum(is.na(g1Idx))
-      stop(sprintf("%d %s%s are not matched across groups in paired data", nBad, idColName, if (nBad == 1) "" else "s"))
+      nBad <- length(missing)
+      stop(sprintf("%d %s%s are not matched across groups '%s' and '%s' in paired data",
+                   nBad, idColName, if (nBad == 1) "" else "s", pair[1], pair[2]))
     }
-    # Statistic functions operate on differences between paired values
-    bootstrapData <- g1[[data.col]][g1Idx] - g2[[data.col]]
-    strata <- rep(1, length(bootstrapData))
-    if (is.function(effect.type)) {
-      statistic <- .wrapPairedStatistic(effect.type)
-    } else if (effect.type == "mean") {
-      statistic <- .wrapPairedStatistic(mean)
-    } else if (effect.type == "cohens") {
-      statistic <- .wrapPairedStatistic(stCohensDz)
-    } else if (effect.type == "hedges") {
-      statistic <- .wrapPairedStatistic(stHedgesGz)
-    }
+    # Pair on ID (don't assume they are sorted)
+    g1Idx <- match(g2[[id.col]], g1[[id.col]])
+
+    # Paired functions accept two arguments, the two groups, however
+    # they assume that rows match in the groups
+    bootstrapData <- data.frame(g1 = g1[[data.col]][g1Idx], g2 = g2[[data.col]])
+    strata <- rep(1, nrow(bootstrapData))
+
+    # Build the statistic function
+    statistic <- .wrapPairedStatistic(etDescr$fun)
+
   } else {
-    # Unpaired data. Only bootstrap rows that are in this pair of groups
-    bootstrapData <- data[data[[group.col]] %in% pair, ]
+    # Unpaired data. Only bootstrap rows that are in the two groups of interest
+    groups <- data[[group.col]]
+    bootstrapData <- data[groups %in% pair, ]
+    # Sample from each group independently
     strata <- factor(bootstrapData[[group.col]])
-    if (is.function(effect.type)) {
-      statistic <- .wrap2GroupStatistic(effect.type)
-    } else if (effect.type == "mean") {
-      statistic <- .wrap2GroupStatistic(stMeanDiff)
-    } else if (effect.type == "cohens") {
-      statistic <- .wrap2GroupStatistic(stCohensD)
-    } else if (effect.type == "hedges") {
-      statistic <- .wrap2GroupStatistic(stHedgesG)
-    }
+
+    statistic <- .wrap2GroupStatistic(etDescr$fun)
   }
 
   # Bootstrap the statistic. The strata argument means that we bootstrap within each group separately
@@ -226,22 +408,28 @@ DurgaDiff <- function(x, ...) {
 #' Formula interface for estimating group mean differences
 #'
 #' Estimates differences between groups in preparation for plotting by
-#' \code{\link{DurgaPlot}}. Applies the formula, \code{x}, and a data set,
-#' \code{data}, to construct a data frame that is then passed, with all
-#' remaining arguments, to the function \code{\link{DurgaDiff.default}}.
+#' \code{\link{DurgaPlot}}. The formula interface allows the value and group
+#' columns to be specified in a formula, which means, for example, that
+#' transformation functions can be applied to columns.
+#'
+#' Applies the formula, \code{x}, and a data set, \code{data}, to construct a
+#' data frame that is then passed, with all remaining arguments, to the function
+#' \code{\link{DurgaDiff.default}}.
 
 #' @inherit DurgaDiff.default
 #'
 #' @inheritDotParams DurgaDiff.default -data.col -group.col -id.col
-#' @param x a formula, such as \code{y ~ grp},
-#'   where \code{y} is a numeric vector of data values to be split into groups
-#'   according to the grouping variable \code{grp} (usually a categorical
-#'   value).
-#' @param data a data.frame (or list) from which the variables in formula should be taken.
+#' @param x a formula, such as \code{y ~ grp}, where \code{y} is a numeric
+#'   vector of data values or measurements to be split into groups according to
+#'   the grouping variable \code{grp}, which is typically a categorical value.
+#'   Multiple group columns can be separated by `+`, in which case Durga treats
+#'   each unique combination of group variables as a distinct group.
+#' @param data a data.frame (or list) from which the variables in formula should
+#'   be taken.
 #'
 #' @examples
 #'
-#' d <- DurgaDiff(sugar ~ treatment, insulin, id.col = "id")
+#' d <- DurgaDiff(log(sugar) ~ treatment, insulin, id.col = "id")
 #' print(d)
 #'
 #' @seealso \code{\link{DurgaDiff.default}}, \code{\link[boot]{boot}},
@@ -249,16 +437,23 @@ DurgaDiff <- function(x, ...) {
 #'
 #' @export
 DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
+
+  # Interpret the formula
   md <- stats::model.frame(x, data)
-  if (ncol(md) != 2)
-    stop(sprintf("Formula must contain exactly two terms"))
+
+  # We assume: response variable is the data.col
+  data.col <- 1
+  # Remaining variables are groups
+  group.col <- seq(2, ncol(md))
+
   # If id.col specified...
   if (!missing(id.col) && !is.na(id.col) && !is.null(id.col)) {
     # Add id.col to the model data set
     md <- cbind(md, data[[id.col]])
-    d <- DurgaDiff(md, 1, 2, 3, ...)
+    colnames(md)[ncol(md)] <- ifelse(is.character(id.col), id.col, names(data)[id.col])
+    d <- DurgaDiff(md, data.col, group.col, ncol(md), ...)
   } else {
-    d <- DurgaDiff(md, 1, 2, ...)
+    d <- DurgaDiff(md, data.col, group.col, ...)
   }
   # Add formula to result
   d$formula <- x
@@ -271,24 +466,32 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #' Estimates differences between groups in preparation for plotting by
 #' \code{\link{DurgaPlot}}.
 #'
-#' If \code{x} is a \code{data.frame} (or similar), and does not contain repeated measures data, it must be in \emph{long
-#' format}: one column (\code{data.col}) contains the measurement or value to be
-#' compared, and another column (\code{group.col}) the group identity. For
-#' repeated measures/paired data in long format, a subject identity column
-#' (\code{id.col}) is also required. Alternatively, \code{x} may be a formula;
-#' see \code{\link{DurgaDiff.formula}}.
+#' ## Data format
 #'
-#' Repeated measures or paired data can be passed in either \emph{long} or
-#' \emph{wide} format. Long format is as described above. Wide format contains
-#' repeated measurements in different columns of the same row. To pass wide
-#' format data, do not specify the arguments \code{data.col} or
-#' \code{group.col}, and you must explicitly specify the groups to be compared
-#' in the \code{groups} argument. Each group must be the name of a column in
-#' \code{x}. You may specify \code{id.col}. The \code{id.col} can be a column
-#' that already exists and uniquely identifies each specimen, or it can be the
-#' name of a column to be created, and the specimen ID will be a generated
-#' integer sequence. Wide format data will be internally convert to long format,
-#' then processing continues as normal.
+#' \code{x} may be a formula; see \code{\link{DurgaDiff.formula}}.
+#'
+#' If \code{x} is a \code{data.frame} (or similar), and does not contain
+#' repeated
+#' measures data, it must be in \emph{long
+#' format}: one column (\code{data.col}) contains the measurement or value to be
+#' compared, and another column (\code{group.col}) the group identity. Repeated
+#' measures/paired data/within-subject comparisons may be in long or wide
+#' format; in long format, a subject identity column (\code{id.col}) is also
+#' required.
+#'
+#' Repeated measures/paired/within-subject comparison data in wide format
+#' contains repeated measurements in different columns of the same row. To pass
+#' wide format data, do not specify the arguments \code{data.col} or
+#' \code{group.col}. Instead, you must explicitly specify the groups to be
+#' compared in the \code{groups} argument. Each group must be the name of a
+#' column in \code{x}. You may specify \code{id.col}, although it is not
+#' required. The \code{id.col} can be a column that already exists and uniquely
+#' identifies each specimen, or it can be the name of a column to be created,
+#' and the specimen ID will be a generated integer sequence. Wide format data
+#' will be internally convert to long format, then processing continues as
+#' normal.
+#'
+#' ## Contrasts
 #'
 #' The pairs of groups to be compared are defined by the parameter
 #' \code{contrasts}. An asterisk (\code{"*"}, the default) creates contrasts for
@@ -300,19 +503,55 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #' specified, it must have a column for each contrast, with the first group in
 #' row 1 and the second in row 2.
 #'
-#' The formulae for Cohen's d and Hedges' g are from Lakens (2013), equations 1
-#' and 4 respectively. The Cohen's d we use is labelled
-#' \emph{\out{d<sub>s</sub>}} by Lakens (2013). Hedges' g is a corrected version
-#' of Cohen's d, and is more suitable for small sample sizes. For paired (i.e.
-#' repeated measures) Cohen's d, we apply equation 6 (Lakens 2013). For paired
-#' Hedges' g, we apply Hedges' correction to the paired Cohen's d.
+#' ## Effect types
 #'
-#' Alternative effect types can be estimated by passing a function for
-#' \code{effect.type}. For unpaired data, the function must accept two
-#' parameters: the values from the two groups to be compared (group 2 and group
-#' 1), and return a single numeric value, the effect size. For paired data, the
-#' function must accept a single argument; a vector of group 1 values - group 2
-#' values, and return a single numeric value.
+#' The \code{effect.type} parameter determines the effect size measure to be
+#' calculated. Our terminology generally follows Lakens (2013), with _d_ meaning
+#' a biased estimate and _g_ meaning a bias-corrected estimate. Some writers
+#' reverse this usage or use alternative terminology. We denote Cumming's (2012)
+#' definition of \eqn{d_{av}} for paired data (equation 11.10) with \eqn{Cohen's\text{ }d*}
+#' since it is identical to \eqn{Cohen's\text{ }d*} used for unpaired data (Delacre et al. 2021)
+#' and to differentiate it from the \eqn{d_{av}} described by Lakens (2013).
+#' Cumming (2012) recommends always using a bias-corrected estimate (although bias
+#' correction is unnecessary for large sample sizes).
+#' Durga applies Hedges' exact method for bias correction.
+#' The set of possible values for the \code{effect.type} argument, and
+#' their meanings, is described below.
+#'
+#' ### Unpaired effect types
+#'
+#' | **Code** | **Label** | **Effect type** | **Standardiser** |
+#' | --- | --- | --- | --- |
+#' | `mean` | \eqn{Mean\text{ }difference} | Unstandardised difference of group means | NA |
+#' | `cohens d*` | \eqn{Cohen's\text{ }d*} | Difference in means standardised by non-pooled average SD (Delacre et al. 2021) | \eqn{\sqrt{({s_1}^2 + {s_2}^2)/2}} |
+#' | `hedges g*` | \eqn{Hedges'\text{ }g*} | Bias-corrected \eqn{Cohen's\text{ }d*} (Delacre et al. 2021) | \eqn{\sqrt{({s_1}^2 + {s_2}^2)/2}} |
+#' | `cohens`&nbsp;`d_s` | \eqn{Cohen's\text{ }d_s} | Difference in means standardised by the pooled standard deviation (Lakens 2013, equation 1) | \eqn{\sqrt{\frac{(n_1-1){s_1}^2 + (n_2-1){s_2}^2}{{n_1} + {n_2} - 2}}} |
+#' | `hedges g_s` | \eqn{Hedges'\text{ }g_s} | Bias-corrected \eqn{Cohen's\text{ }d_s} (Lakens 2013, equation 4) | \eqn{\sqrt{\frac{(n_1-1){s_1}^2 + (n_2-1){s_2}^2}{{n_1} + {n_2} - 2}}} |
+#' | `glass`&nbsp;`delta_pre` |\eqn{Glass's\text{ }\Delta_{pre}} | Difference in means standardised by the standard deviation of the pre-measurement group (which is the 2nd group in a contrast). Lakens (2013) recommends using Glass's \eqn{\Delta} whenever standard deviations differ substantially between conditions | \eqn{s_2} |
+#' | `glass`&nbsp;`delta_post` | \eqn{Glass's\text{ }\Delta_{post}} | Difference in means standardised by the standard deviation of the post-measurement group (which is the 1st group in a contrast) | \eqn{s_1} |
+#'
+#' ### Paired effect types
+#'
+#' | **Code** | **Label** | **Effect type** | **Standardiser** |
+#' | --- | --- | --- | --- |
+#' | `mean` | \eqn{Mean\text{ }difference} | Unstandardised mean of group differences | NA |
+#' | `cohens`&nbsp;`d_z` | \eqn{Cohen's\text{ }d_z} | Mean of differences, standardised by the standard deviation of the differences, (Lakens 2013, equation 6). Cummings (2012) recommends against using \eqn{Cohen's\text{ }d_z}, preferring \eqn{Cumming's\text{ }d_{av}}  | \eqn{\sqrt{\frac{\sum{({X_{diff}} - {M_{diff}})^2}}{n-1}}} |
+#' | `hedges g_z` | \eqn{Hedges'\text{ }g_z} | Bias-corrected \eqn{Cohen's\text{ }d_z} | \eqn{\sqrt{\frac{\sum{({X_{diff}} - {M_{diff}})^2}}{n-1}}} |
+#' | `cohens`&nbsp;`d_av` | \eqn{Cohen's\text{ }d_{av}} | Difference in means standardised by the average standard deviation of the groups (Lakens 2013, equation 10) | \eqn{\dfrac{{s_1} + {s_2}}{2}} |
+#' | `hedges`&nbsp;`g_av` | \eqn{Hedges'\text{ }g_{av}} | Bias-corrected \eqn{Cohen's\text{ }d_{av}} | \eqn{\dfrac{{s_1} + {s_2}}{2}} |
+#' | `cohens`&nbsp;`d*` | \eqn{Cohen's\text{ }d*} | Similar to \eqn{Cohen's\text{ }d_{av}} except that the normaliser is non-pooled average SD rather than mean SD, as recommended by Cummings (2012, eqn 11.9) | \eqn{\sqrt{({s_1}^2 + {s_2}^2)/2}} |
+#' | `hedges`&nbsp;`g*` | \eqn{Hedges'\text{ }g*} | Bias-corrected \eqn{Cohen's\text{ }d*} | \eqn{\sqrt{({s_1}^2 + {s_2}^2)/2}} |
+#'
+#' As a simple rule of thumb, if you want a standardised effect type and you
+#' don't know which one to use, use `"hedges g*"` for either paired or unpaired data.
+#'
+#' Additional effect types can be applied by passing a function for
+#' \code{effect.type}. The function must accept two
+#' parameters and return a single numeric value, the effect size.
+#' The two parameters are the values from the two groups to be compared (group 2 and group 1).
+#'
+#'
+#' ## Confidence intervals
 #'
 #' Confidence intervals for the estimate are determined using bootstrap
 #' resampling, using the adjusted bootstrap percentile (BCa) method (see
@@ -324,14 +563,16 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #' @param x A data frame (or similar) containing values to be compared, or a
 #'   formula (see \code{\link{DurgaDiff.formula}}).
 #' @param data.col Name (character) or index (numeric) of the column within
-#'   \code{data} containing the measurement data.
-#' @param group.col Name or index of the column within \code{data} containing
-#'   the values to group by.
-#' @param id.col Specify for paired data/repeated measures only. Name or index
-#'   of ID column for repeated measures/paired data. Observations for the same
-#'   individual must have the same ID. For non-paired data, do not specify an
-#'   \code{id.col}, (or use \code{id.col = NA}).
-#' @param groups Vector of group names. Defaults to all groups in \code{data} in
+#'   \code{x} containing the measurement data.
+#' @param group.col Name or index of the column within \code{x} containing
+#'   the values to group by. May be a vector, in which case values are pasted
+#'   together to define groups.
+#' @param id.col Specify for paired data/repeated measures/with-subject
+#'   comparisons only. Name or index of ID column for repeated measures/paired
+#'   data. Observations for the same individual must have the same ID. For
+#'   non-paired data, do not specify an \code{id.col}, (or use \code{id.col =
+#'   NA}).
+#' @param groups Vector of group names. Defaults to all groups in \code{x} in
 #'   \emph{natural} order. If \code{groups} is a named vector, the names are
 #'   used as group labels for plotting or printing. If \code{data.col} and
 #'   \code{group.col} are not specified, \code{x} is assumed be to in \emph{wide
@@ -341,16 +582,17 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #'   pairwise differences are generated. May be a single string, a vector of
 #'   strings, or a matrix. Specify \code{NULL} to avoid calculating any
 #'   contrasts. See Details for more information.
-#' @param effect.type Type of group difference to be estimated. Possible types
-#'   are: \code{"mean"}, difference in unstandardised group means;
-#'   \code{"cohens"}, Cohen's d; \code{"hedges"}, Hedges' g; or a function. See
-#'   Details for further information.
+#' @param effect.type Type of group difference to be estimated. Cannot be abbreviated. See Details for
+#'   further information.
 #' @param R The number of bootstrap replicates. \code{R} should be larger than
 #'   your sample size, so the default value of 1000 may need to be increased for
 #'   large sample sizes. If \code{R <= nrow(x)}, an error such as "\code{Error in
 #'   bca.ci... estimated adjustment 'a' is NA}" will be thrown. Additionally,
 #'   warnings such as "\code{In norm.inter(t, adj.alpha) : extreme order
 #'   statistics used as endpoints}" may be avoided by increasing \code{R}.
+#'   Specify \code{R = NA} if you do not wish to calculate any CIs, either
+#'   for group means for for effect sizes. This may be useful if Durga is
+#'   only being used for plotting large data sets.
 #' @param boot.params Optional list of additional names parameters to pass to
 #'   the \code{\link[boot]{boot}} function.
 #' @param ci.conf Numeric confidence level of the required confidence interval,
@@ -382,7 +624,9 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #'   \item{\code{groups}}{Vector of group names}
 #'   \item{\code{group.names}}{Labels used to identify groups}
 #'   \item{\code{effect.type}}{Value of \code{effect.type} parameter}
-#'   \item{\code{effect.name}}{Pretty version of \code{effect.type}}
+#'   \item{\code{effect.name}}{Name of the effect type; may include formatting
+#'   such as subscripts} \item{\code{effect.name.print}}{Text-only version of
+#'   \code{effect.name} for printing; subscripts are indicated by \code{"_"}}
 #'   \item{\code{data.col}}{Value of \code{data.col} parameter; may be an index
 #'   or a name} \item{\code{data.col.name}}{Name of the \code{data.col} column}
 #'   \item{\code{group.col}}{Value of \code{group.col} parameter; may be an
@@ -391,9 +635,9 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #'   \item{\code{id.col}}{Value of \code{id.col} parameter. May be \code{NULL}}
 #'   \item{\code{paired.data}}{\code{TRUE} if paired differences
 #'   were estimated}
-#'   \item{\code{data}}{The input data frame, or the reshaped (long format) data
-#'   frame if the input data set was in wide format} \item{\code{call}}{How this
-#'   function was called}
+#'   \item{\code{data}}{The input data frame (\code{x}), or the reshaped (long format) data
+#'   frame if the input data set was in wide format}
+#'   \item{\code{call}}{How this function was called}
 #'
 #'   A \code{DurgaGroupDiff} object is a \code{boot} object (as returned by
 #'   \code{\link[boot]{boot}}) with added \code{bootci} components (as returned
@@ -433,17 +677,24 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #'
 #' @references
 #'
-#' Lakens, D. (2013). Calculating and reporting effect sizes to facilitate
+#' - Cumming, G. (2012). Understanding the new statistics : effect sizes,
+#' confidence intervals, and meta-analysis (1st ed.). New York: Routledge.
+#'
+#' - Delacre, M., Lakens, D., Ley, C., Liu, L., & Leys, C. (2021). Why
+#' Hedges’g* s based on the non-pooled standard deviation should be reported
+#' with Welch’s t-test. [doi:10.31234/osf.io/tu6mp](https://doi.org/10.31234/osf.io/tu6mp)
+#'
+#' - Lakens, D. (2013). Calculating and reporting effect sizes to facilitate
 #' cumulative science: a practical primer for t-tests and ANOVAs. Frontiers in
-#' Psychology, 4. doi:10.3389/fpsyg.2013.00863
+#' Psychology, 4. [doi:10.3389/fpsyg.2013.00863](https://doi.org/10.3389/fpsyg.2013.00863)
 #'
 #' @export
 DurgaDiff.default <- function(x,
                       data.col, group.col,
                       id.col,
-                      groups = sort(unique(x[[group.col]])),
+                      groups,
                       contrasts = "*",
-                      effect.type = c("mean", "cohens", "hedges"),
+                      effect.type = "mean",
                       R = 1000,
                       boot.params = list(),
                       ci.conf = 0.95,
@@ -465,11 +716,6 @@ DurgaDiff.default <- function(x,
   # If data is a data.table, it breaks things, so convert to a data.frame
   x <- as.data.frame(x)
 
-  effectNames <- c(mean = "Mean difference", cohens = "Cohen's d", hedges = "Hedges' g", median = "Median difference")
-
-  if (!is.function(effect.type))
-    effect.type <- match.arg(effect.type)
-
   # Interpret wide format paired data
   if (missing(data.col) && missing(group.col) && !missing(groups)) {
     x <- wideToLong(x, id.col, groups)
@@ -482,6 +728,7 @@ DurgaDiff.default <- function(x,
 
   # Check column specifications
   .isACol <- function(spec) (is.numeric(spec) && all(spec >= 1) && all(spec <= ncol(x))) || (!is.numeric(spec) && all(spec %in% names(x)))
+  .colName <- function(col) if(is.numeric(col)) { names(x)[col] } else { col }
   if (!.isACol(data.col))
     stop(sprintf("data.col '%s' is not a valid column name or index (names are %s)",
                  data.col, paste(names(x), collapse = ", ")))
@@ -493,6 +740,23 @@ DurgaDiff.default <- function(x,
   if (pairedData && !.isACol(id.col))
     stop(sprintf("id.col '%s' is not a valid column name or index (names are %s)",
                  id.col, paste(names(x), collapse = ", ")))
+
+  # Handle multiple groups ("interactions")
+  if (length(group.col) > 1) {
+    # Create a new column which contains the combined values from each group column
+    groupCol <- combineVariables(x, group.col, ", ")
+    groupColName <- paste(.colName(group.col), collapse = ".")
+    if (groupColName %in% names(x)) stop(sprintf("Unable to create group interaction column '%s', column already exists", groupColName))
+    ocn <- colnames(x)
+    x <- cbind(x, groupCol)
+    colnames(x) <- c(ocn, groupColName)
+    group.col <- groupColName
+  }
+
+  # Now assign default groups value
+  if (missing(groups)) {
+    groups <- sort(unique(x[[group.col]]))
+  }
 
   # Optionally handle NA values
   if (na.rm) {
@@ -514,8 +778,10 @@ DurgaDiff.default <- function(x,
   }
   if (nrow(x) == 0) stop("No data to analyse!")
 
+  # Lookup effect type and get details about it
+  etDescr <- lookupStat(effect.type, pairedData)
+
   # Create return structure with administrative info
-  .colName <- function(col) ifelse(is.numeric(col), names(x)[col], col)
   groupLabels <- names(groups)
   if (is.null(groupLabels)) {
     groupLabels <- as.character(groups)
@@ -533,13 +799,33 @@ DurgaDiff.default <- function(x,
              paired.data = pairedData,
              groups = groups,
              group.names = groupLabels,
-             effect.type = effect.type,
-             effect.name = ifelse(is.function(effect.type), "Custom effect type", effectNames[effect.type]),
+             effect.type = etDescr$code,
+             effect.name = etDescr$label,             # Plottable label
+             effect.name.print = etDescr$label.print, # Printable label
              explicit.contrasts = !missing(contrasts))
   # Return value has type DurgaDiff
   class(es) <- c("DurgaDiff", class(es))
 
-  # Fill in statistical summary about each of the groups
+  # Interpret the contrasts
+  contrasts <- expandContrasts(contrasts, groups, groupLabels)
+  if (is.null(contrasts)) {
+    es$group.differences <- NULL
+  } else {
+    # For each pair of groups...
+    es$group.differences <- apply(contrasts, 2, function(pair) {
+      pairData <- x[as.character(x[[group.col]]) %in% pair, ]
+      groupIndices <- c(which(groups == pair[1]), which(groups == pair[2]))
+      groupLabels <- c(groupLabels[groupIndices[1]],
+                       groupLabels[groupIndices[2]])
+      calcPairDiff(pairData, pair, pairedData, groupLabels, groupIndices, data.col, group.col, id.col,
+                   etDescr, R, ci.conf, ci.type, boot.params, boot.ci.params)
+    })
+  }
+
+  # Fill in statistical summary about each of the groups. Do this after
+  # calculating group differences to preserve backwards compatibility of
+  # reproducible bootstraps in version 1.1.0.9000: there are now random numbers
+  # generated by this code
   gil <- lapply(groups, function(g) {
     grpVals <- x[[data.col]][x[[group.col]] == g]
     #ci <- mean.CI(grpVals, ci.conf)
@@ -558,22 +844,6 @@ DurgaDiff.default <- function(x,
   rownames(df) <- groupLabels
   es$group.statistics <- df
 
-  # Interpret the contrasts
-  contrasts <- expandContrasts(contrasts, groups, groupLabels)
-  if (is.null(contrasts)) {
-    es$group.differences <- NULL
-  } else {
-    # For each pair of groups...
-    es$group.differences <- apply(contrasts, 2, function(pair) {
-      pairData <- x[as.character(x[[group.col]]) %in% pair, ]
-      groupIndices <- c(which(groups == pair[1]), which(groups == pair[2]))
-      groupLabels <- c(groupLabels[groupIndices[1]],
-                       groupLabels[groupIndices[2]])
-      calcPairDiff(pairData, pair, pairedData, groupLabels, groupIndices, data.col, group.col, id.col,
-                   effect.type, R, ci.conf, ci.type, boot.params, boot.ci.params)
-    })
-  }
-
   es
 }
 
@@ -591,13 +861,15 @@ print.DurgaDiff <- function(x, ...) {
   }
   cat(sprintf("  %s\n", fs))
   cat("Groups:\n")
-  print(x$group.statistics)
+  print(x$group.statistics, ...)
   cat(sprintf("%s %s (R = %d, bootstrap CI method = %s):\n",
-              ifelse(x$paired.data, "Paired", "Unpaired"), x$effect.name,
+              ifelse(x$paired.data, "Paired", "Unpaired"),
+              x$effect.name.print,
               # Note R and ci.type should be the same for all comparisons
-              x$group.differences[[1]]$R, x$group.differences[[1]]$ci.type))
+              x$group.differences[[1]]$R,
+              x$group.differences[[1]]$ci.type))
   for (i in seq_len(length(x$group.differences))) {
-    print(x$group.differences[[i]])
+    print(x$group.differences[[i]], ...)
   }
 }
 
