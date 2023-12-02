@@ -28,10 +28,10 @@ test_that("new effect types", {
   expect_equal(DurgaPairEst("cohens d_z"), 1.5)          # Spreadsheet cell V10
   # NOTE Laken's spreadsheet v 4.3 uses the formula for Cohens d* but labels it d_av
   # expect_equal(DurgaPairEst("cohens d_av"), 1.125879938)  # Spreadsheet v1 cell V13
-  expect_equal(DurgaPairEst("cohens d*"), 1.125879938)  # Spreadsheet v1 cell V13
+  expect_equal(DurgaPairEst("cohens d"), 1.125879938)  # Spreadsheet v1 cell V13
   # Spreadsheet says it's Hedges' g_av, but uses the formula for g*!!! Also uses approximate correction
   #expect_equal(DurgaPairEst("hedges g_av"), 1.029375943)  # Spreadsheet cell 14V
-  expect_equal(DurgaPairEst("hedges g*"), 1.029375943, tolerance = 0.0075)  # Spreadsheet cell 14V
+  expect_equal(DurgaPairEst("hedges g"), 1.029375943, tolerance = 0.0075)  # Spreadsheet cell 14V
 
   d_av <- mean(Group_1 - Group_2) / ((sd(Group_1) + sd(Group_2)) / 2)
   expect_equal(DurgaPairEst("cohens d_av"), d_av)
@@ -42,12 +42,12 @@ test_that("new effect types", {
   expect_equal(DurgaEst("glass delta_post"), (mean(Group_1) - mean(Group_2)) / sd(Group_2))
 
   d_ast <- mean(Group_1 - Group_2) / sqrt((sd(Group_1)^2 + sd(Group_2)^2) / 2)
-  expect_equal(DurgaPairEst("cohens d*"), d_ast)
-  expect_equal(DurgaPairEst("hedges g*"), d_ast * esBiasCorrectExact(9)) # Not a very good test
+  expect_equal(DurgaPairEst("cohens d"), d_ast)
+  expect_equal(DurgaPairEst("hedges g"), d_ast * esBiasCorrectExact(9)) # Not a very good test
 
   # Check case insensitivity
-  expect_equal(DurgaEst("Cohens d*"), DurgaEst("COHENS D*"))
-  expect_equal(DurgaPairEst("cOhEnS d*"), DurgaPairEst("CoHeNs D*"))
+  expect_equal(DurgaEst("Cohens d"), DurgaEst("COHENS d"))
+  expect_equal(DurgaPairEst("cOhEnS d"), DurgaPairEst("CoHeNs d"))
 })
 
 # Commented out so that MOTE is not a dependency of Durga
@@ -86,10 +86,10 @@ test_that("new effect types", {
 #   DurgaEst <- function(effectType) DurgaDiff(df, 1, 2, effect.type = effectType)$group.differences[[1]]$t0
 #
 #   expect_equal(DurgaEst("cohens d_s"), effectsize::cohens_d(x2, x1)$Cohens_d)
-#   expect_equal(DurgaEst("cohens d*"), effectsize::cohens_d(x2, x1, pooled_sd = FALSE)$Cohens_d)
+#   expect_equal(DurgaEst("cohens d"), effectsize::cohens_d(x2, x1, pooled_sd = FALSE)$Cohens_d)
 #   expect_equal(DurgaEst("hedges g_s"), effectsize::hedges_g(x2, x1)$Hedges_g)
 #   # effectsize uses a different degrees of freedom calculation for bias correction, with no attribution
-#   expect_equal(DurgaEst("hedges g*"), effectsize::hedges_g(x2, x1, pooled_sd = FALSE)$Hedges_g, tolerance = 0.0001)
+#   expect_equal(DurgaEst("hedges g"), effectsize::hedges_g(x2, x1, pooled_sd = FALSE)$Hedges_g, tolerance = 0.0001)
 #   expect_equal(DurgaEst("glass delta_post"), effectsize::glass_delta(x2, x1)$Glass_delta)
 #   expect_equal(DurgaEst("glass delta_pre"), -effectsize::glass_delta(x1, x2)$Glass_delta)
 #
@@ -102,9 +102,9 @@ test_that("new effect types", {
 #   DurgaPairEst <- function(effectType) DurgaDiff(df, 1, 2, id.col = 3, effect.type = effectType)$group.differences[[1]]$t0
 #
 #   expect_equal(DurgaPairEst("cohens d_z"), effectsize::cohens_d(x2, x1, paired = TRUE)$Cohens_d)
-#   expect_equal(DurgaEst("cohens d*"), effectsize::cohens_d(x2, x1, pooled_sd = FALSE)$Cohens_d)
+#   expect_equal(DurgaEst("cohens d"), effectsize::cohens_d(x2, x1, pooled_sd = FALSE)$Cohens_d)
 #   expect_equal(DurgaEst("hedges g_s"), effectsize::hedges_g(x2, x1)$Hedges_g)
-#   expect_equal(DurgaEst("hedges g*"), effectsize::hedges_g(x2, x1, pooled_sd = FALSE)$Hedges_g)
+#   expect_equal(DurgaEst("hedges g"), effectsize::hedges_g(x2, x1, pooled_sd = FALSE)$Hedges_g)
 # })
 
 test_that("calculations, deffectsize::", {
@@ -125,9 +125,9 @@ test_that("calculations, deffectsize::", {
   expect_equal(d$group.differences[[1]]$t0, deffectsize::datacohen_CI(x2, x1, var.equal = TRUE, unbiased = FALSE, conf.level = 0.95, alternative = "two.sided", na.rm = TRUE)$ES)
   d <- DurgaDiff(df, 1, 2, effect.type = "hedges g_s")
   expect_equal(d$group.differences[[1]]$t0, deffectsize::datacohen_CI(x2, x1, var.equal = TRUE, unbiased = TRUE, conf.level = 0.95, alternative = "two.sided", na.rm = TRUE)$ES)
-  d <- DurgaDiff(df, 1, 2, effect.type = "cohens d*")
+  d <- DurgaDiff(df, 1, 2, effect.type = "cohens d")
   expect_equal(d$group.differences[[1]]$t0, deffectsize::datacohen_CI(x2, x1, var.equal = FALSE, unbiased = FALSE, conf.level = 0.95, alternative = "two.sided", na.rm = TRUE)$ES)
-  d <- DurgaDiff(df, 1, 2, effect.type = "hedges g*")
+  d <- DurgaDiff(df, 1, 2, effect.type = "hedges g")
   expect_equal(d$group.differences[[1]]$t0, deffectsize::datacohen_CI(x2, x1, var.equal = FALSE, unbiased = TRUE, conf.level = 0.95, alternative = "two.sided", na.rm = TRUE)$ES)
 })
 

@@ -1,13 +1,18 @@
 # Changes to the `Durga` package
 
-## Durga 1.1.0.9000 (development version)
+## Durga 1.1.0.9000 (development version, planned to be 2.0)
 
-* `DurgaDiff` can now calculate multiple different effect sizes. The old values for "effect.type" of "cohens" and "hedges" are no longer accepted and generate an error. This backwards-incompatible change has been made so that users are required to consider the effect type they wish to use. See the help file for `DurgaDiff` for more information.
+### Enhancements
+
+* `DurgaDiff` can now calculate multiple different effect sizes. The old values for `effect.type` of `"cohens"` and `"hedges"` are no longer accepted and generate an error. This backwards-incompatible change has been made so that users are required to consider the effect type they wish to use. See the help file for `DurgaDiff` for more information.
 * `DurgaDiff` now calculates CI of group means using BCa bootstrapping rather than using a parametric formula. This means that a group with fewer than 3 distinct values will not have a CI calculated (lower and upper limits will be `NA`).
 * `DurgaDiff` now accepts a vector for `group.col`. A single group column is created by concatenating values from each specified group column.
-* Bug fix in `DurgaPlot`: Ensure entirety of effect size is visible when on the right.
-* `DurgaDiff` now accepts repeated measures data in wide format.
-* Bug fixed in `DurgaDiff`: bootstrap implementation of CI samples each group separately. The bug sometimes meant that the effect size axis disappeared in `DurgaPlots` for groups with small sample sizes. The confidence intervals will be slightly different now.
+* `DurgaDiff` now accepts data in either long or wide format. Added the data set `insulin.wide` as an example of wide format. 
+
+### Bug fixes
+
+* `DurgaPlot`: Ensure entirety of effect size is visible when on the right.
+* `DurgaDiff`: bootstrap implementation of CI samples each group separately. The bug sometimes meant that the effect size axis disappeared in plots for groups with small sample sizes. The confidence intervals will be slightly different now.
 
 ## Durga 1.1.0
 

@@ -137,26 +137,24 @@ Estimates differences between groups in preparation for plotting by
 
 \code{x} may be a formula; see \code{\link{DurgaDiff.formula}}.
 
-If \code{x} is a \code{data.frame} (or similar), and does not contain
-repeated
-measures data, it must be in \emph{long
-format}: one column (\code{data.col}) contains the measurement or value to be
-compared, and another column (\code{group.col}) the group identity. Repeated
-measures/paired data/within-subject comparisons may be in long or wide
-format; in long format, a subject identity column (\code{id.col}) is also
-required.
+If \code{x} is a \code{data.frame} (or similar) it may be in either \emph{long} or \emph{wide}
+format. In long format, one column (\code{data.col}) contains the measurement or value to be
+compared, and another column (\code{group.col}) contains the group identity. Repeated
+measures/paired data/within-subject comparisons in long format require a subject
+identity column (\code{id.col}).
 
-Repeated measures/paired/within-subject comparison data in wide format
-contains repeated measurements in different columns of the same row. To pass
+Wide format contains different measurements in different columns of the same row, and
+is well-suited for repeated measures/paired/within-subject comparison data. To pass
 wide format data, do not specify the arguments \code{data.col} or
 \code{group.col}. Instead, you must explicitly specify the groups to be
 compared in the \code{groups} argument. Each group must be the name of a
-column in \code{x}. You may specify \code{id.col}, although it is not
-required. The \code{id.col} can be a column that already exists and uniquely
-identifies each specimen, or it can be the name of a column to be created,
-and the specimen ID will be a generated integer sequence. Wide format data
-will be internally convert to long format, then processing continues as
-normal.
+column in \code{x}. For paired data, you may specify \code{id.col}, although it is not
+required, as wide format data is assumed to be paired. The \code{id.col} can be a column
+that already exists and uniquely identifies each specimen, or it can be the name of a
+column to be created, in which case the specimen ID will be a generated integer sequence.
+Unpaired data can be in wide format, but it is necessary to inform Durga by passing \code{id.col = NULL}.
+Wide format data will be internally converted to long format, then processing continues as
+for long format input.
 }
 
 \subsection{Contrasts}{
@@ -177,20 +175,25 @@ row 1 and the second in row 2.
 The \code{effect.type} parameter determines the effect size measure to be
 calculated. Our terminology generally follows Lakens (2013), with \emph{d} meaning
 a biased estimate and \emph{g} meaning a bias-corrected estimate. Some writers
-reverse this usage or use alternative terminology. We denote Cumming's (2012)
-definition of \eqn{d_{av}} for paired data (equation 11.10) with \eqn{Cohen's\text{ }d*}
-since it is identical to \eqn{Cohen's\text{ }d*} used for unpaired data (Delacre et al. 2021)
-and to differentiate it from the \eqn{d_{av}} described by Lakens (2013).
-Cumming (2012) recommends always using a bias-corrected estimate (although bias
+reverse this usage or use alternative terminology. Cumming (2012) recommends
+always using a bias-corrected estimate (although bias
 correction is unnecessary for large sample sizes).
 Durga applies Hedges' exact method for bias correction.
+
+The effect type we call
+\eqn{Cohen's\text{ }d} for unpaired data is called \eqn{Cohen's\text{ }d_s^*}
+by Delacre et al. (2021). For paired data, our \eqn{Cohen's\text{ }d} is
+identical to \eqn{Cohen's\text{ }d}
+for unpaired data (Delacre et al. 2021); it is called \eqn{d_{av}}
+by Cumming (2012; equation 11.10). For further details, refer to Khan and McLean (2023).
+
 The set of possible values for the \code{effect.type} argument, and
 their meanings, is described below.
 \subsection{Unpaired effect types}{\tabular{llll}{
    \strong{Code} \tab \strong{Label} \tab \strong{Effect type} \tab \strong{Standardiser} \cr
    \code{mean} \tab \eqn{Mean\text{ }difference} \tab Unstandardised difference of group means \tab NA \cr
-   \verb{cohens d*} \tab \eqn{Cohen's\text{ }d*} \tab Difference in means standardised by non-pooled average SD (Delacre et al. 2021) \tab \eqn{\sqrt{({s_1}^2 + {s_2}^2)/2}} \cr
-   \verb{hedges g*} \tab \eqn{Hedges'\text{ }g*} \tab Bias-corrected \eqn{Cohen's\text{ }d*} (Delacre et al. 2021) \tab \eqn{\sqrt{({s_1}^2 + {s_2}^2)/2}} \cr
+   \verb{cohens d} \tab \eqn{Cohen's\text{ }d} \tab Difference in means standardised by non-pooled average SD (Delacre et al. 2021) \tab \eqn{\sqrt{({s_1}^2 + {s_2}^2)/2}} \cr
+   \verb{hedges g} \tab \eqn{Hedges'\text{ }g} \tab Bias-corrected \eqn{Cohen's\text{ }d} (Delacre et al. 2021) \tab \eqn{\sqrt{({s_1}^2 + {s_2}^2)/2}} \cr
    \code{cohens} \code{d_s} \tab \eqn{Cohen's\text{ }d_s} \tab Difference in means standardised by the pooled standard deviation (Lakens 2013, equation 1) \tab \eqn{\sqrt{\frac{(n_1-1){s_1}^2 + (n_2-1){s_2}^2}{{n_1} + {n_2} - 2}}} \cr
    \verb{hedges g_s} \tab \eqn{Hedges'\text{ }g_s} \tab Bias-corrected \eqn{Cohen's\text{ }d_s} (Lakens 2013, equation 4) \tab \eqn{\sqrt{\frac{(n_1-1){s_1}^2 + (n_2-1){s_2}^2}{{n_1} + {n_2} - 2}}} \cr
    \code{glass} \code{delta_pre} \tab \eqn{Glass's\text{ }\Delta_{pre}} \tab Difference in means standardised by the standard deviation of the pre-measurement group (which is the 2nd group in a contrast). Lakens (2013) recommends using Glass's \eqn{\Delta} whenever standard deviations differ substantially between conditions \tab \eqn{s_2} \cr
@@ -206,13 +209,13 @@ their meanings, is described below.
    \verb{hedges g_z} \tab \eqn{Hedges'\text{ }g_z} \tab Bias-corrected \eqn{Cohen's\text{ }d_z} \tab \eqn{\sqrt{\frac{\sum{({X_{diff}} - {M_{diff}})^2}}{n-1}}} \cr
    \code{cohens} \code{d_av} \tab \eqn{Cohen's\text{ }d_{av}} \tab Difference in means standardised by the average standard deviation of the groups (Lakens 2013, equation 10) \tab \eqn{\dfrac{{s_1} + {s_2}}{2}} \cr
    \code{hedges} \code{g_av} \tab \eqn{Hedges'\text{ }g_{av}} \tab Bias-corrected \eqn{Cohen's\text{ }d_{av}} \tab \eqn{\dfrac{{s_1} + {s_2}}{2}} \cr
-   \code{cohens} \verb{d*} \tab \eqn{Cohen's\text{ }d*} \tab Similar to \eqn{Cohen's\text{ }d_{av}} except that the normaliser is non-pooled average SD rather than mean SD, as recommended by Cummings (2012, eqn 11.9) \tab \eqn{\sqrt{({s_1}^2 + {s_2}^2)/2}} \cr
-   \code{hedges} \verb{g*} \tab \eqn{Hedges'\text{ }g*} \tab Bias-corrected \eqn{Cohen's\text{ }d*} \tab \eqn{\sqrt{({s_1}^2 + {s_2}^2)/2}} \cr
+   \code{cohens} \code{d} \tab \eqn{Cohen's\text{ }d} \tab Similar to \eqn{Cohen's\text{ }d_{av}} except that the normaliser is non-pooled average SD rather than mean SD, as recommended by Cummings (2012, eqn 11.9) \tab \eqn{\sqrt{({s_1}^2 + {s_2}^2)/2}} \cr
+   \code{hedges} \code{g} \tab \eqn{Hedges'\text{ }g} \tab Bias-corrected \eqn{Cohen's\text{ }d} \tab \eqn{\sqrt{({s_1}^2 + {s_2}^2)/2}} \cr
 }
 
 
 As a simple rule of thumb, if you want a standardised effect type and you
-don't know which one to use, use \code{"hedges g*"} for either paired or unpaired data.
+don't know which one to use, use \code{"hedges g"} for either paired or unpaired data.
 
 Additional effect types can be applied by passing a function for
 \code{effect.type}. The function must accept two
@@ -256,8 +259,11 @@ d <- DurgaDiff(insulin.wide, groups = c("sugar.before", "sugar.after"))
 \item Cumming, G. (2012). Understanding the new statistics : effect sizes,
 confidence intervals, and meta-analysis (1st ed.). New York: Routledge.
 \item Delacre, M., Lakens, D., Ley, C., Liu, L., & Leys, C. (2021). Why
-Hedges’g* s based on the non-pooled standard deviation should be reported
+Hedges’ g* based on the non-pooled standard deviation should be reported
 with Welch’s t-test. \href{https://doi.org/10.31234/osf.io/tu6mp}{doi:10.31234/osf.io/tu6mp}
+\item Khan, M. K., & McLean, D. J. (2023). Durga: An R package for effect size estimation
+and visualisation. bioRxiv, 2023.2002.2006.526960.
+\href{https://doi.org/10.1101/2023.02.06.526960}{doi:10.1101/2023.02.06.526960}
 \item Lakens, D. (2013). Calculating and reporting effect sizes to facilitate
 cumulative science: a practical primer for t-tests and ANOVAs. Frontiers in
 Psychology, 4. \href{https://doi.org/10.3389/fpsyg.2013.00863}{doi:10.3389/fpsyg.2013.00863}

@@ -40,14 +40,14 @@ test_that("bias limits", {
   # Bias correction for large sample sizes should be almost the same as no bias correction
   df <- data.frame(val = c(rnorm(500), rnorm(500, 0.2, sd = 0.5)),
                    group = rep(c("Group 1", "Group 2"), each = 500))
-  dg <- DurgaDiff(df, 1, 2, effect.type = "hedges g*")
-  dd <- DurgaDiff(df, 1, 2, effect.type = "cohens d*")
+  dg <- DurgaDiff(df, 1, 2, effect.type = "hedges g")
+  dd <- DurgaDiff(df, 1, 2, effect.type = "cohens d")
   # I don't know what the "correct" tolerance should be here
   expect_equal(dg$group.differences[[1]]$t1, dd$group.differences[[1]]$t1)
 
   df <- data.frame(val = c(rnorm(100), rnorm(100, 0.2)),
                    group = rep(c("Group 1", "Group 2"), each = 100))
-  expect_error(DurgaDiff(df, 1, 2, effect.type = "hedges g*"), NA)
+  expect_error(DurgaDiff(df, 1, 2, effect.type = "hedges g"), NA)
 })
 
 

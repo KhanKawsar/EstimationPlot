@@ -81,7 +81,7 @@ esWeightedPooledSD <- function(x1, x2) {
 # Calculate the unweighted pooled standard deviation of 2 groups. This is the
 # expression for pooled SD when both groups are equal in size, the denominator
 # in the original Cohen's d for unpaired data and Cohens d_av for paired data,
-# and also the denominator for Cohen's d*, where they name it the non-pooled
+# and also the denominator for Cohen's d, where they name it the non-pooled
 # standard deviation (which I think is a poor choice of terminology).
 esUnweightedPooledSD <- function(x1, x2) {
   SD1 <- stats::sd(x1)
@@ -153,13 +153,13 @@ stIndHedgesG_s <- function(x1, x2) {
   esDiffOfMeans(x1, x2) / esWeightedPooledSD(x1, x2) * esBiasCorrect(length(x1) + length(x2) - 2)
 }
 
-# Unpaired Cohens d*
+# Unpaired Cohens d
 # Delacre et al., 2021 (equation unnumbered, but located before eqn 15)
 stIndCohensDAst <- function(x1, x2) {
   esDiffOfMeans(x1, x2) / esUnweightedPooledSD(x1, x2)
 }
 
-# Unpaired Hedges' g*
+# Unpaired Hedges' g
 stIndHedgesGAst <- function(x1, x2) {
   esDiffOfMeans(x1, x2) / esUnweightedPooledSD(x1, x2) * esBiasCorrect(esDFAsterisk(x1, x2))
 }
@@ -217,15 +217,15 @@ lookupStat <- function(code, paired) {
   allStats <- list(
     Stat("mean",         TRUE,  esMeanOfDiffs, "Mean difference", "Mean of differences"),
     Stat("hedges g_av",  TRUE,  stDepHedgesG_av, expression("Hedges' g"[av]), "Hedges' g_av"),
-    Stat("cohens d*",    TRUE, stDepCummingsD_av, expression("Cohen's d*"), "Cohen's d*"),
-    Stat("hedges g*",    TRUE, stDepCummingsG_av, expression("Hedges' g*"), "Hedges' g*"),
+    Stat("cohens d",    TRUE, stDepCummingsD_av, expression("Cohen's d"), "Cohen's d"),
+    Stat("hedges g",    TRUE, stDepCummingsG_av, expression("Hedges' g"), "Hedges' g"),
     Stat("cohens d_av",  TRUE,  stDepCohensD_av, expression("Cohen's d"[av]), "Cohen's d_av"),
     Stat("hedges g_z",   TRUE,  stDepHedgesG_z, expression("Hedges' g"[z]), "Hedges' g_z"),
     Stat("cohens d_z",   TRUE,  stDepCohensD_z, expression("Cohen's d"[z]), "Cohen's d_z"),
 
     Stat("mean",         FALSE, esDiffOfMeans, "Mean difference", "Difference of means"),
-    Stat("hedges g*",    FALSE, stIndHedgesGAst, expression("Cohen's g*"), "Cohen's g*"),
-    Stat("cohens d*",    FALSE, stIndCohensDAst, expression("Cohen's d*"), "Cohen's d*"),
+    Stat("hedges g",    FALSE, stIndHedgesGAst, expression("Cohen's g"), "Cohen's g"),
+    Stat("cohens d",    FALSE, stIndCohensDAst, expression("Cohen's d"), "Cohen's d"),
     Stat("hedges g_s",   FALSE, stIndHedgesG_s, expression("Hedges' g"[s]), "Hedges' g_s"),
     Stat("cohens d_s",   FALSE, stIndCohensD_s, expression("Cohen's d"[s]), "Cohen's d_s"),
 
@@ -360,14 +360,14 @@ calcPairDiff <- function(data, pair, isPaired, pairNames, pairIndices, data.col,
 }
 
 # Convert a wide-format paired data set to long format
-wideToLong <- function(x, id.col, groups) {
+wideToLong <- function(x, groups, id.col) {
   # Check columns exist
   badCols <- !(groups %in% names(x))
   if (any(badCols)) {
     stop(sprintf("Invalid group name%s \"%s\"; in wide format, groups must be column names.\nAvailable columns are: %s",
                  ifelse(sum(badCols) == 1, "", "s"), paste(groups[badCols], collapse = ", "), paste(names(x), collapse = ", ")))
   }
-  # Pick unique column names
+  # Pick unique column names so we don't overwrite an existing column
   .pickCol <- function(base) {
     existingNames <- names(x)
     nm <- base
@@ -470,26 +470,24 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #'
 #' \code{x} may be a formula; see \code{\link{DurgaDiff.formula}}.
 #'
-#' If \code{x} is a \code{data.frame} (or similar), and does not contain
-#' repeated
-#' measures data, it must be in \emph{long
-#' format}: one column (\code{data.col}) contains the measurement or value to be
-#' compared, and another column (\code{group.col}) the group identity. Repeated
-#' measures/paired data/within-subject comparisons may be in long or wide
-#' format; in long format, a subject identity column (\code{id.col}) is also
-#' required.
+#' If \code{x} is a \code{data.frame} (or similar) it may be in either _long_ or _wide_
+#' format. In long format, one column (`data.col`) contains the measurement or value to be
+#' compared, and another column (\code{group.col}) contains the group identity. Repeated
+#' measures/paired data/within-subject comparisons in long format require a subject
+#' identity column (\code{id.col}).
 #'
-#' Repeated measures/paired/within-subject comparison data in wide format
-#' contains repeated measurements in different columns of the same row. To pass
+#' Wide format contains different measurements in different columns of the same row, and
+#' is well-suited for repeated measures/paired/within-subject comparison data. To pass
 #' wide format data, do not specify the arguments \code{data.col} or
 #' \code{group.col}. Instead, you must explicitly specify the groups to be
 #' compared in the \code{groups} argument. Each group must be the name of a
-#' column in \code{x}. You may specify \code{id.col}, although it is not
-#' required. The \code{id.col} can be a column that already exists and uniquely
-#' identifies each specimen, or it can be the name of a column to be created,
-#' and the specimen ID will be a generated integer sequence. Wide format data
-#' will be internally convert to long format, then processing continues as
-#' normal.
+#' column in \code{x}. For paired data, you may specify \code{id.col}, although it is not
+#' required, as wide format data is assumed to be paired. The \code{id.col} can be a column
+#' that already exists and uniquely identifies each specimen, or it can be the name of a
+#' column to be created, in which case the specimen ID will be a generated integer sequence.
+#' Unpaired data can be in wide format, but it is necessary to inform Durga by passing `id.col = NULL`.
+#' Wide format data will be internally converted to long format, then processing continues as
+#' for long format input.
 #'
 #' ## Contrasts
 #'
@@ -508,13 +506,18 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #' The \code{effect.type} parameter determines the effect size measure to be
 #' calculated. Our terminology generally follows Lakens (2013), with _d_ meaning
 #' a biased estimate and _g_ meaning a bias-corrected estimate. Some writers
-#' reverse this usage or use alternative terminology. We denote Cumming's (2012)
-#' definition of \eqn{d_{av}} for paired data (equation 11.10) with \eqn{Cohen's\text{ }d*}
-#' since it is identical to \eqn{Cohen's\text{ }d*} used for unpaired data (Delacre et al. 2021)
-#' and to differentiate it from the \eqn{d_{av}} described by Lakens (2013).
-#' Cumming (2012) recommends always using a bias-corrected estimate (although bias
+#' reverse this usage or use alternative terminology. Cumming (2012) recommends
+#' always using a bias-corrected estimate (although bias
 #' correction is unnecessary for large sample sizes).
 #' Durga applies Hedges' exact method for bias correction.
+#'
+#' The effect type we call
+#' \eqn{Cohen's\text{ }d} for unpaired data is called \eqn{Cohen's\text{ }d_s^*}
+#' by Delacre et al. (2021). For paired data, our \eqn{Cohen's\text{ }d} is
+#' identical to \eqn{Cohen's\text{ }d}
+#' for unpaired data (Delacre et al. 2021); it is called \eqn{d_{av}}
+#' by Cumming (2012; equation 11.10). For further details, refer to Khan and McLean (2023).
+#'
 #' The set of possible values for the \code{effect.type} argument, and
 #' their meanings, is described below.
 #'
@@ -523,8 +526,8 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #' | **Code** | **Label** | **Effect type** | **Standardiser** |
 #' | --- | --- | --- | --- |
 #' | `mean` | \eqn{Mean\text{ }difference} | Unstandardised difference of group means | NA |
-#' | `cohens d*` | \eqn{Cohen's\text{ }d*} | Difference in means standardised by non-pooled average SD (Delacre et al. 2021) | \eqn{\sqrt{({s_1}^2 + {s_2}^2)/2}} |
-#' | `hedges g*` | \eqn{Hedges'\text{ }g*} | Bias-corrected \eqn{Cohen's\text{ }d*} (Delacre et al. 2021) | \eqn{\sqrt{({s_1}^2 + {s_2}^2)/2}} |
+#' | `cohens d` | \eqn{Cohen's\text{ }d} | Difference in means standardised by non-pooled average SD (Delacre et al. 2021) | \eqn{\sqrt{({s_1}^2 + {s_2}^2)/2}} |
+#' | `hedges g` | \eqn{Hedges'\text{ }g} | Bias-corrected \eqn{Cohen's\text{ }d} (Delacre et al. 2021) | \eqn{\sqrt{({s_1}^2 + {s_2}^2)/2}} |
 #' | `cohens`&nbsp;`d_s` | \eqn{Cohen's\text{ }d_s} | Difference in means standardised by the pooled standard deviation (Lakens 2013, equation 1) | \eqn{\sqrt{\frac{(n_1-1){s_1}^2 + (n_2-1){s_2}^2}{{n_1} + {n_2} - 2}}} |
 #' | `hedges g_s` | \eqn{Hedges'\text{ }g_s} | Bias-corrected \eqn{Cohen's\text{ }d_s} (Lakens 2013, equation 4) | \eqn{\sqrt{\frac{(n_1-1){s_1}^2 + (n_2-1){s_2}^2}{{n_1} + {n_2} - 2}}} |
 #' | `glass`&nbsp;`delta_pre` |\eqn{Glass's\text{ }\Delta_{pre}} | Difference in means standardised by the standard deviation of the pre-measurement group (which is the 2nd group in a contrast). Lakens (2013) recommends using Glass's \eqn{\Delta} whenever standard deviations differ substantially between conditions | \eqn{s_2} |
@@ -539,11 +542,11 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #' | `hedges g_z` | \eqn{Hedges'\text{ }g_z} | Bias-corrected \eqn{Cohen's\text{ }d_z} | \eqn{\sqrt{\frac{\sum{({X_{diff}} - {M_{diff}})^2}}{n-1}}} |
 #' | `cohens`&nbsp;`d_av` | \eqn{Cohen's\text{ }d_{av}} | Difference in means standardised by the average standard deviation of the groups (Lakens 2013, equation 10) | \eqn{\dfrac{{s_1} + {s_2}}{2}} |
 #' | `hedges`&nbsp;`g_av` | \eqn{Hedges'\text{ }g_{av}} | Bias-corrected \eqn{Cohen's\text{ }d_{av}} | \eqn{\dfrac{{s_1} + {s_2}}{2}} |
-#' | `cohens`&nbsp;`d*` | \eqn{Cohen's\text{ }d*} | Similar to \eqn{Cohen's\text{ }d_{av}} except that the normaliser is non-pooled average SD rather than mean SD, as recommended by Cummings (2012, eqn 11.9) | \eqn{\sqrt{({s_1}^2 + {s_2}^2)/2}} |
-#' | `hedges`&nbsp;`g*` | \eqn{Hedges'\text{ }g*} | Bias-corrected \eqn{Cohen's\text{ }d*} | \eqn{\sqrt{({s_1}^2 + {s_2}^2)/2}} |
+#' | `cohens`&nbsp;`d` | \eqn{Cohen's\text{ }d} | Similar to \eqn{Cohen's\text{ }d_{av}} except that the normaliser is non-pooled average SD rather than mean SD, as recommended by Cummings (2012, eqn 11.9) | \eqn{\sqrt{({s_1}^2 + {s_2}^2)/2}} |
+#' | `hedges`&nbsp;`g` | \eqn{Hedges'\text{ }g} | Bias-corrected \eqn{Cohen's\text{ }d} | \eqn{\sqrt{({s_1}^2 + {s_2}^2)/2}} |
 #'
 #' As a simple rule of thumb, if you want a standardised effect type and you
-#' don't know which one to use, use `"hedges g*"` for either paired or unpaired data.
+#' don't know which one to use, use `"hedges g"` for either paired or unpaired data.
 #'
 #' Additional effect types can be applied by passing a function for
 #' \code{effect.type}. The function must accept two
@@ -681,8 +684,12 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #' confidence intervals, and meta-analysis (1st ed.). New York: Routledge.
 #'
 #' - Delacre, M., Lakens, D., Ley, C., Liu, L., & Leys, C. (2021). Why
-#' Hedges’g* s based on the non-pooled standard deviation should be reported
+#' Hedges’ g* based on the non-pooled standard deviation should be reported
 #' with Welch’s t-test. [doi:10.31234/osf.io/tu6mp](https://doi.org/10.31234/osf.io/tu6mp)
+#'
+#' - Khan, M. K., & McLean, D. J. (2023). Durga: An R package for effect size estimation
+#' and visualisation. bioRxiv, 2023.2002.2006.526960.
+#' [doi:10.1101/2023.02.06.526960](https://doi.org/10.1101/2023.02.06.526960)
 #'
 #' - Lakens, D. (2013). Calculating and reporting effect sizes to facilitate
 #' cumulative science: a practical primer for t-tests and ANOVAs. Frontiers in
@@ -718,10 +725,11 @@ DurgaDiff.default <- function(x,
 
   # Interpret wide format paired data
   if (missing(data.col) && missing(group.col) && !missing(groups)) {
-    x <- wideToLong(x, id.col, groups)
+    x <- wideToLong(x, groups, id.col)
     data.col <- attr(x, "data.col")
     group.col <- attr(x, "group.col")
-    id.col <- attr(x, "id.col")
+    # Allow unpaired wide format with an explicit NULL for id.col
+    id.col <- if(!missing(id.col) && is.null(id.col)) { NULL } else { attr(x, "id.col") }
   }
 
   pairedData <- !missing(id.col) && !is.null(id.col) && !is.na(id.col)
