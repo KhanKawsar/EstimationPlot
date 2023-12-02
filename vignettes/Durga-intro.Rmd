@@ -342,8 +342,8 @@ effectSizes <- c("No effect" = 0, "Large positive effect" = 0.8, "Huge positive 
 # Give the groups friendly names
 groups <- c("Self" = "self_fertilised", "Westerham" = "westerham_cross", "Inter" = "inter_cross")
 
-# Calculate Cohen's d rather than unstandardised difference in means
-d <- DurgaDiff(petunia, 1, 2, effect.type = "hedges g*", groups = groups)
+# Calculate bias-corrected Cohen's d, named Hedges' g, rather than unstandardised difference in means
+d <- DurgaDiff(petunia, 1, 2, effect.type = "hedges g", groups = groups)
 
 DurgaPlot(d, violin = FALSE, main = "Hedges' g, labelled effect size", 
           points.method = "jitter", 
