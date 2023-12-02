@@ -5,13 +5,14 @@
 \alias{insulin.wide}
 \title{"Wide format" Insulin data}
 \format{
-A data frame with 52 observations and 4 variables.
+A data frame with 52 observations and 5 variables.
 
 \describe{
-\item{\code{experimenter_time}}{Initial of researchers who performed the experiment and at what date}
 \item{\code{sugar.before}}{Blood sugar measurement before administering insulin}
 \item{\code{sugar.after}}{Blood sugar measurement after administering insulin}
 \item{\code{time}}{Time of blood sugar measurement; minutes after administration of insulin}
+\item{\code{experimenter}}{Initials of researcher who performed the experiment}
+\item{\code{date}}{Date of experiment (month day)}
 }
 }
 \source{
@@ -24,8 +25,7 @@ insulin.wide
 }
 \description{
 This data set contains the same information as \link{insulin}, however it is
-in \emph{wide format} rather than \emph{long format}. Durga accepts wide format data
-for repeated measures. Refer to \link{insulin} for further details.
+in \emph{wide format} rather than \emph{long format}. Refer to \link{insulin} for further details.
 }
 \seealso{
 \link{insulin}, \link{petunia}, \link{damselfly}

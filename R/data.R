@@ -5,7 +5,9 @@
 # insulin.wide was created by reshaping insulin as follows:
 # insulin.wide <- reshape(insulin, direction = "wide", idvar = "id", timevar = "treatment", v.names = c("sugar", "time"))
 # insulin.wide$time <- insulin.wide$time.after
-# insulin.wide$time.before <- insulin.wide$time.after <- insulin.wide$id <- NULL
+# insulin.wide$experimenter <- sub(" .*", "", insulin.wide$experimenter_time)
+# insulin.wide$date <- sub("[^ ]* ", "", insulin.wide$experimenter_time)
+# insulin.wide$time.before <- insulin.wide$time.after <- insulin.wide$id <- insulin.wide$experimenter_time <- NULL
 # usethis::use_data(insulin.wide, overwrite = T)
 
 
@@ -41,16 +43,16 @@
 #' "Wide format" Insulin data
 #'
 #' This data set contains the same information as \link{insulin}, however it is
-#' in \emph{wide format} rather than \emph{long format}. Durga accepts wide format data
-#' for repeated measures. Refer to \link{insulin} for further details.
+#' in \emph{wide format} rather than \emph{long format}. Refer to \link{insulin} for further details.
 #'
-#' @format A data frame with 52 observations and 4 variables.
+#' @format A data frame with 52 observations and 5 variables.
 #'
 #' \describe{
-#'   \item{\code{experimenter_time}}{Initial of researchers who performed the experiment and at what date}
 #'   \item{\code{sugar.before}}{Blood sugar measurement before administering insulin}
 #'   \item{\code{sugar.after}}{Blood sugar measurement after administering insulin}
 #'   \item{\code{time}}{Time of blood sugar measurement; minutes after administration of insulin}
+#'   \item{\code{experimenter}}{Initials of researcher who performed the experiment}
+#'   \item{\code{date}}{Date of experiment (month day)}
 #' }
 #'
 #' @seealso \link{insulin}, \link{petunia}, \link{damselfly}
