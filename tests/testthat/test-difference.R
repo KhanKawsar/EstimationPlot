@@ -86,8 +86,36 @@ compareDiffs <- function(d1, d2, tolerance = 0.1) {
   }
 }
 
+plotWithBrackets <- function(d) {
+  ylim <- extendrange(d$data[[d$data.col]])
+  ylim[2] <- extendrange(ylim, f = nrow(d$group.statistics) * 0.05)[2]
+  labelFn <- function(diff) sprintf("%.2g %g%% CI [%.2g, %.2g]",diff$t0, diff$bca[1] * 100, diff$bca[4], diff$bca[5])
+  DurgaPlot(d, ef.size = FALSE, bty = "n", ylim = ylim) |>
+    DurgaBrackets(labels = labelFn)
+}
+
 ##########################################################################
 # Tests start here ####
+
+test_that("multiple groups + contrasts", {
+  n <- 30
+  df <- data.frame(group = c(rep(c("G1", "G2", "G3"), each = n)),
+                   group2 = c(rep(c("A", "B"), each = 3 * n / 2)),
+                   val = c(rnorm(n, 1), rnorm(n, 2), rnorm(n, 3)))
+  d <- expect_error(DurgaDiff(df, "val", c("group", "group2")), NA)
+  expect_equal(length(d$group.differences), 6)
+  # Group names should be compoiste groups after combining the two group columns
+  plotFn <- plotWithBrackets
+  plotFn <- identity
+  d <- expect_error(DurgaDiff(df, "val", c("group", "group2"), contrasts = c("G2, A - G1, A", "G3, B - G2, B", "G2, B - G2, A")), NA)
+  expect_equal(length(d$group.differences), 3)
+  # Attempting to use the comma-separated string version should fail due to ambiguity
+  expect_error(DurgaDiff(df, "val", c("group", "group2"), contrasts = c("G2, A - G1, A, G3, B - G2, B")))
+  # Matrix form should work
+  contrasts <- matrix(c("G2, A", "G1, A", "G3, B", "G2, B", "G2, B", "G2, A"), nrow = 2)
+  d <- DurgaDiff(df, "val", c("group", "group2"), contrasts = contrasts)
+  expect_equal(length(d$group.differences), 3)
+})
 
 test_that("wide to long", {
   n <- 10
@@ -96,6 +124,8 @@ test_that("wide to long", {
   expect_equal(nrow(dfl), 2 * n)
   # The generated id values should be the same as ours
   expect_equal(dfl$id.1, dfl$id)
+  # Group values should all be one of "control", "treatment"
+  expect_true(all(unique(dfl$group) %in% c("control", "treatment")))
   # Specifying a NULL id col should be the same as not specifying one
   dfln <- wideToLong(dfw, c("control", "treatment"), NULL)
   expect_equal(dfln, dfl)
@@ -140,6 +170,14 @@ test_that("wide to long", {
   expect_equal(du3$group.names, c("control", "g1", "g2"))
   expect_equal(unique(du3$data$group), c("control", "g1", "g2"))
   expect_equal(length(du3$group.differences), 3)
+
+  # # How can I use wide format but include another column in the groups?
+  # dfw <- data.frame(control = rnorm(n), treatment = rnorm(n, 1.2), id = seq_len(n),
+  #                   species = sample(c("Sp 1", "Sp 2", "Sp 3"), n, replace = TRUE))
+  # # ANSWER: There is no builtin solution. First convert wide to long, then pass
+  # # to DurgaDiff and specify the 2nd group variable
+  # dfl <- wideToLong(dfw, c("control", "treatment"))
+  # DurgaDiff(dfl, "value", c("group", "species")) |> DurgaPlot()
 })
 
 test_that("Combine vars", {

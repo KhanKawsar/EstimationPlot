@@ -33,8 +33,8 @@ formula (see \code{\link{DurgaDiff.formula}}).}
 \code{x} containing the measurement data.}
 
 \item{group.col}{Name or index of the column within \code{x} containing
-the values to group by. May be a vector, in which case values are pasted
-together to define groups.}
+the values to group by. May be a vector of column names/indices, in
+which case values from each column are concatenated to define groups.}
 
 \item{id.col}{Specify for paired data/repeated measures/with-subject
 comparisons only. Name or index of ID column for repeated measures/paired
@@ -51,11 +51,11 @@ group/treatment data (see example).}
 
 \item{contrasts}{Specify the pairs of groups to be compared. By default, all
 pairwise differences are generated. May be a single string, a vector of
-strings, or a matrix. Specify \code{NULL} to avoid calculating any
-contrasts. See Details for more information.}
+strings, or a matrix. Specify
+\code{NULL} to avoid calculating any contrasts. See Details for more information.}
 
-\item{effect.type}{Type of group difference to be estimated. Cannot be abbreviated. See Details for
-further information.}
+\item{effect.type}{Type of group difference to be estimated. Values cannot be
+abbreviated. See Details for further information.}
 
 \item{R}{The number of bootstrap replicates. \code{R} should be larger than
 your sample size, so the default value of 1000 may need to be increased for
@@ -205,22 +205,25 @@ their meanings, is described below.
 \subsection{Paired effect types}{\tabular{llll}{
    \strong{Code} \tab \strong{Label} \tab \strong{Effect type} \tab \strong{Standardiser} \cr
    \code{mean} \tab \eqn{Mean\text{ }difference} \tab Unstandardised mean of group differences \tab NA \cr
+   \code{cohens} \code{d} \tab \eqn{Cohen's\text{ }d} \tab Similar to \eqn{Cohen's\text{ }d_{av}} except that the normaliser is non-pooled average SD rather than mean SD, as recommended by Cummings (2012, eqn 11.9) \tab \eqn{\sqrt{({s_1}^2 + {s_2}^2)/2}} \cr
+   \code{hedges} \code{g} \tab \eqn{Hedges'\text{ }g} \tab Bias-corrected \eqn{Cohen's\text{ }d} \tab \eqn{\sqrt{({s_1}^2 + {s_2}^2)/2}} \cr
    \code{cohens} \code{d_z} \tab \eqn{Cohen's\text{ }d_z} \tab Mean of differences, standardised by the standard deviation of the differences, (Lakens 2013, equation 6). Cummings (2012) recommends against using \eqn{Cohen's\text{ }d_z}, preferring \eqn{Cumming's\text{ }d_{av}} \tab \eqn{\sqrt{\frac{\sum{({X_{diff}} - {M_{diff}})^2}}{n-1}}} \cr
    \verb{hedges g_z} \tab \eqn{Hedges'\text{ }g_z} \tab Bias-corrected \eqn{Cohen's\text{ }d_z} \tab \eqn{\sqrt{\frac{\sum{({X_{diff}} - {M_{diff}})^2}}{n-1}}} \cr
    \code{cohens} \code{d_av} \tab \eqn{Cohen's\text{ }d_{av}} \tab Difference in means standardised by the average standard deviation of the groups (Lakens 2013, equation 10) \tab \eqn{\dfrac{{s_1} + {s_2}}{2}} \cr
    \code{hedges} \code{g_av} \tab \eqn{Hedges'\text{ }g_{av}} \tab Bias-corrected \eqn{Cohen's\text{ }d_{av}} \tab \eqn{\dfrac{{s_1} + {s_2}}{2}} \cr
-   \code{cohens} \code{d} \tab \eqn{Cohen's\text{ }d} \tab Similar to \eqn{Cohen's\text{ }d_{av}} except that the normaliser is non-pooled average SD rather than mean SD, as recommended by Cummings (2012, eqn 11.9) \tab \eqn{\sqrt{({s_1}^2 + {s_2}^2)/2}} \cr
-   \code{hedges} \code{g} \tab \eqn{Hedges'\text{ }g} \tab Bias-corrected \eqn{Cohen's\text{ }d} \tab \eqn{\sqrt{({s_1}^2 + {s_2}^2)/2}} \cr
 }
 
 
 As a simple rule of thumb, if you want a standardised effect type and you
-don't know which one to use, use \code{"hedges g"} for either paired or unpaired data.
+don't know which one to use, use \code{"hedges g"} for either paired or unpaired data,
+as it is recommended by Delacre et al., (2021) for unpaired data and cumming (2012)
+for paired data.
 
 Additional effect types can be applied by passing a function for
 \code{effect.type}. The function must accept two
 parameters and return a single numeric value, the effect size.
-The two parameters are the values from the two groups to be compared (group 2 and group 1).
+Each parameter is a vector of values from one of the two groups to be
+compared (group 2 and group 1).
 }
 
 }

@@ -33,10 +33,10 @@ format}, and \code{groups} must be a list of column names identifying the
 group/treatment data (see example).}
     \item{\code{contrasts}}{Specify the pairs of groups to be compared. By default, all
 pairwise differences are generated. May be a single string, a vector of
-strings, or a matrix. Specify \code{NULL} to avoid calculating any
-contrasts. See Details for more information.}
-    \item{\code{effect.type}}{Type of group difference to be estimated. Cannot be abbreviated. See Details for
-further information.}
+strings, or a matrix. Specify
+\code{NULL} to avoid calculating any contrasts. See Details for more information.}
+    \item{\code{effect.type}}{Type of group difference to be estimated. Values cannot be
+abbreviated. See Details for further information.}
     \item{\code{R}}{The number of bootstrap replicates. \code{R} should be larger than
 your sample size, so the default value of 1000 may need to be increased for
 large sample sizes. If \code{R <= nrow(x)}, an error such as "\code{Error in

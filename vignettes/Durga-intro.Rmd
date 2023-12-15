@@ -25,10 +25,10 @@ This vignette shows some example Durga plots. Each plot is preceded by the code 
 
 ### Long format data
 
-Before plotting your data, you must estimate the differences in group means by calling `DurgaDiff`. Your raw data should be in a data frame (or similar) in either _long_ or _wide_ format. A long format data frame contains one observation per row, a column for the measurement or value being analysed, and another column for the group or treatment. In addition, paired or repeated measures data requires an ID column to match measurements for the same specimen/individual. For example, within the `insulin` data set, the value being measured - blood sugar level - is recorded in the column `sugar` (specified in the `DurgaDiff` call by passing the argument `data.col = "sugar"`); treatments are `"before"` and `"after"` in the `treatment` column (`group.col = "treatment"`); and the identity of the individual (rabbit) being tested is given in the `id` column (`id.col = "id"`). The blood sugar level of each rabbit was tested before and after treatment with insulin, so for each rabbit, there is a row with the `before` sugar level, and another with the `after` sugar level. Long format is appropriate for unpaired data.
+Before plotting your data, you must estimate the differences in group means by calling `DurgaDiff`. Your raw data should be in a data frame (or similar) in either _long_ or _wide_ format. A long format data frame contains one observation per row, a column for the measurement or value being analysed, and another column for the group or treatment. In addition, paired or repeated measures data requires an ID column to match measurements for the same specimen/individual. For example, within the `insulin` data set, the value being measured - blood sugar level - is recorded in the column `sugar` (specified in the `DurgaDiff` call by passing the argument `data.col = "sugar"`); treatments are `"before"` and `"after"` in the `treatment` column (`group.col = "treatment"`); and the identity of the individual (rabbit) being tested is given in the `id` column (`id.col = "id"`). The blood sugar level of each rabbit was tested before and after treatment with insulin, so for each rabbit, there is a row with the `before` sugar level, and another with the `after` sugar level. Both long and wide format can be used to represent paired and unpaired data, however long format is most appropriate for unpaired data.
 
 ```{r} 
-# Inspect the insulin data set
+# Inspect the insulin data set, paired data in long format
 head(insulin[insulin$id < 4, ])
 
 # Calculate differences in group means
@@ -38,7 +38,7 @@ d
 
 ### Formula interface
 
-When your data set is in long format, you may alternatively identify your data with a formula. The formula interface allows a little more flexibility when specifying your model, but the end results are equivalent. The formula must be specified as `<data variable> ~ <group variable>`. The data table must be in long format. For paired data, you must specify the `id` column using the `id.col` argument.
+When your data set is in long format, you may alternatively identify your data with a formula. The formula interface allows a little more flexibility when specifying your model, but the end results are equivalent. The formula must be specified as `<data variable> ~ <group variable>`. The data table must be in long format. For paired data, specify the `id` column using the `id.col` argument.
 
 ```{r} 
 # Use a formula to define the model

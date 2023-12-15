@@ -37,7 +37,7 @@ mean.CI.boot <- function(x, alpha = 0.95, R = 1000) {
 
 #### Bias correction ####
 
-# Hedges' bias correction, approximate method. Hedges (1981) pp. 114,  Cummings
+# Hedges' bias correction, approximate method. Hedges (1981) pp. 114,  Cumming
 # (2012) equation 11.13. The approximate method is approximately twice as fast
 # to calculate as the exact method.
 #
@@ -383,7 +383,7 @@ wideToLong <- function(x, groups, id.col) {
   data.col <- .pickCol("value")
   group.col <- .pickCol("group")
   x <- stats::reshape(x, direction = "long",
-                      varying = list(groups),
+                      varying = groups,
                       idvar = id.col,
                       v.names = data.col,
                       timevar = group.col,
@@ -538,20 +538,23 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #' | **Code** | **Label** | **Effect type** | **Standardiser** |
 #' | --- | --- | --- | --- |
 #' | `mean` | \eqn{Mean\text{ }difference} | Unstandardised mean of group differences | NA |
+#' | `cohens`&nbsp;`d` | \eqn{Cohen's\text{ }d} | Similar to \eqn{Cohen's\text{ }d_{av}} except that the normaliser is non-pooled average SD rather than mean SD, as recommended by Cummings (2012, eqn 11.9) | \eqn{\sqrt{({s_1}^2 + {s_2}^2)/2}} |
+#' | `hedges`&nbsp;`g` | \eqn{Hedges'\text{ }g} | Bias-corrected \eqn{Cohen's\text{ }d} | \eqn{\sqrt{({s_1}^2 + {s_2}^2)/2}} |
 #' | `cohens`&nbsp;`d_z` | \eqn{Cohen's\text{ }d_z} | Mean of differences, standardised by the standard deviation of the differences, (Lakens 2013, equation 6). Cummings (2012) recommends against using \eqn{Cohen's\text{ }d_z}, preferring \eqn{Cumming's\text{ }d_{av}}  | \eqn{\sqrt{\frac{\sum{({X_{diff}} - {M_{diff}})^2}}{n-1}}} |
 #' | `hedges g_z` | \eqn{Hedges'\text{ }g_z} | Bias-corrected \eqn{Cohen's\text{ }d_z} | \eqn{\sqrt{\frac{\sum{({X_{diff}} - {M_{diff}})^2}}{n-1}}} |
 #' | `cohens`&nbsp;`d_av` | \eqn{Cohen's\text{ }d_{av}} | Difference in means standardised by the average standard deviation of the groups (Lakens 2013, equation 10) | \eqn{\dfrac{{s_1} + {s_2}}{2}} |
 #' | `hedges`&nbsp;`g_av` | \eqn{Hedges'\text{ }g_{av}} | Bias-corrected \eqn{Cohen's\text{ }d_{av}} | \eqn{\dfrac{{s_1} + {s_2}}{2}} |
-#' | `cohens`&nbsp;`d` | \eqn{Cohen's\text{ }d} | Similar to \eqn{Cohen's\text{ }d_{av}} except that the normaliser is non-pooled average SD rather than mean SD, as recommended by Cummings (2012, eqn 11.9) | \eqn{\sqrt{({s_1}^2 + {s_2}^2)/2}} |
-#' | `hedges`&nbsp;`g` | \eqn{Hedges'\text{ }g} | Bias-corrected \eqn{Cohen's\text{ }d} | \eqn{\sqrt{({s_1}^2 + {s_2}^2)/2}} |
 #'
 #' As a simple rule of thumb, if you want a standardised effect type and you
-#' don't know which one to use, use `"hedges g"` for either paired or unpaired data.
+#' don't know which one to use, use `"hedges g"` for either paired or unpaired data,
+#' as it is recommended by Delacre et al., (2021) for unpaired data and cumming (2012)
+#' for paired data.
 #'
 #' Additional effect types can be applied by passing a function for
 #' \code{effect.type}. The function must accept two
 #' parameters and return a single numeric value, the effect size.
-#' The two parameters are the values from the two groups to be compared (group 2 and group 1).
+#' Each parameter is a vector of values from one of the two groups to be
+#' compared (group 2 and group 1).
 #'
 #'
 #' ## Confidence intervals
@@ -568,8 +571,8 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #' @param data.col Name (character) or index (numeric) of the column within
 #'   \code{x} containing the measurement data.
 #' @param group.col Name or index of the column within \code{x} containing
-#'   the values to group by. May be a vector, in which case values are pasted
-#'   together to define groups.
+#'   the values to group by. May be a vector of column names/indices, in
+#'   which case values from each column are concatenated to define groups.
 #' @param id.col Specify for paired data/repeated measures/with-subject
 #'   comparisons only. Name or index of ID column for repeated measures/paired
 #'   data. Observations for the same individual must have the same ID. For
@@ -583,10 +586,10 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #'   group/treatment data (see example).
 #' @param contrasts Specify the pairs of groups to be compared. By default, all
 #'   pairwise differences are generated. May be a single string, a vector of
-#'   strings, or a matrix. Specify \code{NULL} to avoid calculating any
-#'   contrasts. See Details for more information.
-#' @param effect.type Type of group difference to be estimated. Cannot be abbreviated. See Details for
-#'   further information.
+#'   strings, or a matrix. Specify
+#'   \code{NULL} to avoid calculating any contrasts. See Details for more information.
+#' @param effect.type Type of group difference to be estimated. Values cannot be
+#'   abbreviated. See Details for further information.
 #' @param R The number of bootstrap replicates. \code{R} should be larger than
 #'   your sample size, so the default value of 1000 may need to be increased for
 #'   large sample sizes. If \code{R <= nrow(x)}, an error such as "\code{Error in
@@ -723,20 +726,20 @@ DurgaDiff.default <- function(x,
   # If data is a data.table, it breaks things, so convert to a data.frame
   x <- as.data.frame(x)
 
-  # Interpret wide format paired data
+  # Interpret wide format data by converting to long format
   if (missing(data.col) && missing(group.col) && !missing(groups)) {
     x <- wideToLong(x, groups, id.col)
     data.col <- attr(x, "data.col")
     group.col <- attr(x, "group.col")
     # Allow unpaired wide format with an explicit NULL for id.col
-    id.col <- if(!missing(id.col) && is.null(id.col)) { NULL } else { attr(x, "id.col") }
+    id.col <- if (!missing(id.col) && is.null(id.col)) { NULL } else { attr(x, "id.col") }
   }
 
   pairedData <- !missing(id.col) && !is.null(id.col) && !is.na(id.col)
 
   # Check column specifications
   .isACol <- function(spec) (is.numeric(spec) && all(spec >= 1) && all(spec <= ncol(x))) || (!is.numeric(spec) && all(spec %in% names(x)))
-  .colName <- function(col) if(is.numeric(col)) { names(x)[col] } else { col }
+  .colName <- function(col) if (is.numeric(col)) { names(x)[col] } else { col }
   if (!.isACol(data.col))
     stop(sprintf("data.col '%s' is not a valid column name or index (names are %s)",
                  data.col, paste(names(x), collapse = ", ")))
