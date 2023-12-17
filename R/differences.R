@@ -224,7 +224,7 @@ lookupStat <- function(code, paired) {
     Stat("cohens d_z",   TRUE,  stDepCohensD_z, expression("Cohen's d"[z]), "Cohen's d_z"),
 
     Stat("mean",         FALSE, esDiffOfMeans, "Mean difference", "Difference of means"),
-    Stat("hedges g",    FALSE, stIndHedgesGAst, expression("Cohen's g"), "Cohen's g"),
+    Stat("hedges g",    FALSE, stIndHedgesGAst, expression("Hedges' g"), "Hedges' g"),
     Stat("cohens d",    FALSE, stIndCohensDAst, expression("Cohen's d"), "Cohen's d"),
     Stat("hedges g_s",   FALSE, stIndHedgesG_s, expression("Hedges' g"[s]), "Hedges' g_s"),
     Stat("cohens d_s",   FALSE, stIndCohensD_s, expression("Cohen's d"[s]), "Cohen's d_s"),
