@@ -1,6 +1,6 @@
 # Changes to the `Durga` package
 
-## Durga 1.1.0.9000 (development version, planned to be 2.0)
+## Durga 2.0
 
 ### Enhancements
 
