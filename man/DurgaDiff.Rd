@@ -263,13 +263,13 @@ d <- DurgaDiff(insulin.wide, groups = c("sugar.before", "sugar.after"))
 confidence intervals, and meta-analysis (1st ed.). New York: Routledge.
 \item Delacre, M., Lakens, D., Ley, C., Liu, L., & Leys, C. (2021). Why
 Hedges' g* based on the non-pooled standard deviation should be reported
-with Welch's t-test. \href{https://doi.org/10.31234/osf.io/tu6mp}{doi:10.31234/osf.io/tu6mp}
+with Welch's t-test. \doi{10.31234/osf.io/tu6mp}
 \item Khan, M. K., & McLean, D. J. (2023). Durga: An R package for effect size estimation
 and visualisation. bioRxiv, 2023.2002.2006.526960.
-\href{https://doi.org/10.1101/2023.02.06.526960}{doi:10.1101/2023.02.06.526960}
+\doi{10.1101/2023.02.06.526960}
 \item Lakens, D. (2013). Calculating and reporting effect sizes to facilitate
 cumulative science: a practical primer for t-tests and ANOVAs. Frontiers in
-Psychology, 4. \href{https://doi.org/10.3389/fpsyg.2013.00863}{doi:10.3389/fpsyg.2013.00863}
+Psychology, 4. \doi{10.3389/fpsyg.2013.00863}
 }
 }
 \seealso{

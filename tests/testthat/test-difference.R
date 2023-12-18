@@ -1284,8 +1284,8 @@ test_that("plot miscellanea", {
 test_that("CI", {
 
   x <- rnorm(200)
-  CI90 <- mean.CI(x, .9)
-  CI95 <- mean.CI(x, .95)
+  CI90 <- meanCI(x, .9)
+  CI95 <- meanCI(x, .95)
   expect_lt(CI95[1], mean(x))
   expect_lt(CI95[1], CI90[1])
   expect_gt(CI95[2], mean(x))
