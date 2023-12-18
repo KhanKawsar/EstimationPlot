@@ -262,8 +262,8 @@ d <- DurgaDiff(insulin.wide, groups = c("sugar.before", "sugar.after"))
 \item Cumming, G. (2012). Understanding the new statistics : effect sizes,
 confidence intervals, and meta-analysis (1st ed.). New York: Routledge.
 \item Delacre, M., Lakens, D., Ley, C., Liu, L., & Leys, C. (2021). Why
-Hedges’ g* based on the non-pooled standard deviation should be reported
-with Welch’s t-test. \href{https://doi.org/10.31234/osf.io/tu6mp}{doi:10.31234/osf.io/tu6mp}
+Hedges' g* based on the non-pooled standard deviation should be reported
+with Welch's t-test. \href{https://doi.org/10.31234/osf.io/tu6mp}{doi:10.31234/osf.io/tu6mp}
 \item Khan, M. K., & McLean, D. J. (2023). Durga: An R package for effect size estimation
 and visualisation. bioRxiv, 2023.2002.2006.526960.
 \href{https://doi.org/10.1101/2023.02.06.526960}{doi:10.1101/2023.02.06.526960}
