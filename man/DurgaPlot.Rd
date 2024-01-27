@@ -41,6 +41,7 @@ DurgaPlot(
   ef.size.violin.shape = c("right-half", "left-half", "full"),
   ef.size.violin.trunc = TRUE,
   ef.size.pch = 17,
+  ef.size.cex = 1.5,
   ef.size.lty = 1,
   ef.size.lwd = 2,
   ef.size.ticks = NULL,
@@ -203,6 +204,8 @@ is a transparent version of \code{ef.size.violin}.}
 vertically so that it just covers the estimated effect size.}
 
 \item{ef.size.pch}{Symbol to represent mean effect size.}
+
+\item{ef.size.cex}{Mean effect size symbol magnification (default is 1.5).}
 
 \item{ef.size.lty}{Line style for the effect size error bar.}
 

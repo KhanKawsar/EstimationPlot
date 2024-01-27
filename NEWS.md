@@ -1,5 +1,12 @@
 # Changes to the `Durga` package
 
+
+## Durga 2.0.0.9000
+
+### Enhancements
+
+* `DurgaDiff` takes a parameter `ef.size.cex` that controls the size of the effect size central tendency symbol.
+
 ## Durga 2.0
 
 ### Enhancements

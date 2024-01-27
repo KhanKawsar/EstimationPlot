@@ -147,7 +147,7 @@ rangeOfDiff <- function(pwes, violin.trunc) {
 #   specified, no mapping is performed.
 plotEffectSize <- function(pwes, xo, centreY,
                            showViolin, violinCol, violin.fill, violin.width, violin.shape, violin.trunc,
-                           ef.size.col, ef.size.pch, ef.size.lty, ef.size.lwd, mapYFn = identity, xpd = FALSE) {
+                           ef.size.col, ef.size.pch, ef.size.cex, ef.size.lty, ef.size.lwd, mapYFn = identity, xpd = FALSE) {
   deltaY <- centreY - pwes$t0
   if (showViolin) {
     d <- stats::density(pwes$t, na.rm = TRUE)
@@ -168,7 +168,7 @@ plotEffectSize <- function(pwes, xo, centreY,
   }
 
   # Draw mean of effect size
-  graphics::points(xo, mapYFn(pwes$t0 + deltaY), pch = ef.size.pch, col = ef.size.col, cex = 1.5, xpd = xpd)
+  graphics::points(xo, mapYFn(pwes$t0 + deltaY), pch = ef.size.pch, col = ef.size.col, cex = ef.size.cex, xpd = xpd)
   # Confidence interval of effect size
   graphics::segments(xo, mapYFn(pwes$bca[4] + deltaY), xo, mapYFn(pwes$bca[5] + deltaY),
            col = ef.size.col, lty = ef.size.lty, lwd = ef.size.lwd, xpd = xpd)
@@ -186,7 +186,7 @@ buildMapYFn <- function(xc, yc) {
 }
 
 # Plot effect size to the right of the main plot. Only useful when showing a single effect size
-plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch, ef.size.lty, ef.size.lwd,
+plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch, ef.size.cex, ef.size.lty, ef.size.lwd,
                                  showViolin, violinCol, violin.fill, violin.width, violin.shape, violin.trunc,
                                  ef.size.dx, axisLabel, ticksAt,
                                  groupX, ef.size.line.col, ef.size.line.lty, ef.size.line.lwd) {
@@ -204,7 +204,7 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch, ef.size.lty
     esRange <- range(c(0, pwes$t))
     plotEffectSize(pwes, x, y,
                    showViolin, violinCol, violin.fill, violin.width, violin.shape, violin.trunc,
-                   ef.size.col, ef.size.pch, ef.size.lty, ef.size.lwd)
+                   ef.size.col, ef.size.pch, ef.size.cex, ef.size.lty, ef.size.lwd)
 
     # Axis labels on right-hand
     labels <- names(ticksAt)
@@ -222,7 +222,7 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch, ef.size.lty
     mapY <- buildMapYFn(esRange, ylim)
     plotEffectSize(pwes, x, pwes$t0,
                    showViolin, violinCol, violin.fill, violin.width, violin.shape, violin.trunc,
-                   ef.size.col, ef.size.pch, ef.size.lty, ef.size.lwd, mapYFn = mapY)
+                   ef.size.col, ef.size.pch, ef.size.cex, ef.size.lty, ef.size.lwd, mapYFn = mapY)
 
     # Axis labels on right-hand
     labels <- names(ticksAt)
@@ -260,7 +260,7 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch, ef.size.lty
 #   bottom of the main plot region and the top of the effect size plot region.
 # @param plotProportion Height of the effect size plot region as a proportion of
 #   the main plot region.
-plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch, ef.size.lty, ef.size.lwd,
+plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch, ef.size.cex, ef.size.lty, ef.size.lwd,
                                  showViolin, violinCol, violin.fill, violin.width, violin.shape, violin.trunc,
                                  xlim, ef.size.dx, ef.size.label, ticksAt,
                                  ef.size.line.col, ef.size.line.lty, ef.size.line.lwd,
@@ -328,6 +328,7 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch, ef.siz
   # Recycle parameters
   ef.size.col <- rep_len(ef.size.col, length(plotDiffs))
   ef.size.pch <- rep_len(ef.size.pch, length(plotDiffs))
+  ef.size.cex <- rep_len(ef.size.cex, length(plotDiffs))
   ef.size.lty <- rep_len(ef.size.lty, length(plotDiffs))
   ef.size.lwd <- rep_len(ef.size.lwd, length(plotDiffs))
 
@@ -339,7 +340,7 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch, ef.siz
       # Add default group dx for the displayed group to effect size dx for the contrast
       x <- gid1 + group.dx[gid1] + ef.size.dx[i]
       plotEffectSize(pwes, x, pwes$t0, showViolin, violinCol, violin.fill, violin.width, violin.shape, violin.trunc,
-                     ef.size.col[i], ef.size.pch[i], ef.size.lty[i], ef.size.lwd[i], mapY, xpd = TRUE)
+                     ef.size.col[i], ef.size.pch[i], ef.size.cex[i], ef.size.lty[i], ef.size.lwd[i], mapY, xpd = TRUE)
       # Label this difference
       graphics::text(x, mapY(ylim[1]), getDiffLabel(pwes), xpd = TRUE, pos = 1)
     }
@@ -579,6 +580,7 @@ DurgaTransparent <-  function(colour, transparency, relative = FALSE) {
 #' @param ef.size.violin.fill Colour used to fill effect size violins. Default
 #'   is a transparent version of \code{ef.size.violin}.
 #' @param ef.size.pch Symbol to represent mean effect size.
+#' @param ef.size.cex Mean effect size symbol magnification (default is 1.5).
 #' @param ef.size.lty Line style for the effect size error bar.
 #' @param ef.size.lwd Line weight for the effect size error bar.
 #' @param ef.size.dx Horizontal shift to be applied to each contrast/effect
@@ -738,6 +740,7 @@ DurgaPlot <- function(es,
                     ef.size.violin.shape = c("right-half", "left-half", "full"),
                     ef.size.violin.trunc = TRUE,
                     ef.size.pch = 17,
+                    ef.size.cex = 1.5,
                     ef.size.lty = 1,
                     ef.size.lwd = 2,
                     ef.size.ticks = NULL,
@@ -1162,12 +1165,12 @@ DurgaPlot <- function(es,
 
     if (ef.size.position == "right") {
       lineStartAt <- seq_len(nGroups) + ef.size.mean.line.dx
-      plotEffectSizesRight(es, plotDiffs[[1]], ef.size.col, ef.size.pch, ef.size.lty, ef.size.lwd,
+      plotEffectSizesRight(es, plotDiffs[[1]], ef.size.col, ef.size.pch, ef.size.cex, ef.size.lty, ef.size.lwd,
                            .show(ef.size.violin), violinCol, violinFill, violin.width, ef.size.violin.shape, ef.size.violin.trunc,
                            ef.size.dx, ef.size.label, ef.size.ticks,
                            lineStartAt, ef.size.line.col, ef.size.line.lty, ef.size.line.lwd)
     } else if (ef.size.position == "below") {
-      plotEffectSizesBelow(es, plotDiffs, ef.size.col, ef.size.pch, ef.size.lty, ef.size.lwd,
+      plotEffectSizesBelow(es, plotDiffs, ef.size.col, ef.size.pch, ef.size.cex, ef.size.lty, ef.size.lwd,
                            .show(ef.size.violin), violinCol, violinFill, violin.width, ef.size.violin.shape, ef.size.violin.trunc,
                            xlim, ef.size.dx, ef.size.label, ef.size.ticks,
                            ef.size.line.col, ef.size.line.lty, ef.size.line.lwd, group.dx,
