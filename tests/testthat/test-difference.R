@@ -1237,7 +1237,6 @@ test_that("Grouped plot", {
 })
 
 test_that("CI", {
-
   x <- rnorm(200)
   CI90 <- meanCI(x, .9)
   CI95 <- meanCI(x, .95)
