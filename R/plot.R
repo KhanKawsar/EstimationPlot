@@ -1,6 +1,9 @@
 #_____________________________________________________________#
 #### Private functions ####
 
+# Convenience operator like Ruby's || operator. Returns a if it is not null, otherwise b
+`%||%` <- function(a, b) if (!is.null(a)) a else b
+
 # Returns the label to be used to represent the specified diff
 getDiffLabel <- function(pwes) {
   label <- attr(pwes, "label")
@@ -113,8 +116,15 @@ getErrorBars <- function(es, groupIdx, groupMean, error.bars) {
 # Function to add text and tick marks to the x-axis, applying consistent spacing
 # etc.. Labels are positioned and aligned along the top of the bounding box, so
 # multi-line labels descend lower
-labelXAxis <- function(at, labels, tick) {
-  graphics::axis(1, tick = tick, at = at, labels = labels, padj = 1, mgp = c(3, 0, 0))
+#
+# @param params Added to help with future improvement: give users greater
+#   control over axis display
+labelXAxis <- function(at, labels, tick, params = list()) {
+  tick <- params[["tick"]] %||% tick
+  padj <- params[["padj"]] %||% 1
+  mgp <- params[["mgp"]] %||% c(3, 0, 0)
+  params[c("tick", "padj", "mgp")] <- NULL
+  do.call(graphics::axis, c(list(1, at = at, labels = labels, tick = tick, padj = padj, mgp = mgp), params))
 }
 
 
@@ -346,9 +356,6 @@ plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch, ef.siz
     }
   }
 }
-
-# Convenience operator like Ruby's || operator. Returns a if it is not null, otherwise b
-`%||%` <- function(a, b) if (!is.null(a)) a else b
 
 #_____________________________________________________________#
 #### Public functions ####
@@ -1090,7 +1097,7 @@ DurgaPlot <- function(es,
   # Draw lines between paired points
   if (.show(paired)) {
     if (!es$paired.data)
-      stop("To plot paired lines, data must be, i.e. id.col specified to DurgaDiffs")
+      stop("To plot paired lines, data must be paired, i.e. id.col specified to DurgaDiffs")
     col <- .boolToDef(paired, DurgaTransparent("grey20", 0.7))
     # Display all contrasts, which can get very ugly if there's more than one
     for (i in seq_len(length(plotDiffs))) {
