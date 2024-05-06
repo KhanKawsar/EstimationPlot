@@ -40,7 +40,7 @@
 #'   American Journal of Physiology-Legacy Content, 62(1), 162-176.
 "insulin"
 
-#' "Wide format" Insulin data
+#' "Wide format" insulin data
 #'
 #' This data set contains the same information as \link{insulin}, however it is
 #' in \emph{wide format} rather than \emph{long format}. Refer to \link{insulin} for further details.

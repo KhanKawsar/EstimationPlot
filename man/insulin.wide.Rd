@@ -3,7 +3,7 @@
 \docType{data}
 \name{insulin.wide}
 \alias{insulin.wide}
-\title{"Wide format" Insulin data}
+\title{"Wide format" insulin data}
 \format{
 A data frame with 52 observations and 5 variables.
 
