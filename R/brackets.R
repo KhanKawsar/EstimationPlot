@@ -208,7 +208,7 @@ BracketsAnnot <- function(labels, shorten, data.gap, vertical.gap, text.pad, tip
 
   labelFns <- list(
     CI = function(diff) sprintf("[%g, %g]", round.fn(diff$bca[4]), round.fn(diff$bca[5])),
-    diff = function(diff) as.character(round(diff$t0, 1)),
+    diff = function(diff) as.character(round.fn(diff$t0)),
     `diff CI` = function(diff) sprintf("%g [%g, %g]", round.fn(diff$t0), round.fn(diff$bca[4]), round.fn(diff$bca[5])),
     `level CI` = function(diff) sprintf("%g%% CI [%g, %g]", diff$bca[1] * 100, round.fn(diff$bca[4]), round.fn(diff$bca[5]))
   )
