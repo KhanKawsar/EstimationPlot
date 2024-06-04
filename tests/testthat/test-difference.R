@@ -98,6 +98,42 @@ plotWithBrackets <- function(d) {
 ##########################################################################
 # Tests start here ####
 
+test_that("nested groups", {
+  groupedContrasts <- function(df, group.cols) {
+    outer <- unique(df[[group.cols[1]]])
+    inner <- unique(df[[group.cols[2]]])
+    # We only want comparisons within each structure
+    sapply(outer, function(o) {
+      # For each pair of inner groups
+      apply(combn(inner, 2), 2, function(pair) {
+        sprintf("%s, %s - %s, %s", o, pair[2], o, pair[1])
+      })})
+  }
+
+  # Test data with 2 group columns and only compare within outer groups E.g. 3
+  # species, for each species we measure the size of different organs. We only
+  # want to compare the same organs between species
+  df <- data.frame(species = rep(c("Species A", "Species B"), each = 30),
+                   organ = rep(c("Brain", "Heart", "Appendix"), each = 10, times = 2),
+                   size = NA)
+  df$size[df$species == "Species A" & df$organ == "Brain"] <- rnorm(10, 1.3, 0.3)
+  df$size[df$species == "Species A" & df$organ == "Heart"] <- rnorm(10, 0.3, sd = 0.1)
+  df$size[df$species == "Species A" & df$organ == "Appendix"] <- rnorm(10, 0.01, sd = 0.001)
+  df$size[df$species == "Species B" & df$organ == "Brain"] <- rnorm(10, 1.5, 0.3)
+  df$size[df$species == "Species B" & df$organ == "Heart"] <- rnorm(10, 0.5, sd = 0.1)
+  df$size[df$species == "Species B" & df$organ == "Appendix"] <- rnorm(10, 0.01, sd = 0.005)
+
+  ctr <- groupedContrasts(df, c("organ", "species"))
+  expect_equal(length(ctr), 3)
+
+  d <- expect_error(DurgaDiff(df, "size", c("organ", "species"), contrasts = ctr), NA)
+  expect_equal(length(d$group.differences), 3)
+  # DurgaPlot(d)
+  # Without explicit contrasts, expect all possible combinations
+  d <- DurgaDiff(df, "size", c("organ", "species"))
+  expect_equal(length(d$group.differences), 15)
+})
+
 test_that("multiple groups + contrasts", {
   n <- 30
   df <- data.frame(group = c(rep(c("G1", "G2", "G3"), each = n)),
