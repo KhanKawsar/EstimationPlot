@@ -8,8 +8,8 @@
 A data frame with 52 observations and 5 variables.
 
 \describe{
-\item{\code{sugar.before}}{Blood sugar measurement before administering insulin}
-\item{\code{sugar.after}}{Blood sugar measurement after administering insulin}
+\item{\code{sugar.before}}{Blood sugar measurement before administering insulin (\%)}
+\item{\code{sugar.after}}{Blood sugar measurement after administering insulin (\%)}
 \item{\code{time}}{Time of blood sugar measurement; minutes after administration of insulin}
 \item{\code{experimenter}}{Initials of researcher who performed the experiment}
 \item{\code{date}}{Date of experiment (month day)}

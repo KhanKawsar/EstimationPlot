@@ -23,7 +23,7 @@
 #' @format A data frame with 104 observations and 5 variables.
 #'
 #' \describe{
-#'   \item{\code{sugar}}{Measured blood sugar level}
+#'   \item{\code{sugar}}{Measured blood sugar level (%)}
 #'   \item{\code{treatment}}{Blood sugar measurements treatment group; \code{before} or \code{after}
 #'   administering insulin}
 #'   \item{\code{id}}{Identifier of individual being measured
@@ -48,8 +48,8 @@
 #' @format A data frame with 52 observations and 5 variables.
 #'
 #' \describe{
-#'   \item{\code{sugar.before}}{Blood sugar measurement before administering insulin}
-#'   \item{\code{sugar.after}}{Blood sugar measurement after administering insulin}
+#'   \item{\code{sugar.before}}{Blood sugar measurement before administering insulin (%)}
+#'   \item{\code{sugar.after}}{Blood sugar measurement after administering insulin (%)}
 #'   \item{\code{time}}{Time of blood sugar measurement; minutes after administration of insulin}
 #'   \item{\code{experimenter}}{Initials of researcher who performed the experiment}
 #'   \item{\code{date}}{Date of experiment (month day)}
@@ -68,7 +68,7 @@
 #'
 #' @format A data frame with 64 observations and 3 variables. Plants (self fertilised, inter-cross and westerham-cross) were measured to the tops of their stems when coming into flower. Data collated from Darwin (1877)
 #' \describe{
-#'   \item{\code{height}}{Measured height of plants}
+#'   \item{\code{height}}{Measured height of plants (inches)}
 #'   \item{\code{group}}{Plant fertilisation groups; \code{westerham_cross}, \code{inter_cross} or \code{self_fertilised}}
 #'   \item{\code{pot_no}}{Identifier of pot number in which each plant was grown}
 #' }

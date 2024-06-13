@@ -8,7 +8,7 @@
 A data frame with 104 observations and 5 variables.
 
 \describe{
-\item{\code{sugar}}{Measured blood sugar level}
+\item{\code{sugar}}{Measured blood sugar level (\%)}
 \item{\code{treatment}}{Blood sugar measurements treatment group; \code{before} or \code{after}
 administering insulin}
 \item{\code{id}}{Identifier of individual being measured
