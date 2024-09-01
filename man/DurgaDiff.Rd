@@ -12,7 +12,6 @@ DurgaDiff(x, ...)
   data.col,
   group.col,
   id.col,
-  random.col,
   groups,
   contrasts = "*",
   effect.type = "mean",
@@ -145,8 +144,7 @@ measures/paired data/within-subject comparisons in long format require a subject
 identity column (\code{id.col}).
 
 Wide format contains different measurements in different columns of the same row, and
-is well-suited for repeated measures/paired/within-subject comparison data (and Durga
-assumes that wide-format data is paired). To pass
+is well-suited for repeated measures/paired/within-subject comparison data. To pass
 wide format data, do not specify the arguments \code{data.col} or
 \code{group.col}. Instead, you must explicitly specify the groups to be
 compared in the \code{groups} argument. Each group must be the name of a
@@ -154,7 +152,7 @@ column in \code{x}. For paired data, you may specify \code{id.col}, although it 
 required, as wide format data is assumed to be paired. The \code{id.col} can be a column
 that already exists and uniquely identifies each specimen, or it can be the name of a
 column to be created, in which case the specimen ID will be a generated integer sequence.
-Unpaired data may be in wide format, but it is necessary to inform Durga by passing \code{id.col = NULL}.
+Unpaired data can be in wide format, but it is necessary to inform Durga by passing \code{id.col = NULL}.
 Wide format data will be internally converted to long format, then processing continues as
 for long format input.
 }
