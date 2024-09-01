@@ -26,7 +26,7 @@ mmToUser <- function(mm, horizontal) {
 # Draw a single confidence bracket across the top of two groups
 #
 # @param diff Object of class \code{DurgaGroupDiff}
-# @param plot.stats Object returned by the call to \code{\link{DurgaPlot}}
+# @param plotExtents Plot extents as returned by \code{DurgaDiff} , field \code{extents}
 # @param y Y value of bracket
 # @param text Text to display above the bracket
 # @param text Text to display above bracket
@@ -85,6 +85,11 @@ DrawBracket <- function(diff, plotExtents, y, text, text.pad, plot = TRUE,
                      cex = lb.cex, col = lb.col, font = lb.font, ...)
     }
 
+    # Add text width to bounding box since it might extend past the ends of the bracket
+    w <- graphics::strwidth(text, units = "user", cex = lb.cex, col = lb.col, font = lb.font, ...)
+    textWidth <- c(tx - w / 2, tx + w / 2)
+    bb[1:2] <- range(bb[1:2], textWidth)
+
     # Add text extent to bounding box
     h <- graphics::strheight(text, units = "user", cex = lb.cex, col = lb.col, font = lb.font, ...)
     textHeight <- (yinc + h) * posFactor
@@ -113,7 +118,7 @@ shiftRect <- function(r, dx, dy) r + rep(c(dx, dy), each = 2)
 # fit well, then progressively add brackets, shifting them upwards so they don't
 # overlap any others (or the data).
 #
-# @param es Object of class \code{DurgaDiff}
+# @param plotExtents Plot extents as returned by \code{DurgaDiff} , field \code{extents}
 # @param diffs List of \code{DurgaGroupDiff} objects
 # @param plotExtents Extents object from object returned by the call to
 #   \code{\link{DurgaPlot}}
@@ -262,7 +267,7 @@ isRightToLeft <- function(diff) {
 #' Brackets are added to a \code{DurgaPlot} that already exists. That means you
 #' must ensure there is sufficient space for the brackets above the plot. To do
 #' this, either specify \code{ylim} to \code{\link{DurgaPlot}}, or create a
-#' large top margin (\code{par(mar = c(...))}) and the turn off the plot frame
+#' large top margin (\code{par(mar = c(...))}) and turn off the plot frame
 #' (\code{DurgaPlot(..., frame.plot = FALSE)}). In either case, experiment with
 #' the values until the result is visually pleasing. The annotation can be drawn
 #' into the margin as it will not be cropped.

@@ -246,13 +246,13 @@ test_that("Group interactions", {
   da <- DurgaDiff(df2, "val", c("group", "sex"))
   expect_equal(length(da$groups), 4)
   expect_equal(length(da$group.differences), 6)
-  DurgaPlot(da, bty = "n", ylim = c(-1.5, 8), ef.size = FALSE, main = "Auto interaction") |> DurgaBrackets()
+  DurgaPlot(da, bty = "n", ylim = c(-1.5, 20), ef.size = FALSE, main = "Auto interaction") |> DurgaBrackets(lb.cex = 0.5)
   # Manual interaction
   df2$group_sex <- combineVariables(df2, c("group", "sex"), ", ")
   dm <- DurgaDiff(df2, "val", "group_sex")
   expect_equal(length(dm$groups), 4)
   expect_equal(length(dm$group.differences), 6)
-  DurgaPlot(dm, bty = "n", ylim = c(-1.5, 8), ef.size = FALSE, main = "Manual interaction") |> DurgaBrackets()
+  DurgaPlot(dm, bty = "n", ylim = c(-1.5, 20), ef.size = FALSE, main = "Manual interaction") |> DurgaBrackets(lb.cex = 0.5)
 
   compareDiffs(da, dm)
 

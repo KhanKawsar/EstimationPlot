@@ -138,3 +138,15 @@ test_that("bracket overlap", {
   p <- DurgaPlot(d, main = "No overlapping brackets", ef.size = FALSE, bty = "n", ylim = extendrange(data$val, f = c(0, 1)))
   expect_error(DurgaBrackets(p, contrasts = "*", labels = "diff", lb.cex = 0.6, tip.length = 1, vertical.gap = 0.6), NA)
 })
+
+test_that("bracket text overlap", {
+  n <- 10
+  ng <- 7
+  set.seed(1)
+  data <- data.frame(val = c(replicate(ng, rnorm(n, runif(1)))),
+                     group = rep(1:ng, each = n))
+  d <- DurgaDiff(data, "val", "group")
+  p <- DurgaPlot(d, main = "No overlapping bracket text", ef.size = FALSE, bty = "n", ylim = extendrange(data$val, f = c(0, 0.1)))
+  contrasts <- sprintf("%s-%s", 2:ng, 1:(ng - 1))
+  expect_error(DurgaBrackets(p, contrasts = contrasts, labels = "level CI", tip.length = 1, vertical.gap = 0.6), NA)
+})

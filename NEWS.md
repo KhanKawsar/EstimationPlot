@@ -6,6 +6,7 @@
 ### Enhancements
 
 * `DurgaDiff` takes a parameter `ef.size.cex` that controls the size of the effect size central tendency symbol.
+* `DurgBrackets` prevents bracket text from overlapping.
 
 ## Durga 2.0
 

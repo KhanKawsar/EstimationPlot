@@ -84,7 +84,7 @@ of adding confidence brackets to the current plot.
 Brackets are added to a \code{DurgaPlot} that already exists. That means you
 must ensure there is sufficient space for the brackets above the plot. To do
 this, either specify \code{ylim} to \code{\link{DurgaPlot}}, or create a
-large top margin (\code{par(mar = c(...))}) and the turn off the plot frame
+large top margin (\code{par(mar = c(...))}) and turn off the plot frame
 (\code{DurgaPlot(..., frame.plot = FALSE)}). In either case, experiment with
 the values until the result is visually pleasing. The annotation can be drawn
 into the margin as it will not be cropped.
