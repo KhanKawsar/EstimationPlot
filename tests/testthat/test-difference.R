@@ -98,6 +98,15 @@ plotWithBrackets <- function(d) {
 ##########################################################################
 # Tests start here ####
 
+test_that("boolean datasets", {
+  n <- 100
+  df <- data.frame(group = sample(c("A", "B"), n, replace = TRUE),
+                  value = sample(c(0, 1), n * 2, replace = TRUE))
+  d <- DurgaDiff(df, "value", "group")
+  # Check that group CIs are not NA
+  expect_true(!any(is.na(d$group.statistics)))
+})
+
 test_that("nested groups", {
   groupedContrasts <- function(df, group.cols) {
     outer <- unique(df[[group.cols[1]]])

@@ -20,7 +20,9 @@ meanCI <- function(x, alpha = 0.95) {
 #
 meanCIboot <- function(x, alpha = 0.95, R = 1000) {
   bmean <- function(x, i) mean(x[i], na.rm = TRUE) # How should we handle NAs?
-  if (length(unique(x)) < 3 || is.na(R)) {
+  # Try to avoid the situation where boot.ci returns a textual error message because
+  # that is not at all helpful
+  if (length(na.omit(x)) < 3 || length(unique(x)) < 2 || is.na(R)) {
     # Silently return NAs
     c(NA, NA)
   } else {
@@ -302,8 +304,10 @@ calcPairDiff <- function(data, pair, isPaired, pairNames, pairIndices, data.col,
       if (is.numeric(idColName))
         idColName <- names(data)[id.col]
       nBad <- length(missing)
-      stop(sprintf("%d %s%s are not matched across groups '%s' and '%s' in paired data",
-                   nBad, idColName, if (nBad == 1) "" else "s", pair[1], pair[2]))
+      stop(sprintf("%d %s%s %s not matched across groups '%s' and '%s' in paired data",
+                   nBad, idColName,
+                   if (nBad == 1) "" else "s", if (nBad == 1) "is" else "are",
+                   pair[1], pair[2]))
     }
     # Pair on ID (don't assume they are sorted)
     g1Idx <- match(g2[[id.col]], g1[[id.col]])
@@ -362,10 +366,11 @@ calcPairDiff <- function(data, pair, isPaired, pairNames, pairIndices, data.col,
 # Convert a wide-format paired data set to long format
 wideToLong <- function(x, groups, id.col) {
   # Check columns exist
-  badCols <- !(groups %in% names(x))
+  groupCols <- unlist(groups)
+  badCols <- !(groupCols %in% names(x))
   if (any(badCols)) {
     stop(sprintf("Invalid group name%s \"%s\"; in wide format, groups must be column names.\nAvailable columns are: %s",
-                 ifelse(sum(badCols) == 1, "", "s"), paste(groups[badCols], collapse = ", "), paste(names(x), collapse = ", ")))
+                 ifelse(sum(badCols) == 1, "", "s"), paste(groupCols[badCols], collapse = ", "), paste(names(x), collapse = ", ")))
   }
   # Pick unique column names so we don't overwrite an existing column
   .pickCol <- function(base) {
@@ -477,7 +482,8 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #' identity column (\code{id.col}).
 #'
 #' Wide format contains different measurements in different columns of the same row, and
-#' is well-suited for repeated measures/paired/within-subject comparison data. To pass
+#' is well-suited for repeated measures/paired/within-subject comparison data (and Durga
+#' assumes that wide-format data is paired). To pass
 #' wide format data, do not specify the arguments \code{data.col} or
 #' \code{group.col}. Instead, you must explicitly specify the groups to be
 #' compared in the \code{groups} argument. Each group must be the name of a
@@ -485,7 +491,7 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #' required, as wide format data is assumed to be paired. The \code{id.col} can be a column
 #' that already exists and uniquely identifies each specimen, or it can be the name of a
 #' column to be created, in which case the specimen ID will be a generated integer sequence.
-#' Unpaired data can be in wide format, but it is necessary to inform Durga by passing `id.col = NULL`.
+#' Unpaired data may be in wide format, but it is necessary to inform Durga by passing `id.col = NULL`.
 #' Wide format data will be internally converted to long format, then processing continues as
 #' for long format input.
 #'
