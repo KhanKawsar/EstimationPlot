@@ -98,6 +98,15 @@ plotWithBrackets <- function(d) {
 ##########################################################################
 # Tests start here ####
 
+test_that("R = NA works", {
+  n <- 100
+  df <- data.frame(group = sample(c("A", "B"), n, replace = TRUE),
+                   value = sample(c(0, 1), n * 2, replace = TRUE))
+  d <- DurgaDiff(df, "value", "group", R = NA)
+  # Check that group CIs are NA
+  expect_true(all(is.na(d$group.statistics[c("CI.lower", "CI.upper")])))
+})
+
 test_that("boolean datasets", {
   n <- 100
   df <- data.frame(group = sample(c("A", "B"), n, replace = TRUE),

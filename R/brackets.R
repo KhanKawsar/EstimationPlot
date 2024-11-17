@@ -360,6 +360,7 @@ DurgaBrackets <- function(plot.stats,
   # For each difference, record whether CI overlaps 0, is negative or positive
   sign <- sapply(diffs, function(diff) ifelse(diff$bca[5] < 0, -1,
                                               ifelse(diff$bca[4] > 0, 1, 0)))
+  sign[is.na(sign)] <- 0
   if (is.null(br.lwd)) br.lwd <- ifelse(sign == 0, 1, 2)
   if (is.null(br.col)) br.col <- ifelse(sign == 0, "grey60", "grey20")
   if (is.null(lb.font)) lb.font <- ifelse(sign == 0, 1, 2)
