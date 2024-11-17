@@ -11,6 +11,7 @@
 ### Bug fixes
 
 * `DurgaDiff` now calculates CI of group mean for groups with at least 3 values and 2 distinct values. Previously it was only calculated for at least 3 distinct values.
+* `DurgaDiff` now correctly handles `R = NA` as documented; does not calculate CIs
 
 ## Durga 2.0
 

@@ -330,15 +330,21 @@ calcPairDiff <- function(data, pair, isPaired, pairNames, pairIndices, data.col,
     statistic <- .wrap2GroupStatistic(etDescr$fun)
   }
 
-  # Bootstrap the statistic. The strata argument means that we bootstrap within each group separately
-  es <- do.call(boot::boot, c(list(data = bootstrapData, strata = strata,
-                                   statistic = statistic, R = R, stype = "i"), boot.params))
+  if (!is.na(R)) {
+    # Bootstrap the statistic. The strata argument means that we bootstrap within each group separately
+    es <- do.call(boot::boot, c(list(data = bootstrapData, strata = strata,
+                                     statistic = statistic, R = R, stype = "i"), boot.params))
 
-  if (is.na(es$t0))
-    stop(sprintf("Estimate is NA; do you need to specify na.rm = TRUE?"))
+    if (is.na(es$t0))
+      stop(sprintf("Estimate is NA; do you need to specify na.rm = TRUE?"))
 
-  # Calculate confidence interval
-  ci <- do.call(boot::boot.ci, c(list(es, type = ci.type, conf = ci.conf), boot.ci.params))
+    # Calculate confidence interval
+    ci <- do.call(boot::boot.ci, c(list(es, type = ci.type, conf = ci.conf), boot.ci.params))
+  } else {
+    # CIs not wanted - just calculate sample statistic and set all CI-related values to NA
+    es <- list(t0 = statistic(bootstrapData, seq_len(nrow(bootstrapData))), R = NA, bca = rep(NA, 5))
+    ci <- data.frame()
+  }
 
   # Save some parts of the CI data into the returned value (don't need values that are already there or misleading)
   es[["ci.type"]] <- ci.type
@@ -603,7 +609,7 @@ DurgaDiff.formula <- function(x, data = NULL, id.col, ...) {
 #'   warnings such as "\code{In norm.inter(t, adj.alpha) : extreme order
 #'   statistics used as endpoints}" may be avoided by increasing \code{R}.
 #'   Specify \code{R = NA} if you do not wish to calculate any CIs, either
-#'   for group means for for effect sizes. This may be useful if Durga is
+#'   for group means or for effect sizes. This may be useful if Durga is
 #'   only being used for plotting large data sets.
 #' @param boot.params Optional list of additional names parameters to pass to
 #'   the \code{\link[boot]{boot}} function.
