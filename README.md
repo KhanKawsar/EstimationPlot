@@ -1,11 +1,11 @@
-#<img src="man/figures/logo.png" align="right" height="120" />
-
+# <img src="man/figures/logo.png" align="right" height="120" />
 # Durga: An R package for effect size estimation and visualisation
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/KhanKawsar/EstimationPlot/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/KhanKawsar/EstimationPlot/actions/workflows/R-CMD-check.yaml)
 [![Codecov test coverage](https://codecov.io/gh/KhanKawsar/EstimationPlot/branch/main/graph/badge.svg)](https://app.codecov.io/gh/KhanKawsar/EstimationPlot?branch=main)
 [![CRAN status](https://www.r-pkg.org/badges/version/Durga)](https://CRAN.R-project.org/package=Durga)
+![CRAN download count](https://cranlogs.r-pkg.org/badges/Durga)
 <!-- badges: end -->
 
 
@@ -15,7 +15,7 @@ Effect size estimation and plotting is a component of [estimation statistics](ht
 
 If you use `Durga` in your research, please cite (and read) the article:
 
-Khan, M.K. & McLean, D.J. (2023) Durga: An R package for effect size estimation and visualisation. _bioRxiv_, 2023.2002.2006.526960. https://doi.org/10.1101/2023.02.06.526960
+Khan, M. K., & McLean, D. J. (2024). Durga: An R package for effect size estimation and visualisation. Journal of Evolutionary Biology. doi:10.1093/jeb/voae073
 
 
 ## Installation
