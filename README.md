@@ -15,7 +15,7 @@ Effect size estimation and plotting is a component of [estimation statistics](ht
 
 If you use `Durga` in your research, please cite (and read) the article:
 
-Khan, M. K., & McLean, D. J. (2024). Durga: An R package for effect size estimation and visualisation. Journal of Evolutionary Biology. doi:10.1093/jeb/voae073
+Khan, M. K., & McLean, D. J. (2024). Durga: An R package for effect size estimation and visualisation. _Journal of Evolutionary Biology_. doi:10.1093/jeb/voae073
 
 
 ## Installation
