@@ -272,19 +272,24 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch, ef.size.cex
 #   the main plot region.
 plotEffectSizesBelow <- function(es, plotDiffs, ef.size.col, ef.size.pch, ef.size.cex, ef.size.lty, ef.size.lwd,
                                  showViolin, violinCol, violin.fill, violin.width, violin.shape, violin.trunc,
-                                 xlim, ef.size.dx, ef.size.label, ticksAt,
+                                 xlim, ef.size.dx, ef.size.label, ticksAt, ylim,
                                  ef.size.line.col, ef.size.line.lty, ef.size.line.lwd,
                                  group.dx,
                                  paddingTop, plotProportion) {
   groups <- es$groups
 
   # What will we plot?
-  # Range of effect sizes
-  ylimData <- range(sapply(plotDiffs, rangeOfDiff, violin.trunc), na.rm = TRUE)
-  # Ensure ylim includes 0
-  ylimData <- range(c(0, ylimData), na.rm = TRUE)
-  # Extend range the same way a normal plot does
-  ylim <- grDevices::extendrange(ylimData)
+  if (!is.null(ylim)) {
+    # ylimData is used to calculate where to put the ticks
+    ylimData <- ylim
+  } else {
+    # Range of effect sizes
+    ylimData <- range(sapply(plotDiffs, rangeOfDiff, violin.trunc), na.rm = TRUE)
+    # Ensure ylim includes 0
+    ylimData <- range(c(0, ylimData), na.rm = TRUE)
+    # Extend range the same way a normal plot does
+    ylim <- grDevices::extendrange(ylimData)
+  }
 
   # Vertical layout. The effect size is plotted into the bottom margin. Layout
   # calculations are performed as follows:
@@ -570,8 +575,7 @@ DurgaTransparent <-  function(colour, transparency, relative = FALSE) {
 #' @param paired.lwd Line width for pair lines.
 #'
 #' @param ef.size If not \code{FALSE}, effect sizes are plotted. May be
-#'   \code{TRUE} or
-#'   a colour.
+#'   \code{TRUE} or a colour.
 #' @param ef.size.position Effect sizes are plotted to the right of the main
 #'   plot if there is only one effect size to plot and \code{ef.size.position !=
 #'   "below"}. If the effect size is drawn to the right, you will need to
@@ -600,6 +604,7 @@ DurgaTransparent <-  function(colour, transparency, relative = FALSE) {
 #'   negative effect" = -0.5, "Small negative effect" = -0.2, "No effect" = 0,
 #'   "Small positive effect" = 0.2, "Medium positive effect" = 0.5, "Large
 #'   positive effect" = 0.8)}
+#' @param ef.size.ylim If specified, overrides the y-axis limits of the effect size plot.
 #' @param ef.size.top.pad Gap (in units of default character height scaled by
 #'   \code{cex}) between the bottom of the main plot region and the top of the
 #'   effect size plot region. Only applies when effect size is positioned below.
@@ -751,6 +756,7 @@ DurgaPlot <- function(es,
                     ef.size.lty = 1,
                     ef.size.lwd = 2,
                     ef.size.ticks = NULL,
+                    ef.size.ylim = NULL,
                     ef.size.label = es$effect.name,
                     ef.size.dx = 0,
                     ef.size.adj.margin = TRUE,
@@ -865,6 +871,10 @@ DurgaPlot <- function(es,
   } else if (length(plotDiffs) > 1) {
     # Can't show more than one effect size to the right
     ef.size.position <- "below"
+  }
+  # ef.size.ylim can't be applied when ef size is on the right
+  if (!is.null(ef.size.ylim) && ef.size.position == "right") {
+    stop("Argument ef.size.ylim can only be specified when the effect size position is below the main plot")
   }
 
 
@@ -1179,7 +1189,7 @@ DurgaPlot <- function(es,
     } else if (ef.size.position == "below") {
       plotEffectSizesBelow(es, plotDiffs, ef.size.col, ef.size.pch, ef.size.cex, ef.size.lty, ef.size.lwd,
                            .show(ef.size.violin), violinCol, violinFill, violin.width, ef.size.violin.shape, ef.size.violin.trunc,
-                           xlim, ef.size.dx, ef.size.label, ef.size.ticks,
+                           xlim, ef.size.dx, ef.size.label, ef.size.ticks, ef.size.ylim,
                            ef.size.line.col, ef.size.line.lty, ef.size.line.lwd, group.dx,
                            ef.size.top.pad, ef.size.height)
     }
