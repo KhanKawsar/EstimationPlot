@@ -22,7 +22,7 @@ meanCIboot <- function(x, alpha = 0.95, R = 1000) {
   bmean <- function(x, i) mean(x[i], na.rm = TRUE) # How should we handle NAs?
   # Try to avoid the situation where boot.ci returns a textual error message because
   # that is not at all helpful
-  if (length(na.omit(x)) < 3 || length(unique(x)) < 2 || is.na(R)) {
+  if (length(stats::na.omit(x)) < 3 || length(unique(x)) < 2 || is.na(R)) {
     # Silently return NAs
     c(NA, NA)
   } else {
