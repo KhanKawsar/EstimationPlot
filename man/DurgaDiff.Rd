@@ -64,7 +64,7 @@ large sample sizes. If \code{R <= nrow(x)}, an error such as "\code{Error in
 warnings such as "\code{In norm.inter(t, adj.alpha) : extreme order
   statistics used as endpoints}" may be avoided by increasing \code{R}.
 Specify \code{R = NA} if you do not wish to calculate any CIs, either
-for group means for for effect sizes. This may be useful if Durga is
+for group means or for effect sizes. This may be useful if Durga is
 only being used for plotting large data sets.}
 
 \item{boot.params}{Optional list of additional names parameters to pass to
@@ -144,7 +144,8 @@ measures/paired data/within-subject comparisons in long format require a subject
 identity column (\code{id.col}).
 
 Wide format contains different measurements in different columns of the same row, and
-is well-suited for repeated measures/paired/within-subject comparison data. To pass
+is well-suited for repeated measures/paired/within-subject comparison data (and Durga
+assumes that wide-format data is paired). To pass
 wide format data, do not specify the arguments \code{data.col} or
 \code{group.col}. Instead, you must explicitly specify the groups to be
 compared in the \code{groups} argument. Each group must be the name of a
@@ -152,7 +153,7 @@ column in \code{x}. For paired data, you may specify \code{id.col}, although it 
 required, as wide format data is assumed to be paired. The \code{id.col} can be a column
 that already exists and uniquely identifies each specimen, or it can be the name of a
 column to be created, in which case the specimen ID will be a generated integer sequence.
-Unpaired data can be in wide format, but it is necessary to inform Durga by passing \code{id.col = NULL}.
+Unpaired data may be in wide format, but it is necessary to inform Durga by passing \code{id.col = NULL}.
 Wide format data will be internally converted to long format, then processing continues as
 for long format input.
 }

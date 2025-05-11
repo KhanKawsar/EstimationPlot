@@ -23,6 +23,26 @@ makeData <- function(N = 40) {
 # Tests start here ####
 
 
+# TODO test x.axis.params
+# test_that("plot x axis params", {
+#   op <- par(mfrow = c(1, 2))
+#   on.exit(par(op))
+#   expect_error(DurgaDiff(mass ~ maturity, damselfly) |>
+#                  DurgaPlot(x.axis.params = list(col = "red", cex = 1.4), main = "Custom x axis"), NA)
+#   expect_error(DurgaDiff(mass ~ maturity, damselfly) |>
+#                  DurgaPlot(x.axis.params = list(col = "red", cex = 1.4), main = "Custom x axis", ef.size.position = "below"), NA)
+# })
+
+test_that("ef.size.ylim", {
+  mar <- par("mar")
+  op <- par(mfrow = c(1, 2))
+  on.exit(par(op))
+  d <- DurgaDiff(mass ~ maturity, damselfly)
+  expect_error(DurgaPlot(d, ef.size.ylim, main = "ef.size.ylim default"))
+  DurgaPlot(d, ef.size.position = "below", main = "ef.size.ylim default")
+  expect_error(DurgaPlot(d, ef.size.position = "below", ef.size.ylim = c(-20, 20), main = "ef.size.ylim (-20, 20)"), NA)
+})
+
 test_that("ef.size.cex", {
   mar <- par("mar")
   op <- par(mfrow = c(1, 2))

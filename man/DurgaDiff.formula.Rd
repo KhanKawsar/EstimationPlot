@@ -44,7 +44,7 @@ large sample sizes. If \code{R <= nrow(x)}, an error such as "\code{Error in
 warnings such as "\code{In norm.inter(t, adj.alpha) : extreme order
   statistics used as endpoints}" may be avoided by increasing \code{R}.
 Specify \code{R = NA} if you do not wish to calculate any CIs, either
-for group means for for effect sizes. This may be useful if Durga is
+for group means or for effect sizes. This may be useful if Durga is
 only being used for plotting large data sets.}
     \item{\code{boot.params}}{Optional list of additional names parameters to pass to
 the \code{\link[boot]{boot}} function.}
