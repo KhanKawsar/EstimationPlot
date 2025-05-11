@@ -45,6 +45,7 @@ DurgaPlot(
   ef.size.lty = 1,
   ef.size.lwd = 2,
   ef.size.ticks = NULL,
+  ef.size.ylim = NULL,
   ef.size.label = es$effect.name,
   ef.size.dx = 0,
   ef.size.adj.margin = TRUE,
@@ -93,7 +94,7 @@ information.}
 can be shifted independently using the appropriate \code{*.dx} parameters.}
 
 \item{group.colour}{Colours to use for each group. Either an
-\code{\link{RColorBrewer}} palette name or a vector of colours.}
+\code{\link[RColorBrewer:RColorBrewer]{RColorBrewer}} palette name or a vector of colours.}
 
 \item{points}{If not \code{FALSE}, points are plotted. If \code{TRUE}, points
 are displayed with a default colour (which is the group colour with 40\%
@@ -181,8 +182,7 @@ according to \code{central.tendency}. May be \code{TRUE} or a colour.}
 \item{bar.dx}{Horizontal shift to be applied to each bar.}
 
 \item{ef.size}{If not \code{FALSE}, effect sizes are plotted. May be
-\code{TRUE} or
-a colour.}
+\code{TRUE} or a colour.}
 
 \item{ef.size.position}{Effect sizes are plotted to the right of the main
 plot if there is only one effect size to plot and \code{ef.size.position !=
@@ -217,6 +217,8 @@ specify \code{ef.size.ticks = c("Large negative effect" = -0.8, "Medium
   negative effect" = -0.5, "Small negative effect" = -0.2, "No effect" = 0,
   "Small positive effect" = 0.2, "Medium positive effect" = 0.5, "Large
   positive effect" = 0.8)}}
+
+\item{ef.size.ylim}{If specified, overrides the y-axis limits of the effect size plot.}
 
 \item{ef.size.label}{Label to display on y-axis for effect size.}
 

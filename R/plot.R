@@ -474,7 +474,7 @@ DurgaTransparent <-  function(colour, transparency, relative = FALSE) {
 #'   \code{group.dx = c(0.1, -0.1)} will group into pairs. Individual components
 #'   can be shifted independently using the appropriate \code{*.dx} parameters.
 #' @param group.colour Colours to use for each group. Either an
-#'   \code{\link{RColorBrewer}} palette name or a vector of colours.
+#'   \code{\link[RColorBrewer:RColorBrewer]{RColorBrewer}} palette name or a vector of colours.
 #'
 #' @param points If not \code{FALSE}, points are plotted. If \code{TRUE}, points
 #'   are displayed with a default colour (which is the group colour with 40%
