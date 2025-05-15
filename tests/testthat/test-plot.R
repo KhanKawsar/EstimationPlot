@@ -35,12 +35,16 @@ makeData <- function(N = 40) {
 
 test_that("ef.size.ylim", {
   mar <- par("mar")
-  op <- par(mfrow = c(1, 2))
+  op <- par(mfrow = c(2, 2))
   on.exit(par(op))
-  d <- DurgaDiff(mass ~ maturity, damselfly)
-  expect_error(DurgaPlot(d, ef.size.ylim, main = "ef.size.ylim default"))
-  DurgaPlot(d, ef.size.position = "below", main = "ef.size.ylim default")
-  expect_error(DurgaPlot(d, ef.size.position = "below", ef.size.ylim = c(-20, 20), main = "ef.size.ylim (-20, 20)"), NA)
+  dm <- DurgaDiff(mass ~ maturity, damselfly)
+  dg <- DurgaDiff(mass ~ maturity, damselfly, effect.type = "hedges g")
+  # Can't specify ef.size.ylim if effect size is on the right and effect type is mean
+  expect_error(DurgaPlot(dm, ef.size.ylim = c(-20, 20)))
+  expect_error(DurgaPlot(dg, main = "ef.size.ylim default"), NA)
+  expect_error(DurgaPlot(dg, ef.size.ylim = c(-10, 2), main = "ef.size.ylim c(-10, 2)"), NA)
+  DurgaPlot(dm, ef.size.position = "below", main = "ef.size.ylim default")
+  expect_error(DurgaPlot(dm, ef.size.position = "below", ef.size.ylim = c(-20, 20), main = "ef.size.ylim (-20, 20)"), NA)
 })
 
 test_that("ef.size.cex", {

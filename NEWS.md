@@ -6,7 +6,7 @@
 ### Enhancements
 
 * `DurgaPlot` takes a parameter `ef.size.cex` that controls the size of the effect size central tendency symbol.
-* `DurgaPlot` takes a parameter `ef.size.ylim` that sets y-axis limits of the effect size plot. Can only be specified if the effect size plot is below the main plot.
+* `DurgaPlot` takes a parameter `ef.size.ylim` that sets y-axis limits of the effect size plot. Cannot be specified if the effect size plot is to the right and the effect type is "mean", because in that case the effect size y-axis must match the main plot y-axis.
 
 ### Bug fixes
 

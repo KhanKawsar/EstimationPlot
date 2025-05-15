@@ -198,7 +198,7 @@ buildMapYFn <- function(xc, yc) {
 # Plot effect size to the right of the main plot. Only useful when showing a single effect size
 plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch, ef.size.cex, ef.size.lty, ef.size.lwd,
                                  showViolin, violinCol, violin.fill, violin.width, violin.shape, violin.trunc,
-                                 ef.size.dx, axisLabel, ticksAt,
+                                 ef.size.dx, axisLabel, ticksAt, ylim,
                                  groupX, ef.size.line.col, ef.size.line.lty, ef.size.line.lwd) {
 
   # Get the means of the 2 groups
@@ -211,6 +211,9 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch, ef.size.cex
   x <- length(es$groups) + 1 + ef.size.dx
 
   if (!is.function(es$effect.type) && es$effect.type == "mean") {
+    # When the effect type is mean, units for effect size (i.e. y-axis) are the
+    # same as the main plot y axis
+
     esRange <- range(c(0, pwes$t))
     plotEffectSize(pwes, x, y,
                    showViolin, violinCol, violin.fill, violin.width, violin.shape, violin.trunc,
@@ -226,7 +229,12 @@ plotEffectSizesRight <- function(es, pwes, ef.size.col, ef.size.pch, ef.size.cex
     }
     graphics::axis(4, at = y2 + ticksAt, labels = labels)
   } else {
-    esRange <- range(c(0, pwes$t0))
+    # Any effect type other than mean and we have to map the y-axis to the main plot y-axis
+    if (is.null(ylim)) {
+      esRange <- range(c(0, pwes$t0))
+    } else {
+      esRange <- ylim
+    }
     ylim <- range(y, y2)
     # Function to map esRange to ylim
     mapY <- buildMapYFn(esRange, ylim)
@@ -872,9 +880,9 @@ DurgaPlot <- function(es,
     # Can't show more than one effect size to the right
     ef.size.position <- "below"
   }
-  # ef.size.ylim can't be applied when ef size is on the right
-  if (!is.null(ef.size.ylim) && ef.size.position == "right") {
-    stop("Argument ef.size.ylim can only be specified when the effect size position is below the main plot")
+  # ef.size.ylim can't be applied when ef size is on the right and effect type is mean, because in that case effect size y-axis must match the main plot y-axis
+  if (!is.null(ef.size.ylim) && ef.size.position == "right" && es$effect.type == "mean") {
+    stop("Argument ef.size.ylim cannot be specified when the ef.size.position is \"right\" and effect type is \"mean\"")
   }
 
 
@@ -1184,7 +1192,7 @@ DurgaPlot <- function(es,
       lineStartAt <- seq_len(nGroups) + ef.size.mean.line.dx
       plotEffectSizesRight(es, plotDiffs[[1]], ef.size.col, ef.size.pch, ef.size.cex, ef.size.lty, ef.size.lwd,
                            .show(ef.size.violin), violinCol, violinFill, violin.width, ef.size.violin.shape, ef.size.violin.trunc,
-                           ef.size.dx, ef.size.label, ef.size.ticks,
+                           ef.size.dx, ef.size.label, ef.size.ticks, ef.size.ylim,
                            lineStartAt, ef.size.line.col, ef.size.line.lty, ef.size.line.lwd)
     } else if (ef.size.position == "below") {
       plotEffectSizesBelow(es, plotDiffs, ef.size.col, ef.size.pch, ef.size.cex, ef.size.lty, ef.size.lwd,
